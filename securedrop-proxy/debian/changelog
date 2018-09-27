@@ -1,0 +1,5 @@
+securedrop-proxy (0.1.0) unstable; urgency=medium
+
+  * Initial release. (Closes: #XXX)
+
+ -- Kushal Das <kushal@freedom.press>  Tue, 25 Sep 2018 17:58:38 -0400
