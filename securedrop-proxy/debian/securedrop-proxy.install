@@ -1,2 +1,2 @@
-qubes/securedrop.Proxy etc/qubes-rpc/securedrop.Proxy
+qubes/securedrop.Proxy etc/qubes-rpc/
 config-example.yaml usr/share/securedrop-proxy/
