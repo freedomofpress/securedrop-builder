@@ -1,5 +1,9 @@
 DEFAULT_GOAL: help
 
+.PHONY: wheel-urls
+wheel-urls: ## Creates download URLs from s3 bucket from sha256sums.txt file
+	./scripts/createdownloadurls.py > wheelsurls.txt
+
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
 
