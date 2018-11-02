@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+mkdir -p ./localwheels/
+wget -nc -i wheelsurls.txt -P ./localwheels/
