@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import subprocess
+import tempfile
+import shutil
+import argparse
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Builds and caches sources and wheels"
+    )
+    parser.add_argument(
+        "-r",
+        default="./requirements.txt",
+        help="Point to the requirements file",
+    )
+    parser.add_argument(
+        "--cache", default="./localwheels", help="Final cache dir"
+    )
+    args = parser.parse_args()
+
+    if not os.path.exists(args.r):
+        print("Can not read {0}.".format(args.r))
+        sys.exit(1)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cmd = [
+            "pip3",
+            "download",
+            "--no-binary",
+            ":all:",
+            "-d",
+            tmpdir,
+            "-r",
+            args.r,
+        ]
+        subprocess.check_call(cmd)
+
+        cmd = [
+            "pip3",
+            "wheel",
+            "--no-binary",
+            ":all:",
+            "-f",
+            tmpdir,
+            "-w",
+            tmpdir,
+            "-r",
+            args.r,
+        ]
+        subprocess.check_call(cmd)
+
+        # Now find the names
+        names = os.listdir(tmpdir)
+
+        cachenames = os.listdir(args.cache)
+
+        for name in names:
+            if name in cachenames:  # Means all ready in our cache
+                continue
+
+            # Else copy to cache
+            filepath = os.path.join(tmpdir, name)
+            shutil.copy(filepath, args.cache, follow_symlinks=True)
+            print("Copying {0} to cache {1}".format(name, args.cache))
+
+
+if __name__ == "__main__":
+    main()
