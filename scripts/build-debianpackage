@@ -1,0 +1,59 @@
+#!/bin/bash
+set -xe
+CUR_DIR=$PWD
+export DH_PIP_EXTRA_ARGS="--no-cache-dir"
+
+TOP_BUILDDIR=~/debbuild/packaging
+
+echo "Make sure build setup is ready."
+mkdir -p ~/debbuild/packaging
+
+echo $PKG_PATH
+
+echo $CUR_DIR
+
+if [ -z ${PKG_PATH+x} ]; then
+    echo "Set PKG_PATH source tarball";
+    exit 1
+fi
+
+if [ -z ${PKG_VERSION+x} ]; then
+    echo "Set PKG_VERSION of the build";
+    exit 1
+fi
+
+if [ -z ${PKG_NAME+x} ]; then
+    echo "Set PKG_NAME of the build";
+    exit 1
+fi
+
+TARNAME=`basename $PKG_PATH`
+
+rm -rf $TOP_BUILDDIR/$PKG_NAME
+mkdir -p $TOP_BUILDDIR/$PKG_NAME
+
+# Now copy the source in the right place
+cp $PKG_PATH $TOP_BUILDDIR/$PKG_NAME/
+
+# Now move to the directory
+cd $TOP_BUILDDIR/$PKG_NAME/
+
+tar xvf $TARNAME
+
+cd ./$PKG_NAME-$PKG_VERSION
+
+# Now copy over the debian directory from our main working place.
+
+cp -r $CUR_DIR/$PKG_NAME/debian .
+
+# Now create the link to the localwheels directory
+
+ln -s $CUR_DIR/localwheels ./localwheels 
+
+# Let us build the package
+dpkg-buildpackage -us -uc
+
+# Tell the user the path of the files buillt
+echo "Find the .deb and other build files at $TOP_BUILDDIR/$PKG_NAME" 
+
+
