@@ -1,4 +1,4 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv --python /usr/bin/python3.5 --setuptools
+	dh $@ --with python-virtualenv --python /usr/bin/python3.5 --setuptools --index-url https://dev-bin.ops.securedrop.org/simple
