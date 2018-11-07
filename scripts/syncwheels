@@ -1,5 +1,33 @@
 #!/bin/bash
-set -x
+# Fetches Python wheel files from S3 bucket hosted by FPF, so that
+# previously built wheels are reused in new package builds.
+set -e
+set -u
+set -o pipefail
 
-mkdir -p ./localwheels/
-wget -nc -i wheelsurls.txt -P ./localwheels/
+
+TOPLEVEL="$(git rev-parse --show-toplevel)"
+WHEELS_DIR="${TOPLEVEL}/localwheels/"
+WHEELS_URLS="${TOPLEVEL}/wheelsurls.txt"
+
+# Display notice about dev wheels location, if applicable
+if grep -qF 'dev-bin.ops.securedrop.org' "$WHEELS_URLS" ; then
+    echo "WARNING: Using dev wheels location for build..."
+fi
+
+# Create local directory for storing the wheels
+mkdir -p "$WHEELS_DIR"
+
+# Initialize counters for friendly feedback
+num_urls="$(wc -l "$WHEELS_URLS" | perl -lanE 'print $F[0]')"
+num_fetched=0
+
+# curl doesn't support target dirs, so hop into the target dir
+cd "$WHEELS_DIR"
+while read -r url ; do
+    curl -O -s "$url"
+    num_fetched=$((num_fetched+1))
+    printf "\rFetching wheel URLs... %i/%i" "$num_fetched" "$num_urls"
+done < "$WHEELS_URLS"
+
+printf "... done.\n"

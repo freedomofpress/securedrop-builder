@@ -1,4 +1,16 @@
 #!/bin/bash
+# Installs required dependencies for building SecureDrop Worsktation packages.
+# Assumes a Debian 9 machine, ideally a Qubes AppVM.
 
 sudo apt-get update
-sudo apt-get install  libssl-dev libffi-dev build-essential devscripts dh-python python3-all python3-setuptools dh-make dh-virtualenv
+sudo apt-get install  \
+    build-essential \
+    curl \
+    devscripts \
+    dh-make \
+    dh-python \
+    dh-virtualenv \
+    libffi-dev \
+    libssl-dev \
+    python3-all \
+    python3-setuptools
