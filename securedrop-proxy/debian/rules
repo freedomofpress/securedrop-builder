@@ -1,4 +1,13 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv --python /usr/bin/python3.5 --setuptools --index-url https://dev-bin.ops.securedrop.org/simple
+	dh $@ --with python-virtualenv
+
+override_dh_virtualenv:
+	# Set install suffix to empty string, otherwise build path is used in venv
+	# paths inside generated package files.
+	dh_virtualenv --python /usr/bin/python3.5 \
+		--setuptools \
+		--use-system-packages \
+		--index-url https://dev-bin.ops.securedrop.org/simple \
+		--install-suffix ''
