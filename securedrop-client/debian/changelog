@@ -1,3 +1,14 @@
+securedrop-client (0.0.2) unstable; urgency=medium
+
+  * Enable decryption and viewing of replies (#114).
+  * Enable decryption and viewing of messages (#99).
+  * Enable decryption and opening of files in a DispVM (#113).
+  * Add status bar on bottom of application (#65).
+  * Prevent concurrent application launches (#54).
+  * Enable starring/unstarring of sources (#50).
+
+ -- redshiftzero <jen@freedom.press>  Wed, 07 Nov 2018 19:39:22 -0500
+
 securedrop-client (0.0.1) unstable; urgency=medium
 
   * Initial release.
