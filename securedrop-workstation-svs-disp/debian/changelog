@@ -1,0 +1,11 @@
+securedrop-workstation-svs-disp (0.1.1) unstable; urgency=medium
+
+  * Remove LibreOffice.
+
+ -- SecureDrop Team <securedrop@freedom.press>  Wed, 7 Nov 2018 21:09:44 -0400
+
+securedrop-workstation-svs-disp (0.1.0) unstable; urgency=medium
+
+  * Initial release.
+
+ -- SecureDrop Team <securedrop@freedom.press>  Thu, 6 Nov 2018 09:01:10 -0400
