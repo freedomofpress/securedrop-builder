@@ -1,0 +1,78 @@
+#!/bin/bash
+# Wrapper script to build Debian packages for the SecureDrop Workstation.
+# Requires a source tarball to build the package, defined via `PKG_PATH`.
+# The script will check for a suitable tarball on an adjacent directory.
+# Explicit configuration is available via the following env vars:
+#
+#   * PKG_PATH
+#   * PKG_VERSION
+#   * PKG_NAME
+#
+set -e
+set -u
+set -o pipefail
+
+
+# Store root of repo, since we'll change dirs several times.
+CUR_DIR="$(git rev-parse --show-toplevel)"
+
+# Validate required args.
+if [[ -z "${PKG_NAME:-}" ]]; then
+    echo "Set PKG_NAME of the build";
+    exit 1
+fi
+
+if [[ -z "${PKG_VERSION:-}" ]]; then
+    echo "Set PKG_VERSION of the build";
+    exit 1
+fi
+
+if [[ -z "${PKG_PATH:-}" ]]; then
+    # Try to find tarball in a reasonable location
+    candidate_pkg_path="$(realpath "${CUR_DIR}/../${PKG_NAME}/dist/${PKG_NAME}-${PKG_VERSION}.tar.gz")"
+    if [[ -f "$candidate_pkg_path" ]]; then
+        PKG_PATH="$candidate_pkg_path"
+        echo "Found tarball at $PKG_PATH, override with PKG_PATH..."
+    else
+        echo "Set PKG_PATH source tarball";
+        exit 1
+    fi
+fi
+
+# Disable use of pip cache during debhelper build actions.
+export DH_PIP_EXTRA_ARGS="--no-cache-dir"
+
+# Declare general packaging building workspace; subdirs will
+# be created within, to build specific packages.
+TOP_BUILDDIR="$HOME/debbuild/packaging"
+mkdir -p "$TOP_BUILDDIR"
+rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
+mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
+
+printf "Building package '%s' from version '%s'...\\n" "$PKG_NAME" "$PKG_VERSION"
+
+# Update changelog interactively. Currently using "unstable" but we intend
+# to target "stretch" for SDW applications. Must run before files are copied
+# into non-version-controlled build dir.
+dch --newversion "${PKG_VERSION}" --distribution unstable -c "${CUR_DIR}/${PKG_NAME}/debian/changelog"
+
+# Copy the source tarball to the packaging workspace
+cp "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
+
+# Extract the source tarball in the packaging workspace
+tar -C "$TOP_BUILDDIR/$PKG_NAME" -xvf "$PKG_PATH"
+
+# Copy over the debian directory (including new changelog) from repo
+cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/$PKG_NAME-$PKG_VERSION"
+
+# Create symlink to the localwheels directory
+ln -s "$CUR_DIR/localwheels" "$TOP_BUILDDIR/$PKG_NAME/$PKG_NAME-$PKG_VERSION/localwheels"
+
+# Hop into the package build dir, to run dpkg-buildpackage
+cd "$TOP_BUILDDIR/$PKG_NAME/$PKG_NAME-$PKG_VERSION"
+
+# Build the package
+dpkg-buildpackage -us -uc
+
+# Tell the user the path of the files buillt
+echo "Find the .deb and other build files at $TOP_BUILDDIR/$PKG_NAME"
