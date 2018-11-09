@@ -1,3 +1,9 @@
+securedrop-client (0.0.2-1) unstable; urgency=medium
+
+  * Resolves venv paths in generated scripts (via dh-virtualenv)
+
+ -- Conor Schaefer <conor@freedom.press>  Thu, 08 Nov 2018 18:45:53 -0800
+
 securedrop-client (0.0.2) unstable; urgency=medium
 
   * Enable decryption and viewing of replies (#114).
