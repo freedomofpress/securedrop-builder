@@ -1,3 +1,11 @@
+securedrop-client (0.0.3) unstable; urgency=medium
+
+  * Fix and squash migrations (#129).
+  * Don't hide two factor code while typing (#131).
+  * Remove placeholder text from source list (#134).
+
+ -- redshiftzero <jen@freedom.press>  Fri, 09 Nov 2018 13:10:21 -0500
+
 securedrop-client (0.0.2-1) unstable; urgency=medium
 
   * Resolves venv paths in generated scripts (via dh-virtualenv)
