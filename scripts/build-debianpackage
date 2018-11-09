@@ -60,16 +60,16 @@ dch --newversion "${PKG_VERSION}" --distribution unstable -c "${CUR_DIR}/${PKG_N
 cp "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
 
 # Extract the source tarball in the packaging workspace
-tar -C "$TOP_BUILDDIR/$PKG_NAME" -xvf "$PKG_PATH"
+tar --strip-components=1 -C "$TOP_BUILDDIR/$PKG_NAME" -xvf "$PKG_PATH"
 
 # Copy over the debian directory (including new changelog) from repo
-cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/$PKG_NAME-$PKG_VERSION"
+cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/"
 
 # Create symlink to the localwheels directory
-ln -s "$CUR_DIR/localwheels" "$TOP_BUILDDIR/$PKG_NAME/$PKG_NAME-$PKG_VERSION/localwheels"
+ln -s "$CUR_DIR/localwheels" "$TOP_BUILDDIR/$PKG_NAME/localwheels"
 
 # Hop into the package build dir, to run dpkg-buildpackage
-cd "$TOP_BUILDDIR/$PKG_NAME/$PKG_NAME-$PKG_VERSION"
+cd "$TOP_BUILDDIR/$PKG_NAME/"
 
 # Build the package
 dpkg-buildpackage -us -uc
