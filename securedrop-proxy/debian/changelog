@@ -1,3 +1,9 @@
+securedrop-proxy (0.1.1-1) unstable; urgency=medium
+
+  * Resolves venv paths in generated scripts (via dh-virtualenv)
+
+ -- Conor Schaefer <conor@freedom.press>  Thu, 08 Nov 2018 18:51:12 -0800
+
 securedrop-proxy (0.1.1) unstable; urgency=medium
 
   * Update requests to 2.20.0
