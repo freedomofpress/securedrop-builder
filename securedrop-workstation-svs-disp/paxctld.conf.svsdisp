@@ -113,3 +113,5 @@
 # libreoffice will still run fine without the below line,
 # but it will report an RWX mprotect attempt
 # /usr/lib/libreoffice/program/soffice.bin	m
+
+/usr/bin/totem			m
