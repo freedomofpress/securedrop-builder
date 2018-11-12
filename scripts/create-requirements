@@ -1,0 +1,19 @@
+#!/bin/bash
+# Wrapper script to create/update the requirements.txt and requirements-dev.txt
+# It finds the correct project directory from the `PKG_DIR` envirionment variable.
+#
+
+set -e
+set -u
+set -o pipefail
+
+if [[ -z "${PKG_DIR:-}" ]]; then
+    echo "Set PKG_DIR of the project.";
+    exit 1
+fi
+
+cd $PKG_DIR
+
+# Now create both of the files
+pipenv lock -r > requirements.txt
+pipenv lock -d -r > requirements-dev.txt
