@@ -40,7 +40,7 @@ if [[ -z "${PKG_PATH:-}" ]]; then
 fi
 
 # Disable use of pip cache during debhelper build actions.
-export DH_PIP_EXTRA_ARGS="--no-cache-dir"
+export DH_PIP_EXTRA_ARGS="--no-cache-dir --require-hashes"
 
 # Declare general packaging building workspace; subdirs will
 # be created within, to build specific packages.
