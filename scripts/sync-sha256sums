@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# A script to update the sha256sums from localwheels directory
+
+set -e
+set -u
+set -o pipefail
+
+cd ./localwheels/
+sha256sum * > ../sha256sums.txt
