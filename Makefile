@@ -26,6 +26,23 @@ securedrop-workstation-grsec: ## Builds Debian metapackage for Qubes Workstation
 install-deps: ## Install initial Debian packaging dependencies
 	./scripts/install-deps
 
+.PHONY: requirements
+requirements: ## Creates requirements files for the Python projects
+	./scripts/create-requirements
+	./scripts/update-requirements
+
+.PHONY: build-wheels
+build-wheels: syncwheels ## Builds the wheels and syncs to the localwheels directory
+	./scripts/build-sync-wheels -r ${PKG_DIR}/requirements.txt
+	./scripts/build-sync-wheels -r ${PKG_DIR}/requirements-dev.txt
+	./scripts/sync-sha256sums
+	./scripts/createdownloadurls.py > wheelsurls.txt
+
+.PHONY: sync-sha256sums
+sync-sha256sums: ## Updates the sha256sums of the localwheels
+	./scripts/sync-sha256sums
+	./scripts/createdownloadurls.py > wheelsurls.txt
+
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
 
