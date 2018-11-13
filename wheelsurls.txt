@@ -64,6 +64,8 @@ https://dev-bin.ops.securedrop.org/localwheels/pyflakes-2.0.0-py2.py3-none-any.w
 https://dev-bin.ops.securedrop.org/localwheels/pyflakes-2.0.0.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/pytest-3.10.0-py2.py3-none-any.whl
 https://dev-bin.ops.securedrop.org/localwheels/pytest-3.10.0.tar.gz
+https://dev-bin.ops.securedrop.org/localwheels/pytest-3.10.1-py2.py3-none-any.whl
+https://dev-bin.ops.securedrop.org/localwheels/pytest-3.10.1.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/pytest-3.9.3-py2.py3-none-any.whl
 https://dev-bin.ops.securedrop.org/localwheels/pytest-3.9.3.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/pytest-cov-2.6.0.tar.gz
