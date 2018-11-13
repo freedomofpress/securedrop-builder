@@ -1,3 +1,16 @@
+securedrop-client (0.0.5-1) unstable; urgency=medium
+
+  * Package updated to apt-test-qubes did not include securedrop-sdk 0.4 
+
+ -- mickael e. <user@localhost>  Mon, 12 Nov 2018 17:25:49 -0500
+
+securedrop-client (0.0.5) unstable; urgency=medium
+
+  * Standardize dev env (#145)
+  * Update securedrop-proxy to 0.0.4
+
+ -- mickael e. <user@localhost>  Sat, 10 Nov 2018 15:58:36 -0500
+
 securedrop-client (0.0.4) unstable; urgency=medium
 
   * Adds .desktop shortcut.
