@@ -67,6 +67,8 @@ ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a  requests-2.19.
 99dcfdaaeb17caf6e526f32b6a7b780461512ab3f1d992187801694cba42770c  requests-2.20.0.tar.gz
 a0fb44d06b1cb096e00cacb4f4d1668a422c74b9f7a26d35dd4e8684428905c2  securedrop_sdk-0.0.3-py3-none-any.whl
 5e3ebfde6ef63fc9a614da5b3b9820a93b827f2f7ecb4a72178ebe6d8e2f6d2a  securedrop-sdk-0.0.3.tar.gz
+319f9f3aec1e46b89d6fd8b1bec9963dfe11a4f8a4abcf62c130a96d92c9f6c8  securedrop_sdk-0.0.4-py3-none-any.whl
+73b4148ea31681779c6a5aa127fce6764a80d241e791d54cec66c6834ac5ab3d  securedrop-sdk-0.0.4.tar.gz
 20b72454de4f5fcf3cb247803263f66f80ae202818dad30df5a06b0ae8b2e582  setuptools-40.5.0-py2.py3-none-any.whl
 2a2a200f4a760adbded23a091a00be2eca4e28efed65c6120ea275f7e89a1eab  setuptools-40.5.0.zip
 832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb  six-1.11.0-py2.py3-none-any.whl
