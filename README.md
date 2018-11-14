@@ -54,9 +54,6 @@ If you are making any changes in the `Pipfile`, remember
 to add all recursive dependencies directly as dependency
 under `[packages]`.
 
-Then, you can build the new wheels and sync them up following
-the steps at https://github.com/freedomofpress/securedrop-debian-packaging-guide/issues/6
-
 Generate a tarball to be used in the build process:
 
 ```
