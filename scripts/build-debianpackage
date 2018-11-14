@@ -51,10 +51,6 @@ mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
 
 printf "Building package '%s' from version '%s'...\\n" "$PKG_NAME" "$PKG_VERSION"
 
-# Update changelog interactively. Currently using "unstable" but we intend
-# to target "stretch" for SDW applications. Must run before files are copied
-# into non-version-controlled build dir.
-dch --newversion "${PKG_VERSION}" --distribution unstable -c "${CUR_DIR}/${PKG_NAME}/debian/changelog"
 
 # Copy the source tarball to the packaging workspace
 cp "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
@@ -65,8 +61,6 @@ tar --strip-components=1 -C "$TOP_BUILDDIR/$PKG_NAME" -xvf "$PKG_PATH"
 # Copy over the debian directory (including new changelog) from repo
 cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/"
 
-# Create symlink to the localwheels directory
-ln -s "$CUR_DIR/localwheels" "$TOP_BUILDDIR/$PKG_NAME/localwheels"
 
 # Hop into the package build dir, to run dpkg-buildpackage
 cd "$TOP_BUILDDIR/$PKG_NAME/"

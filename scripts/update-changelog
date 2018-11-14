@@ -1,0 +1,48 @@
+#!/bin/bash
+# Wrapper script for `dch`, for editing changelogs in Debian packages.
+# Provides flags on invocation, and also checks for env vars, so that
+# maintainer info makes it into the package.
+set -e
+set -u
+set -o pipefail
+
+TOPLEVEL="$(git rev-parse --show-toplevel)"
+
+# These env vars are only required when updating changelogs,
+# otherwise the developer must edit the fields by hand, lest
+# they commit "user@localhost" entries.
+if [[ -z "${DEBEMAIL:-}" || -z "${DEBFULLNAME:-}" ]]; then
+    echo "Error: cannot find env vars DEBEMAIL and DEBFULLNAME"
+    echo "Export those env vars in order to update changelogs"
+    exit 1
+fi
+
+
+# Determine which package we want to update the changelog for.
+# As with the other tools, we'll support the PKG_NAME env var.
+PKG_NAME="${PKG_NAME:-}"
+if [[ -z "${PKG_NAME:-}" ]]; then
+    if [[ -n "${1:-}" ]]; then
+        PKG_NAME="$1"
+        shift
+    else
+        printf 'Usage: %s <package_name>\n' "$0"
+        printf 'You can also export PKG_NAME\n'
+        exit 2
+    fi
+fi
+
+if [[ -z "${PKG_VERSION:-}" ]]; then
+    echo "Error: cannot find env var PKG_VERSION."
+    exit 3
+fi
+
+
+# Update the changelog.
+changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog"
+if [[ ! -f "$changelog" ]]; then
+    printf 'Could not find changelog at %s\n' "$changelog"
+    exit 4
+fi
+
+dch --newversion "${PKG_VERSION}" --distribution unstable -c "$changelog"

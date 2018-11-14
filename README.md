@@ -36,12 +36,24 @@ Generate a tarball to be used in the build process:
 python3 setup.py sdist
 ```
 
-Finally, build the package by cloning this repository, and pointing to the tarball and package version:
+Clone this repository for access to the packaging tooling.
 
 ```
 cd ..
 git clone git@github.com:freedomofpress/securedrop-debian-packaging.git
 cd securedrop-debian-packaging
+```
+
+If you are releasing a new version (rather than rebuilding a package from a previous version),
+you must update the changelog:
+
+```
+./scripts/update-changelog securedrop-foobar
+```
+
+Finally, build the package by pointing to the tarball and package version:
+
+```
 PKG_PATH=/path/to/tarball PKG_VERSION=0.x.y make securedrop-foobar
 ```
 

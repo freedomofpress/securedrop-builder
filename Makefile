@@ -9,11 +9,11 @@ syncwheels: ## Downloads wheels and sources from the remote server
 	./scripts/syncwheels
 
 .PHONY: securedrop-proxy
-securedrop-proxy: syncwheels ## Builds Debian package for securedrop-proxy code
+securedrop-proxy: ## Builds Debian package for securedrop-proxy code
 	PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
 
 .PHONY: securedrop-client
-securedrop-client: syncwheels ## Builds Debian package for securedrop-client code
+securedrop-client: ## Builds Debian package for securedrop-client code
 	PKG_NAME="securedrop-client" ./scripts/build-debianpackage
 
 .PHONY: securedrop-workstation-config
