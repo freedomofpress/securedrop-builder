@@ -1,0 +1,36 @@
+#!/bin/bash
+# Wrapper to verify that the checksums file used to track the integrity
+# of the assets in the PyPI mirror, hosted on S3, has a valid signature.
+#
+# We expect a valid signature to correspond to a SecureDrop Maintainer,
+# so we create a temporary keyring in order to force gpg to use *only*
+# authorized keys during the verification check.
+set -e
+set -u
+set -o pipefail
+
+# Canonicalize path, since script may be called from different
+# locations within the repo.
+repo_root="$(git rev-parse --show-toplevel)"
+
+# Hardcode expected filepaths
+gpg_sig_file="${repo_root}/sha256sums.txt.asc"
+gpg_target_file="${repo_root}/sha256sums.txt"
+
+# Create temporary keyring for use in import and verify actions.
+temp_keyring="$(mktemp)"
+
+# Ensure temporary keyring is cleaned up afterward.
+trap 'rm -f "${temp_keyring}"' EXIT
+
+# Import the public keys for SecureDrop Maintainers, for inclusion
+# in keyring during verification.
+gpg --batch --no-default-keyring --keyring "${temp_keyring}" \
+    --import "${repo_root}/pubkeys/"*.pub
+
+# Validate signature.
+gpg --batch --no-default-keyring --keyring "${temp_keyring}" \
+    --verify "${gpg_sig_file}" "${gpg_target_file}"
+
+# Exit with aplomb.
+exit 0

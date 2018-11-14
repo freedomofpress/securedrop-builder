@@ -28,7 +28,7 @@ def main():
 
 def verify_sha256sums_file():
     "Verifies the sha256sums.txt file with gpg signature"
-    
+
     if not os.path.exists("sha256sums.txt"):
         print("Missing sha256sums.txt file.")
         sys.exit(1)
@@ -38,17 +38,13 @@ def verify_sha256sums_file():
         sys.exit(1)
 
     # Both file exists, we can now verify using gpg.
-    cmd = [
-            "gpg",
-            "--verify",
-            "sha256sums.txt.asc",
-            "sha256sums.txt",
-    ]
+    # Using a wrapper script to ensure proper keyring.
+    cmd = ["./scripts/verify-sha256sum-signature"]
     subprocess.check_call(cmd)
 
 def add_sha256sums(path: str) -> None:
     """Adds all the required sha256sums to the wheels
-    
+
     :param path: path to the requirements file.
     :type path: str
     :return: None
@@ -117,7 +113,7 @@ def add_sha256sums(path: str) -> None:
 
 def cleanup(path: str) -> None:
     """Cleans up requirement files
-    
+
     :param path: The file to cleanup
     :type path: str
     :return: None

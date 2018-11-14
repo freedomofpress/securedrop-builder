@@ -17,7 +17,7 @@ set -o pipefail
 CUR_DIR="$(git rev-parse --show-toplevel)"
 
 # Verify sha256sums.txt in the git repo
-gpg --verify $CUR_DIR/sha256sums.txt.asc $CUR_DIR/sha256sums.txt
+"${CUR_DIR}/scripts/verify-sha256sum-signature"
 
 # Validate required args.
 if [[ -z "${PKG_NAME:-}" ]]; then

@@ -33,6 +33,7 @@ requirements: ## Creates requirements files for the Python projects
 
 .PHONY: build-wheels
 build-wheels: fetch-wheels ## Builds the wheels and adds them to the localwheels directory
+	./scripts/verify-sha256sum-signature
 	./scripts/build-sync-wheels -p ${PKG_DIR}
 	./scripts/sync-sha256sums
 	./scripts/createdownloadurls.py > wheelsurls.txt
