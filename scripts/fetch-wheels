@@ -25,7 +25,7 @@ num_fetched=0
 # curl doesn't support target dirs, so hop into the target dir
 cd "$WHEELS_DIR"
 while read -r url ; do
-    curl -O -s "$url"
+    curl -O -s -C - "$url"
     num_fetched=$((num_fetched+1))
     printf "\rFetching wheel URLs... %i/%i" "$num_fetched" "$num_urls"
 done < "$WHEELS_URLS"

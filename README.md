@@ -12,7 +12,7 @@ In a Debian AppVM in Qubes:
 
 ```
 make install-deps
-make syncwheels
+make fetch-wheels
 ```
 
 ## Build a package
