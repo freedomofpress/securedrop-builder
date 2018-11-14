@@ -8,3 +8,6 @@ set -o pipefail
 
 cd ./localwheels/
 sha256sum * > ../sha256sums.txt
+
+printf "Now you must sign the generated sha256sums.txt file."
+gpg --output ../sha256sums.txt.asc --sign ../sha256sums.txt
