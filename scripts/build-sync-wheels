@@ -49,10 +49,14 @@ def main():
                 hashes = " ".join(["--hash={}".format(value) for value in defaults[name]["hashes"]])
                 fobj.write("{} {}\n".format(package_name,hashes))
 
+        # The --require-hashes option will be used by default if there are
+        # hashes in the requirements.txt file. We specify it anyway to guard
+        # against use of a requirements.txt file without hashes.
         cmd = [
             "pip3",
             "download",
             "--no-binary",
+            "--require-hashes",
             ":all:",
             "-d",
             tmpdir,
