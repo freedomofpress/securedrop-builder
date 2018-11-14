@@ -37,11 +37,6 @@ build-wheels: syncwheels ## Builds the wheels and syncs to the localwheels direc
 	./scripts/sync-sha256sums
 	./scripts/createdownloadurls.py > wheelsurls.txt
 
-.PHONY: sync-sha256sums
-sync-sha256sums: ## Updates the sha256sums of the localwheels
-	./scripts/sync-sha256sums
-	./scripts/createdownloadurls.py > wheelsurls.txt
-
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
 
