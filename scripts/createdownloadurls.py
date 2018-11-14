@@ -33,6 +33,10 @@ def main():
     filenames.sort()
     for name in filenames:
         print("{0}/{1}".format(WHEELS_BUCKET_BASE_URL, name))
+    
+    print("Done! Now please follow the instructions in "
+          "https://github.com/freedomofpress/securedrop-debian-packaging-guide/issues/6 "
+          "to push these changes to the FPF PyPI index")
 
 
 if __name__ == "__main__":
