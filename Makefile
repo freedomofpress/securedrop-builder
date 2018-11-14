@@ -33,8 +33,7 @@ requirements: ## Creates requirements files for the Python projects
 
 .PHONY: build-wheels
 build-wheels: syncwheels ## Builds the wheels and syncs to the localwheels directory
-	./scripts/build-sync-wheels -r ${PKG_DIR}/requirements.txt
-	./scripts/build-sync-wheels -r ${PKG_DIR}/requirements-dev.txt
+	./scripts/build-sync-wheels -p ${PKG_DIR}
 	./scripts/sync-sha256sums
 	./scripts/createdownloadurls.py > wheelsurls.txt
 

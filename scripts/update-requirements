@@ -6,26 +6,45 @@ import os
 import sys
 import glob
 import hashlib
+import subprocess
 from pprint import pprint
 
 
 def main():
     PKG_DIR = os.environ["PKG_DIR"]
     req_path = os.path.join(PKG_DIR, "requirements.txt")
-    reqdev_path = os.path.join(PKG_DIR, "requirements-dev.txt")
-    for path in [req_path, reqdev_path]:
-        if not os.path.exists(path):
-            print("Missing {0}.".format(path))
-            sys.exit(1)
+
+    if not os.path.exists(req_path):
+        print("Missing {0}.".format(req_path))
+        sys.exit(1)
 
     # First remove index line and any PyQt or sip dependency
     cleanup(req_path)
-    cleanup(reqdev_path)
+
+    verify_sha256sums_file()
 
     # Now let us update the files along with the sha256sums from localwheels
     add_sha256sums(req_path)
-    add_sha256sums(reqdev_path)
 
+def verify_sha256sums_file():
+    "Verifies the sha256sums.txt file with gpg signature"
+    
+    if not os.path.exists("sha256sums.txt"):
+        print("Missing sha256sums.txt file.")
+        sys.exit(1)
+
+    if not os.path.exists("sha256sums.txt.asc"):
+        print("Missing sha256sums.txt.asc file.")
+        sys.exit(1)
+
+    # Both file exists, we can now verify using gpg.
+    cmd = [
+            "gpg",
+            "--verify",
+            "sha256sums.txt.asc",
+            "sha256sums.txt",
+    ]
+    subprocess.check_call(cmd)
 
 def add_sha256sums(path: str) -> None:
     """Adds all the required sha256sums to the wheels
@@ -111,13 +130,16 @@ def cleanup(path: str) -> None:
     finallines = []
 
     for line in lines:
-        # Skip the PyPI index line
+        # Skip the PyPI index line so that when we
+        # install we use the FPF PyPI mirror.
         if line.startswith("-i https://pypi.org/simple"):
             continue
-        # For PyQt5
+        # We don't want to install pyqt5 from wheels.
+        # It will come as a debian package dependency.
         elif line.startswith("pyqt5"):
             continue
-        # For sip
+        # We don't want to install sip from wheels.
+        # It will come as a debian package dependency.
         elif line.startswith("sip"):
             continue
         else:

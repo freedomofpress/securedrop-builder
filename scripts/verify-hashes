@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+if len(sys.argv) != 3:
+    print("Usage: ./scripts/verify-hashes sha256sums.txt requirements.txt")
+    sys.exit(1)
+
+# This is the already gpg signed and verified data
+sha256sum_data = {}
+with open(sys.argv[1]) as fobj:
+    data = fobj.readlines()
+
+for line in data:
+    line = line.strip()
+    words = line.split()
+    # just check that the sums are of correct length
+    if len(words[0]) != 64:
+        print("Wrong sha256sum {0}".format(words[0]))
+        sys.exit(3)
+    sha256sum_data[words[0]] = True
+
+
+# Now read the requirements.txt file
+lines = []
+with open(sys.argv[2]) as fobj:
+    lines = fobj.readlines()
+
+# Let us verify each hash is in our data or not
+for line in lines:
+    line = line.strip()
+    if not line:
+        continue
+    # Split based on --hash=sha256:
+    words = line.split("--hash=sha256:")
+    assert len(words) == 2  # We should have only hash per line
+    
+    if words[1] not in sha256sum_data:
+        print("Missing sha256sum {0}".format(words[1]))
+        sys.exit(1)
+
+sys.exit(0)
+
+

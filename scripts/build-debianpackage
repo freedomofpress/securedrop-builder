@@ -16,6 +16,9 @@ set -o pipefail
 # Store root of repo, since we'll change dirs several times.
 CUR_DIR="$(git rev-parse --show-toplevel)"
 
+# Verify sha256sums.txt in the git repo
+gpg --verify $CUR_DIR/sha256sums.txt.asc $CUR_DIR/sha256sums.txt
+
 # Validate required args.
 if [[ -z "${PKG_NAME:-}" ]]; then
     echo "Set PKG_NAME of the build";
@@ -64,6 +67,11 @@ cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/"
 
 # Hop into the package build dir, to run dpkg-buildpackage
 cd "$TOP_BUILDDIR/$PKG_NAME/"
+
+# Verify all the hashes from the verified sha256sums.txt
+$CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt ./requirements.txt
+
+echo "All hashes verified."
 
 # Build the package
 dpkg-buildpackage -us -uc
