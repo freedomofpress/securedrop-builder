@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import subprocess
 import tempfile
 import shutil
@@ -13,29 +14,54 @@ def main():
         description="Builds and caches sources and wheels"
     )
     parser.add_argument(
-        "-r",
-        default="./requirements.txt",
-        help="Point to the requirements file",
+        "-p",
+        help="Points to the project dirctory",
     )
     parser.add_argument(
         "--cache", default="./localwheels", help="Final cache dir"
     )
     args = parser.parse_args()
 
-    if not os.path.exists(args.r):
-        print("Can not read {0}.".format(args.r))
+    if not os.path.exists(args.p):
+        print("Project directory missing {0}.".format(args.p))
         sys.exit(1)
 
+    lockfile_path = os.path.join(args.p, "Pipfile.lock")
+
+    if not os.path.exists(lockfile_path):
+        print("Pipfile.lock missing at {0}.".format(lockfile_path))
+        sys.exit(3)
+
+    with open(lockfile_path) as fobj:
+        data = json.load(fobj)
+
+    defaults = data["default"]
     with tempfile.TemporaryDirectory() as tmpdir:
+        newreq_path = os.path.join(tmpdir, "requirements.txt")
+        # First let us create the requirements.txt file with hashes
+        # from Pipfile.lock, these hashes are from upstream PyPI.
+
+        with open(newreq_path, "w") as fobj:
+            for name in defaults:
+                if name in ["pyqt5", "sip"]:  #  These will come from Debian
+                    continue
+                package_name = "{}{}".format(name, defaults[name]["version"])
+                hashes = " ".join(["--hash={}".format(value) for value in defaults[name]["hashes"]])
+                fobj.write("{} {}\n".format(package_name,hashes))
+
+        # The --require-hashes option will be used by default if there are
+        # hashes in the requirements.txt file. We specify it anyway to guard
+        # against use of a requirements.txt file without hashes.
         cmd = [
             "pip3",
             "download",
             "--no-binary",
             ":all:",
+            "--require-hashes",
             "-d",
             tmpdir,
             "-r",
-            args.r,
+            newreq_path,
         ]
         subprocess.check_call(cmd)
 
@@ -49,7 +75,7 @@ def main():
             "-w",
             tmpdir,
             "-r",
-            args.r,
+            newreq_path,
         ]
         subprocess.check_call(cmd)
 
@@ -59,6 +85,8 @@ def main():
         cachenames = os.listdir(args.cache)
 
         for name in names:
+            if name == "requirements.txt":  # We don't need this in cache
+                continue
             if name in cachenames:  # Means all ready in our cache
                 continue
 

@@ -4,9 +4,9 @@ DEFAULT_GOAL: help
 wheel-urls: ## Creates download URLs from s3 bucket from sha256sums.txt file
 	./scripts/createdownloadurls.py > wheelsurls.txt
 
-.PHONY: syncwheels
-syncwheels: ## Downloads wheels and sources from the remote server
-	./scripts/syncwheels
+.PHONY: fetch-wheels
+fetch-wheels: ## Downloads wheels and sources from the remote server
+	./scripts/fetch-wheels
 
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
@@ -25,6 +25,21 @@ securedrop-workstation-grsec: ## Builds Debian metapackage for Qubes Workstation
 .PHONY: install-deps
 install-deps: ## Install initial Debian packaging dependencies
 	./scripts/install-deps
+
+.PHONY: requirements
+requirements: ## Creates requirements files for the Python projects
+	./scripts/create-requirements
+	./scripts/update-requirements
+
+.PHONY: build-wheels
+build-wheels: fetch-wheels ## Builds the wheels and adds them to the localwheels directory
+	./scripts/verify-sha256sum-signature
+	./scripts/build-sync-wheels -p ${PKG_DIR}
+	./scripts/sync-sha256sums
+	./scripts/createdownloadurls.py > wheelsurls.txt
+	@printf "Done! Now please follow the instructions in\n"
+	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/issues/6\n"
+	@printf "to push these changes to the FPF PyPI index\n"
 
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts

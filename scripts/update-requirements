@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+
+# To update the requirements files with sha256sums from our local PyPI.
+
+import os
+import sys
+import glob
+import hashlib
+import subprocess
+from pprint import pprint
+
+
+def main():
+    PKG_DIR = os.environ["PKG_DIR"]
+    req_path = os.path.join(PKG_DIR, "requirements.txt")
+
+    if not os.path.exists(req_path):
+        print("Missing {0}.".format(req_path))
+        sys.exit(1)
+
+    # First remove index line and any PyQt or sip dependency
+    cleanup(req_path)
+
+    verify_sha256sums_file()
+
+    # Now let us update the files along with the sha256sums from localwheels
+    add_sha256sums(req_path)
+
+def verify_sha256sums_file():
+    "Verifies the sha256sums.txt file with gpg signature"
+
+    if not os.path.exists("sha256sums.txt"):
+        print("Missing sha256sums.txt file.")
+        sys.exit(1)
+
+    if not os.path.exists("sha256sums.txt.asc"):
+        print("Missing sha256sums.txt.asc file.")
+        sys.exit(1)
+
+    # Both file exists, we can now verify using gpg.
+    # Using a wrapper script to ensure proper keyring.
+    cmd = ["./scripts/verify-sha256sum-signature"]
+    subprocess.check_call(cmd)
+
+def add_sha256sums(path: str) -> None:
+    """Adds all the required sha256sums to the wheels
+
+    :param path: path to the requirements file.
+    :type path: str
+    :return: None
+    :rtype: None
+    """
+    files = []
+
+    with open("sha256sums.txt") as fobj:
+        lines = fobj.readlines()
+
+    for line in lines:
+        line = line.strip()
+        # Skip any sources
+        if line.find(".whl") == -1:
+            continue
+        files.append(line.split())
+
+    with open(path) as fobj:
+        lines = fobj.readlines()
+
+    newlines = []
+    missing_wheels = []
+    for line in lines:
+        line = line.strip()
+        words = line.split()
+        values = words[0].split("==")
+        values[1] = values[1].strip(';')
+        packagename = "-".join(values)
+        othername = "-".join([values[0].replace("-", "_"), values[1]])
+
+        for name in files:
+            lowername = name[1].lower()
+            digest = name[0]
+            package_othername = packagename.replace("-", "_")
+            # Now check if a wheel is already available
+            if lowername.startswith(packagename) or lowername.startswith(
+                othername
+            ):
+                # Check if the sha256sum is already there or not
+                if digest not in line:
+                    # Now add the hash to the line
+                    line = "{} --hash=sha256:{}\n".format(line, digest)
+        newlines.append(line)
+        if line.find("--hash") == -1:  # Missing wheel
+            missing_wheels.append(values)
+
+    # Do not update the file if missing wheels
+    if missing_wheels:
+        print("The following dependent wheel(s) are missing:")
+        for value in missing_wheels:
+            print("{0}=={1}".format(value[0], value[1]))
+
+        print("\nPlease build the wheel by using the following command:\n")
+        print("\tPKG_DIR={0} make build-wheels\n".format(os.environ["PKG_DIR"]))
+        print("Then sync the newly built wheels and sources to the s3 bucket.")
+        print("Also update the index HTML files accordingly and sync to s3.")
+        print("After these steps, please rerun the command again.")
+
+        sys.exit(1)
+
+    # Now update the file
+    with open(path, "w") as fobj:
+        for line in newlines:
+            fobj.write(line)
+
+
+def cleanup(path: str) -> None:
+    """Cleans up requirement files
+
+    :param path: The file to cleanup
+    :type path: str
+    :return: None
+    :rtype: None
+    """
+
+    with open(path) as fobj:
+        lines = fobj.readlines()
+
+    finallines = []
+
+    for line in lines:
+        # Skip the PyPI index line so that when we
+        # install we use the FPF PyPI mirror.
+        if line.startswith("-i https://pypi.org/simple"):
+            continue
+        # We don't want to install pyqt5 from wheels.
+        # It will come as a debian package dependency.
+        elif line.startswith("pyqt5"):
+            continue
+        # We don't want to install sip from wheels.
+        # It will come as a debian package dependency.
+        elif line.startswith("sip"):
+            continue
+        else:
+            finallines.append(line)
+
+    # Now let us write back the file.
+    with open(path, "w") as fobj:
+        for line in finallines:
+            fobj.write(line)
+
+
+if __name__ == "__main__":
+    main()

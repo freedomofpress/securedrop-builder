@@ -1,6 +1,7 @@
 # SecureDrop Debian Packaging
 
 This repository contains the packaging files and tooling for building Debian packages for projects for the alpha [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Packages are placed on `apt-test-qubes.freedom.press` for installation in Debian-based TemplateVMs. These packages are not yet ready for use in a production environment.
+![Packaging Workflow](images/diagram.png)
 
 ## Packaging a Python-based SecureDrop project
 
@@ -12,8 +13,28 @@ In a Debian AppVM in Qubes:
 
 ```
 make install-deps
-make syncwheels
+make fetch-wheels
 ```
+
+## Make a release
+
+Release managers of `securedrop-client` and `securedrop-proxy` must update
+the requirements files which are used for build of these packages using
+`make requirements`. If new dependencies were added in the Pipfile of that
+repo that are not in the FPF PyPI mirror, then the release manager needs
+to build those wheels and push the tarball and wheel package of the new
+dependency to the FPF PyPI mirror using `make build-wheels`.
+
+Summarizing release manager steps:
+
+1. Update versions as necessary
+2. `make requirements`
+3. Do a test build following steps below
+4. Make any changes as necessary and create a PR with the modifications from steps 1-4
+5. Push the release tag for use in building
+
+This means that the `requirements.txt` files will be updated by release managers,
+not developers. Developers should update `Pipfile.lock`.
 
 ## Build a package
 
@@ -29,6 +50,10 @@ Checkout the release tag for the project:
 ```
 git checkout 0.x.y
 ```
+
+If you are making any changes in the `Pipfile`, remember
+to add all recursive dependencies directly as dependency
+under `[packages]`.
 
 Generate a tarball to be used in the build process:
 
