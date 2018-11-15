@@ -1,3 +1,20 @@
+securedrop-client (0.0.6) unstable; urgency=medium
+
+  * Long lived threads are now de-authenticated on logout (#179)
+  * updated requirements based on newly built wheels (#177)
+  * Application no longer crashes when source collection is deleted on web
+    interface (#176)
+  * Improved input validation for login panel (#169)
+  * Delete submissions on disk when deleted from server (#168)
+  * Escape HTML in messages (#164)
+  * Source list displayed by last_updated value (#158)
+  * Show attachment icon when document count is greater than zero (#157)
+  * Disable refresh when API call in progress (#154)
+  * Fix crash in offline mode (#150)
+  * Developer environment fixes (#148, #149, #152)
+
+ -- Mickael E. <mickael@freedom.press>  Thu, 15 Nov 2018 17:49:57 -0500
+
 securedrop-client (0.0.5-1) unstable; urgency=medium
 
   * Package updated to apt-test-qubes did not include securedrop-sdk 0.4 
