@@ -37,6 +37,9 @@ build-wheels: fetch-wheels ## Builds the wheels and adds them to the localwheels
 	./scripts/build-sync-wheels -p ${PKG_DIR}
 	./scripts/sync-sha256sums
 	./scripts/createdownloadurls.py > wheelsurls.txt
+	@printf "Done! Now please follow the instructions in\n"
+	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/issues/6\n"
+	@printf "to push these changes to the FPF PyPI index\n"
 
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
