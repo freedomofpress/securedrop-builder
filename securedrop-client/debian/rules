@@ -6,4 +6,8 @@
 override_dh_virtualenv:
 	dh_virtualenv --python /usr/bin/python3.5 --setuptools -S --index-url https://dev-bin.ops.securedrop.org/simple
 
-
+override_dh_strip_nondeterminism:
+	find ./debian/ -type f -name '*.pyc' -delete
+	find ./debian/ -type f -name 'pip-selfcheck.json' -delete
+	find -type f -name RECORD -exec sed -i -e '/.*\.pyc.*/d' {} +
+	dh_strip_nondeterminism $@
