@@ -45,6 +45,7 @@ fi
 # Disable use of pip cache during debhelper build actions.
 export DH_PIP_EXTRA_ARGS="--no-cache-dir --require-hashes"
 
+
 # Declare general packaging building workspace; subdirs will
 # be created within, to build specific packages.
 TOP_BUILDDIR="$HOME/debbuild/packaging"
@@ -72,6 +73,9 @@ cd "$TOP_BUILDDIR/$PKG_NAME/"
 $CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt ./requirements.txt
 
 echo "All hashes verified."
+
+# Adds reproducibility step
+export SOURCE_DATE_EPOCH=`dpkg-parsechangelog -STimestamp`
 
 # Build the package
 dpkg-buildpackage -us -uc
