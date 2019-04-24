@@ -4,6 +4,8 @@ https://dev-bin.ops.securedrop.org/localwheels/MarkupSafe-1.0-cp35-cp35m-linux_x
 https://dev-bin.ops.securedrop.org/localwheels/MarkupSafe-1.0.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/PyYAML-3.13-cp35-cp35m-linux_x86_64.whl
 https://dev-bin.ops.securedrop.org/localwheels/PyYAML-3.13.tar.gz
+https://dev-bin.ops.securedrop.org/localwheels/PyYAML-5.1-cp35-cp35m-linux_x86_64.whl
+https://dev-bin.ops.securedrop.org/localwheels/PyYAML-5.1.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/SQLAlchemy-1.2.13-cp35-cp35m-linux_x86_64.whl
 https://dev-bin.ops.securedrop.org/localwheels/SQLAlchemy-1.2.13.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/Werkzeug-0.14.1-py2.py3-none-any.whl
