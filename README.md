@@ -1,11 +1,16 @@
 # SecureDrop Debian Packaging
 
 This repository contains the packaging files and tooling for building Debian packages for projects for the alpha [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Packages are placed on `apt-test-qubes.freedom.press` for installation in Debian-based TemplateVMs. These packages are not yet ready for use in a production environment.
-![Packaging Workflow](images/diagram.png)
 
 ## Packaging a Python-based SecureDrop project
 
-This includes `securedrop-proxy` and `securedrop-client`.
+The following process is used for Python-based projects for the Qubes SecureDrop Workstation, namely, `securedrop-proxy` and `securedrop-client`:
+
+![gif explaining what is committed where](images/securedrop-pip-mirror.gif)
+
+The following diagram shows the makefile targets/scripts in this repository, the produced artifacts and the locations where these artifacts are stored:
+
+![Packaging Workflow](images/diagram.png)
 
 ### Packaging Dependencies
 
@@ -50,10 +55,6 @@ Checkout the release tag for the project:
 ```
 git checkout 0.x.y
 ```
-
-If you are making any changes in the `Pipfile`, remember
-to add all recursive dependencies directly as dependency
-under `[packages]`.
 
 Generate a tarball to be used in the build process:
 
