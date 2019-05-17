@@ -70,7 +70,7 @@ cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/"
 cd "$TOP_BUILDDIR/$PKG_NAME/"
 
 # Verify all the hashes from the verified sha256sums.txt
-$CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt ./requirements.txt
+$CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt ./build-requirements.txt
 
 echo "All hashes verified."
 

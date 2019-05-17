@@ -14,5 +14,7 @@ fi
 
 cd $PKG_DIR
 
-# Now create both of the files
-pipenv lock -r > requirements.txt
+# Now make a copy of the new requirements file.
+# This will overwrite any previous build requirements if it exists,
+# and in the next script we'll add in the hashes from FPF PyPI.
+cp requirements.txt build-requirements.txt
