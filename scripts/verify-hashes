@@ -27,19 +27,63 @@ lines = []
 with open(sys.argv[2]) as fobj:
     lines = fobj.readlines()
 
-# Let us verify each hash is in our data or not
-for line in lines:
-    line = line.strip()
-    if not line:
+# Now we want to verify that for each dependency in the project
+# to be packaged, has a matching source tarball on FPF's PyPI.
+
+# Remove lines with comments.
+uncommented_lines = [line for line in lines if not line.startswith('#')]
+
+# The hashes for a given requirement will be distributed
+# across multiple lines, e.g.
+#
+# atomicwrites==1.2.1 \
+#    --hash=sha256:0312ad34fcad8fac3704d441f7b317e50af620823353ec657a53e981f92920c0 \
+#    --hash=sha256:ec9ae8adaae229e4f8446952d204a3e4b5fdd2d099f9be3aaf556120135fb3ee
+#
+# Let's create a list with one list element per dependency.
+
+dependencies_with_hashes = ''.join(uncommented_lines).replace('\\\n', '').splitlines()
+
+# Now we'll construct a dict containing each dependency,
+# and a list of its hashes, e.g.:
+#
+# {
+#   'alembic': ['04bcb970ca8659c3607ddd8ffd86cc9d6a99661c9bc590955e8813c66bfa582b']
+# }
+#
+# Note that at this point the hashes can be of upstream wheels.
+
+dependencies = {}
+for dependency_line in dependencies_with_hashes:
+    if not dependency_line:
         continue
-    # Split based on --hash=sha256:
-    words = line.split("--hash=sha256:")
-    assert len(words) == 2  # We should have only hash per line
-    
-    if words[1] not in sha256sum_data:
-        print("Missing sha256sum {0}".format(words[1]))
+
+    package_name_and_version = dependency_line.split()[0]
+
+    # If this fails, we are missing a hash in requirements.txt.
+    assert len(dependency_line.split()) >= 2
+
+    hashes = []
+    for sha_256_hash in dependency_line.split()[1:]:
+        hashes.append(sha_256_hash.replace("--hash=sha256:", ""))
+
+    dependencies.update({
+        package_name_and_version: hashes
+    })
+
+# Now check, for each dependency that there is at least one matching hash
+# on FPF's PyPI (this will be the hash of the source tarball).
+for dependency in dependencies.keys():
+
+    found_a_hash = False
+    for requirements_sha_256_hash in dependencies[dependency]:
+        if requirements_sha_256_hash in sha256sum_data:
+            found_a_hash = True
+
+    # If we get here, it means we did not find a corresponding hash in our
+    # sha256sums data (representing the state of FPF's PyPI)
+    if not found_a_hash:
+        print("Missing sha256sum for package: {0}".format(dependency))
         sys.exit(1)
 
 sys.exit(0)
-
-
