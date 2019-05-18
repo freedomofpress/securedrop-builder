@@ -67,35 +67,37 @@ def add_sha256sums(path: str) -> None:
 
     newlines = []
     missing_wheels = []
+
+    # For each dependency in the requirements file
     for line in lines:
-        line = line.strip()
-        words = line.split()
-        values = words[0].split("==")
-        values[1] = values[1].strip(';')
-        packagename = "-".join(values)
-        othername = "-".join([values[0].replace("-", "_"), values[1]])
+        package_name_and_version = line.strip().split()[0]
+        package_name = package_name_and_version.split('==')[0]
+        package_version = package_name_and_version.split('==')[1]
+
+        wheel_name_prefix = '{}-{}'.format(package_name, package_version)
 
         for name in files:
             lowername = name[1].lower()
             digest = name[0]
-            package_othername = packagename.replace("-", "_")
+
+            package_othername = wheel_name_prefix.replace("-", "_")
             # Now check if a wheel is already available
-            if lowername.startswith(packagename) or lowername.startswith(
-                othername
+            if lowername.startswith(wheel_name_prefix) or lowername.startswith(
+                package_othername
             ):
-                # Check if the sha256sum is already there or not
-                if digest not in line:
-                    # Now add the hash to the line
-                    line = "{} --hash=sha256:{}\n".format(line, digest)
+                # Now add the hash to the line
+                line = "{} --hash=sha256:{}\n".format(
+                    package_name_and_version, digest)
+
         newlines.append(line)
         if line.find("--hash") == -1:  # Missing wheel
-            missing_wheels.append(values)
+            missing_wheels.append(package_name_and_version)
 
     # Do not update the file if missing wheels
     if missing_wheels:
         print("The following dependent wheel(s) are missing:")
-        for value in missing_wheels:
-            print("{0}=={1}".format(value[0], value[1]))
+        for missing_dep in missing_wheels:
+            print("{}".format(missing_dep))
 
         print("\nPlease build the wheel by using the following command:\n")
         print("\tPKG_DIR={0} make build-wheels\n".format(os.environ["PKG_DIR"]))
@@ -137,6 +139,15 @@ def cleanup(path: str) -> None:
         # We don't want to install sip from wheels.
         # It will come as a debian package dependency.
         elif line.startswith("sip"):
+            continue
+        # We want to ignore lines that are comments.
+        elif line.lstrip().startswith("#"):
+            continue
+        # We just want the package names, since we're
+        # using the hashes of the wheels (and we verified
+        # the integrity of those hashes by verifying the gpg
+        # signature of a textfile containing the list of hashes).
+        elif line.lstrip().startswith("--hash=sha256"):
             continue
         else:
             finallines.append(line)
