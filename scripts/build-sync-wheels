@@ -26,29 +26,13 @@ def main():
         print("Project directory missing {0}.".format(args.p))
         sys.exit(1)
 
-    lockfile_path = os.path.join(args.p, "Pipfile.lock")
+    req_path = os.path.join(args.p, "requirements.txt")
 
-    if not os.path.exists(lockfile_path):
-        print("Pipfile.lock missing at {0}.".format(lockfile_path))
+    if not os.path.exists(req_path):
+        print("requirements.txt missing at {0}.".format(req_path))
         sys.exit(3)
 
-    with open(lockfile_path) as fobj:
-        data = json.load(fobj)
-
-    defaults = data["default"]
     with tempfile.TemporaryDirectory() as tmpdir:
-        newreq_path = os.path.join(tmpdir, "requirements.txt")
-        # First let us create the requirements.txt file with hashes
-        # from Pipfile.lock, these hashes are from upstream PyPI.
-
-        with open(newreq_path, "w") as fobj:
-            for name in defaults:
-                if name in ["pyqt5", "sip"]:  #  These will come from Debian
-                    continue
-                package_name = "{}{}".format(name, defaults[name]["version"])
-                hashes = " ".join(["--hash={}".format(value) for value in defaults[name]["hashes"]])
-                fobj.write("{} {}\n".format(package_name,hashes))
-
         # The --require-hashes option will be used by default if there are
         # hashes in the requirements.txt file. We specify it anyway to guard
         # against use of a requirements.txt file without hashes.
@@ -61,7 +45,7 @@ def main():
             "-d",
             tmpdir,
             "-r",
-            newreq_path,
+            req_path,
         ]
         subprocess.check_call(cmd)
 
@@ -75,7 +59,7 @@ def main():
             "-w",
             tmpdir,
             "-r",
-            newreq_path,
+            req_path,
         ]
         subprocess.check_call(cmd)
 
