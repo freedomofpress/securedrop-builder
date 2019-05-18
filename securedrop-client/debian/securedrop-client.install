@@ -2,6 +2,6 @@ files/alembic.ini usr/share/securedrop-client/
 alembic/env.py usr/share/securedrop-client/alembic/
 alembic/README usr/share/securedrop-client/alembic/
 alembic/script.py.mako usr/share/securedrop-client/alembic/
-alembic/versions/15ac9509fc68_init.py usr/share/securedrop-client/alembic/versions/
+alembic/versions/2f363b3d680e_init.py usr/share/securedrop-client/alembic/versions/
 files/securedrop-client usr/bin/
 files/securedrop-client.desktop usr/share/applications/
