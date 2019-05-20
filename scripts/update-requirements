@@ -12,19 +12,19 @@ from pprint import pprint
 
 def main():
     PKG_DIR = os.environ["PKG_DIR"]
-    req_path = os.path.join(PKG_DIR, "requirements.txt")
+    req_path = os.path.join(PKG_DIR, "build-requirements.txt")
 
     if not os.path.exists(req_path):
         print("Missing {0}.".format(req_path))
         sys.exit(1)
 
     # First remove index line and any PyQt or sip dependency
-    cleanup(req_path)
+    cleaned_lines = cleanup(req_path)
 
     verify_sha256sums_file()
 
     # Now let us update the files along with the sha256sums from localwheels
-    add_sha256sums(req_path)
+    add_sha256sums(req_path, cleaned_lines)
 
 def verify_sha256sums_file():
     "Verifies the sha256sums.txt file with gpg signature"
@@ -42,11 +42,13 @@ def verify_sha256sums_file():
     cmd = ["./scripts/verify-sha256sum-signature"]
     subprocess.check_call(cmd)
 
-def add_sha256sums(path: str) -> None:
+def add_sha256sums(path: str, requirements_lines: str) -> None:
     """Adds all the required sha256sums to the wheels
 
     :param path: path to the requirements file.
     :type path: str
+    :param requirements_lines: cleaned lines from the requirements file.
+    :type requirements_lines: str
     :return: None
     :rtype: None
     """
@@ -62,14 +64,11 @@ def add_sha256sums(path: str) -> None:
             continue
         files.append(line.split())
 
-    with open(path) as fobj:
-        lines = fobj.readlines()
-
     newlines = []
     missing_wheels = []
 
     # For each dependency in the requirements file
-    for line in lines:
+    for line in requirements_lines:
         package_name_and_version = line.strip().split()[0]
         package_name = package_name_and_version.split('==')[0]
         package_version = package_name_and_version.split('==')[1]
@@ -113,7 +112,7 @@ def add_sha256sums(path: str) -> None:
             fobj.write(line)
 
 
-def cleanup(path: str) -> None:
+def cleanup(path: str) -> str:
     """Cleans up requirement files
 
     :param path: The file to cleanup
@@ -152,10 +151,7 @@ def cleanup(path: str) -> None:
         else:
             finallines.append(line)
 
-    # Now let us write back the file.
-    with open(path, "w") as fobj:
-        for line in finallines:
-            fobj.write(line)
+    return finallines
 
 
 if __name__ == "__main__":
