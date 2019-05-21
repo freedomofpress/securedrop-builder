@@ -82,12 +82,12 @@ def add_sha256sums(path: str, requirements_lines: str) -> None:
         package_version = package_name_and_version.split('==')[1]
 
         wheel_name_prefix = '{}-{}'.format(package_name, package_version)
+        package_othername = '{}-{}'.format(package_name.replace("-", "_"), package_version)
 
         for name in files:
             lowername = name[1].lower()
             digest = name[0]
 
-            package_othername = wheel_name_prefix.replace("-", "_")
             # Now check if a wheel is already available
             if lowername.startswith(wheel_name_prefix) or lowername.startswith(
                 package_othername
