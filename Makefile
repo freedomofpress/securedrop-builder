@@ -28,7 +28,6 @@ install-deps: ## Install initial Debian packaging dependencies
 
 .PHONY: requirements
 requirements: ## Creates requirements files for the Python projects
-	./scripts/create-requirements
 	./scripts/update-requirements
 
 .PHONY: build-wheels

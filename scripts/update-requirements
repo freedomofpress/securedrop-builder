@@ -12,19 +12,27 @@ from pprint import pprint
 
 def main():
     PKG_DIR = os.environ["PKG_DIR"]
-    req_path = os.path.join(PKG_DIR, "requirements.txt")
+    if not PKG_DIR:
+        print("Set PKG_DIR of the project")
+        sys.exit(1)
 
-    if not os.path.exists(req_path):
-        print("Missing {0}.".format(req_path))
+    input_requirements_path = os.path.join(
+        PKG_DIR, "requirements.txt")
+
+    output_requirements_path = os.path.join(
+        PKG_DIR, "build-requirements.txt")
+
+    if not os.path.exists(input_requirements_path):
+        print("Missing {0}.".format(input_requirements_path))
         sys.exit(1)
 
     # First remove index line and any PyQt or sip dependency
-    cleanup(req_path)
+    cleaned_lines = cleanup(input_requirements_path)
 
     verify_sha256sums_file()
 
     # Now let us update the files along with the sha256sums from localwheels
-    add_sha256sums(req_path)
+    add_sha256sums(output_requirements_path, cleaned_lines)
 
 def verify_sha256sums_file():
     "Verifies the sha256sums.txt file with gpg signature"
@@ -42,11 +50,13 @@ def verify_sha256sums_file():
     cmd = ["./scripts/verify-sha256sum-signature"]
     subprocess.check_call(cmd)
 
-def add_sha256sums(path: str) -> None:
+def add_sha256sums(path: str, requirements_lines: str) -> None:
     """Adds all the required sha256sums to the wheels
 
     :param path: path to the requirements file.
     :type path: str
+    :param requirements_lines: cleaned lines from the requirements file.
+    :type requirements_lines: str
     :return: None
     :rtype: None
     """
@@ -62,40 +72,39 @@ def add_sha256sums(path: str) -> None:
             continue
         files.append(line.split())
 
-    with open(path) as fobj:
-        lines = fobj.readlines()
-
     newlines = []
     missing_wheels = []
-    for line in lines:
-        line = line.strip()
-        words = line.split()
-        values = words[0].split("==")
-        values[1] = values[1].strip(';')
-        packagename = "-".join(values)
-        othername = "-".join([values[0].replace("-", "_"), values[1]])
+
+    # For each dependency in the requirements file
+    for line in requirements_lines:
+        package_name_and_version = line.strip().split()[0]
+        package_name = package_name_and_version.split('==')[0]
+        package_version = package_name_and_version.split('==')[1]
+
+        wheel_name_prefix = '{}-{}'.format(package_name, package_version)
+        package_othername = '{}-{}'.format(package_name.replace("-", "_"), package_version)
 
         for name in files:
             lowername = name[1].lower()
             digest = name[0]
-            package_othername = packagename.replace("-", "_")
+
             # Now check if a wheel is already available
-            if lowername.startswith(packagename) or lowername.startswith(
-                othername
+            if lowername.startswith(wheel_name_prefix) or lowername.startswith(
+                package_othername
             ):
-                # Check if the sha256sum is already there or not
-                if digest not in line:
-                    # Now add the hash to the line
-                    line = "{} --hash=sha256:{}\n".format(line, digest)
+                # Now add the hash to the line
+                line = "{} --hash=sha256:{}\n".format(
+                    package_name_and_version, digest)
+
         newlines.append(line)
         if line.find("--hash") == -1:  # Missing wheel
-            missing_wheels.append(values)
+            missing_wheels.append(package_name_and_version)
 
     # Do not update the file if missing wheels
     if missing_wheels:
         print("The following dependent wheel(s) are missing:")
-        for value in missing_wheels:
-            print("{0}=={1}".format(value[0], value[1]))
+        for missing_dep in missing_wheels:
+            print("{}".format(missing_dep))
 
         print("\nPlease build the wheel by using the following command:\n")
         print("\tPKG_DIR={0} make build-wheels\n".format(os.environ["PKG_DIR"]))
@@ -111,7 +120,7 @@ def add_sha256sums(path: str) -> None:
             fobj.write(line)
 
 
-def cleanup(path: str) -> None:
+def cleanup(path: str) -> str:
     """Cleans up requirement files
 
     :param path: The file to cleanup
@@ -138,13 +147,19 @@ def cleanup(path: str) -> None:
         # It will come as a debian package dependency.
         elif line.startswith("sip"):
             continue
+        # We want to ignore lines that are comments.
+        elif line.lstrip().startswith("#"):
+            continue
+        # We just want the package names, since we're
+        # using the hashes of the wheels (and we verified
+        # the integrity of those hashes by verifying the gpg
+        # signature of a textfile containing the list of hashes).
+        elif line.lstrip().startswith("--hash=sha256"):
+            continue
         else:
             finallines.append(line)
 
-    # Now let us write back the file.
-    with open(path, "w") as fobj:
-        for line in finallines:
-            fobj.write(line)
+    return finallines
 
 
 if __name__ == "__main__":
