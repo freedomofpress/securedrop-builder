@@ -107,11 +107,8 @@
 # openrc
 /lib/rc/bin/lsb2rcconf		E
 
+
 # libreoffice
-# Ubuntu doesn't seem to carry this patch:
-# https://bz.apache.org/ooo/show_bug.cgi?id=80816
-# libreoffice will still run fine without the below line,
-# but it will report an RWX mprotect attempt
-# /usr/lib/libreoffice/program/soffice.bin	m
+/usr/lib/libreoffice/program/soffice.bin	m
 
 /usr/bin/totem			m
