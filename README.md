@@ -25,7 +25,7 @@ make fetch-wheels
 
 Release managers of `securedrop-client` and `securedrop-proxy` must update
 the requirements files which are used for build of these packages using
-`make requirements`. If new dependencies were added in the Pipfile of that
+`make requirements`. If new dependencies were added in the `requirements.txt` of that
 repo that are not in the FPF PyPI mirror, then the release manager needs
 to build those wheels and push the tarball and wheel package of the new
 dependency to the FPF PyPI mirror using `make build-wheels`.
@@ -38,8 +38,7 @@ Summarizing release manager steps:
 4. Make any changes as necessary and create a PR with the modifications from steps 1-4
 5. Push the release tag for use in building
 
-This means that the `requirements.txt` files will be updated by release managers,
-not developers. Developers should update `Pipfile.lock`.
+This means that the `build-requirements.txt` files will be updated by release managers, not developers. Developers should update `requirements.txt`.
 
 ## Build a package
 
