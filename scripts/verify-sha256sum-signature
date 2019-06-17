@@ -46,7 +46,7 @@ function verify_sha256sum_no_changes() {
     fi
     cd "${repo_root}/localwheels"
     sha256sum * > "$temp_sha256sum"
-    diff "$sha256sums_file" "$temp_sha256sum"
+    diff <(sort "$sha256sums_file") <(sort "$temp_sha256sum")
 }
 
 verify_sha256sum_signature

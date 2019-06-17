@@ -1,0 +1,92 @@
+---
+common-steps:
+  - &installdeps
+    run:
+      name: Install Debian packaging dependencies
+      command: make install-deps
+
+  - &fetchwheels
+    run:
+      name: Download wheels and sources
+      command: make fetch-wheels
+
+  - &makesourcetarball
+    run:
+      name: Get latest tag for the project and make a source tarball
+      command: |
+        cd ~/packaging/securedrop-*
+        export LATEST_TAG="$(git describe --tags $(git rev-list --tags --max-count=1))"
+        # Enable access to this env var in subsequent run steps
+        echo $LATEST_TAG > ~/packaging/sd_version
+        echo 'export LATEST_TAG=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+        # Create tarball
+        git checkout $LATEST_TAG
+        python3 setup.py sdist
+
+version: 2.1
+jobs:
+  build-securedrop-client:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+
+      - run:
+          name: Clone the repository to be packaged
+          command: |
+            mkdir ~/packaging && cd ~/packaging
+            git clone https://github.com/freedomofpress/securedrop-client.git
+
+      - *makesourcetarball
+
+      - run:
+          name: Build securedrop-client debian package
+          command: |
+            export PKG_PATH=~/packaging/securedrop-client/dist/securedrop-client-$LATEST_TAG.tar.gz
+            export PKG_VERSION=$LATEST_TAG
+            make securedrop-client
+            ls ~/debbuild/packaging/*.deb
+
+  build-securedrop-proxy:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+
+      - run:
+          name: Clone the repository to be packaged
+          command: |
+            mkdir ~/packaging && cd ~/packaging
+            git clone https://github.com/freedomofpress/securedrop-proxy.git
+
+      - *makesourcetarball
+
+      - run:
+          name: Build securedrop-proxy debian package
+          command: |
+            export PKG_PATH=~/packaging/securedrop-proxy/dist/securedrop-proxy-$LATEST_TAG.tar.gz
+            export PKG_VERSION=$LATEST_TAG
+            make securedrop-proxy
+            ls ~/debbuild/packaging/*.deb
+
+workflows:
+  build-debian-packages:
+    jobs:
+      - build-securedrop-client
+      - build-securedrop-proxy
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 5 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-securedrop-client
+      - build-securedrop-proxy
