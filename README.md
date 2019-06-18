@@ -23,24 +23,31 @@ make install-deps
 make fetch-wheels
 ```
 
-## Make a release
+## Updating Python wheels
 
-Release managers of `securedrop-client` and `securedrop-proxy` must update
-the requirements files which are used for build of these packages using
-`make requirements`. If new dependencies were added in the `requirements.txt` of that
-repo that are not in the FPF PyPI mirror, then the release manager needs
-to build those wheels and push the tarball and wheel package of the new
-dependency to the FPF PyPI mirror using `make build-wheels`.
+Maintainers of `securedrop-client` and `securedrop-proxy` must ensure that
+the requirements files which are used for build of these packages (`build-requirements.txt`)
+using `make requirements` are kept up to date in latest `master` of those repositories.
+
+If new dependencies were added in the `requirements.txt` of that
+repo that are not in the FPF PyPI mirror, then the maintainer needs
+to:
+
+1. Build those wheels using `make build-wheels`
+2. Push the tarball and wheel package of the new
+dependency to the FPF PyPI mirror using the steps described [here](https://github.com/freedomofpress/securedrop-debian-packaging-guide/issues/6).
+3. Make a PR updating the shasums and signature in this repository.
+4. Once this is done, `make requirements` can be used to update `build-requirements.txt`
+in the repository to be packaged.
+
+## Make a release
 
 Summarizing release manager steps:
 
 1. Update versions as necessary
-2. `make requirements`
-3. Do a test build following steps below
-4. Make any changes as necessary and create a PR with the modifications from steps 1-4
-5. Push the release tag for use in building
-
-This means that the `build-requirements.txt` files will be updated by release managers, not developers. Developers should update `requirements.txt`.
+2. Do a test build following steps below
+3. Make any changes as necessary and create a PR into the repository to be packaged with the modifications from steps 1-3
+4. Push the release tag for use in building
 
 ## Build a package
 
