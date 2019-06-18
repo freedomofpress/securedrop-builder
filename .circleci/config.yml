@@ -52,6 +52,17 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
+  - &clonesecuredropproxy
+    run:
+      name: Clone the repository to be packaged
+      command: |
+        mkdir ~/packaging && cd ~/packaging
+        git clone https://github.com/freedomofpress/securedrop-proxy.git
+        export PKG_NAME="securedrop-proxy"
+        # Enable access to this env var in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
   - &updatedebianchangelog
     run:
       name: Update debian changelog
@@ -104,23 +115,10 @@ jobs:
       - checkout
       - *installdeps
       - *fetchwheels
-
-      - run:
-          name: Clone the repository to be packaged
-          command: |
-            mkdir ~/packaging && cd ~/packaging
-            git clone https://github.com/freedomofpress/securedrop-proxy.git
-
+      - *clonesecuredropproxy
       - *getlatestreleasedversion
       - *makesourcetarball
-
-      - run:
-          name: Build securedrop-proxy debian package
-          command: |
-            export PKG_PATH=~/packaging/securedrop-proxy/dist/securedrop-proxy-$VERSION_TO_BUILD.tar.gz
-            export PKG_VERSION=$VERSION_TO_BUILD
-            make securedrop-proxy
-            ls ~/debbuild/packaging/*.deb
+      - *builddebianpackage
 
 workflows:
   build-debian-packages:
