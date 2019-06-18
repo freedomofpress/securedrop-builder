@@ -123,17 +123,4 @@ jobs:
 workflows:
   build-debian-packages:
     jobs:
-      - build-securedrop-client
-      - build-securedrop-proxy
-
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 5 * * *"
-          filters:
-            branches:
-              only:
-                - master
-    jobs:
       - build-nightly-securedrop-client
-      - build-securedrop-proxy
