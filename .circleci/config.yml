@@ -10,18 +10,65 @@ common-steps:
       name: Download wheels and sources
       command: make fetch-wheels
 
-  - &makesourcetarball
+  - &getlatestreleasedversion
     run:
-      name: Get latest tag for the project and make a source tarball
+      name: Get latest released version of the project
       command: |
         cd ~/packaging/securedrop-*
-        export LATEST_TAG="$(git describe --tags $(git rev-list --tags --max-count=1))"
+        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))"
         # Enable access to this env var in subsequent run steps
-        echo $LATEST_TAG > ~/packaging/sd_version
-        echo 'export LATEST_TAG=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-        # Create tarball
-        git checkout $LATEST_TAG
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+
+  - &getnightlyversion
+    run:
+      name: Create nightly version
+      command: |
+        cd ~/packaging/securedrop-*
+        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
+        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        # Enable access to this env var in subsequent run steps
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+        ./update_version.sh $VERSION_TO_BUILD
+        git tag $VERSION_TO_BUILD
+
+  - &makesourcetarball
+    run:
+      name: Create source tarball
+      command: |
+        cd ~/packaging/securedrop-*
+        git checkout $VERSION_TO_BUILD
         python3 setup.py sdist
+
+  - &clonesecuredropclient
+    run:
+      name: Clone the repository to be packaged
+      command: |
+        mkdir ~/packaging && cd ~/packaging
+        git clone https://github.com/freedomofpress/securedrop-client.git
+        export PKG_NAME="securedrop-client"
+        # Enable access to this env var in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
+  - &updatedebianchangelog
+    run:
+      name: Update debian changelog
+      command: |
+        cd ~/project/$PKG_NAME
+        export DEBFULLNAME='Automated builds'
+        export DEBEMAIL=securedrop@freedom.press
+        dch --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD "This is an automated build."
+
+  - &builddebianpackage
+    run:
+      name: Build debian package
+      command: |
+        export PKG_PATH=~/packaging/$PKG_NAME/dist/$PKG_NAME-$VERSION_TO_BUILD.tar.gz
+        export PKG_VERSION=$VERSION_TO_BUILD
+        make $PKG_NAME
+        ls ~/debbuild/packaging/*.deb
 
 version: 2.1
 jobs:
@@ -32,22 +79,23 @@ jobs:
       - checkout
       - *installdeps
       - *fetchwheels
-
-      - run:
-          name: Clone the repository to be packaged
-          command: |
-            mkdir ~/packaging && cd ~/packaging
-            git clone https://github.com/freedomofpress/securedrop-client.git
-
+      - *clonesecuredropclient
+      - *getlatestreleasedversion
       - *makesourcetarball
+      - *builddebianpackage
 
-      - run:
-          name: Build securedrop-client debian package
-          command: |
-            export PKG_PATH=~/packaging/securedrop-client/dist/securedrop-client-$LATEST_TAG.tar.gz
-            export PKG_VERSION=$LATEST_TAG
-            make securedrop-client
-            ls ~/debbuild/packaging/*.deb
+  build-nightly-securedrop-client:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropclient
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
 
   build-securedrop-proxy:
     docker:
@@ -63,13 +111,14 @@ jobs:
             mkdir ~/packaging && cd ~/packaging
             git clone https://github.com/freedomofpress/securedrop-proxy.git
 
+      - *getlatestreleasedversion
       - *makesourcetarball
 
       - run:
           name: Build securedrop-proxy debian package
           command: |
-            export PKG_PATH=~/packaging/securedrop-proxy/dist/securedrop-proxy-$LATEST_TAG.tar.gz
-            export PKG_VERSION=$LATEST_TAG
+            export PKG_PATH=~/packaging/securedrop-proxy/dist/securedrop-proxy-$VERSION_TO_BUILD.tar.gz
+            export PKG_VERSION=$VERSION_TO_BUILD
             make securedrop-proxy
             ls ~/debbuild/packaging/*.deb
 
@@ -88,5 +137,5 @@ workflows:
               only:
                 - master
     jobs:
-      - build-securedrop-client
+      - build-nightly-securedrop-client
       - build-securedrop-proxy
