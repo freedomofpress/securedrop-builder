@@ -1,3 +1,10 @@
+securedrop-proxy (0.1.4) unstable; urgency=medium
+
+  * Update urllib3 to version 1.24.3 or later due to CVE-2019-11324 (#35)
+  * Remove pipenv in favor of pip-tools (#33)
+
+ -- Allie Crevier <allie@freedom.press>  Tues, 18 Jun 2019 15:55:27 -0400
+
 securedrop-proxy (0.1.3) UNRELEASED; urgency=medium
 
   * Updated PyYAML to 5.1 and safe loading of YAML files
