@@ -120,6 +120,19 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
+  build-nightly-securedrop-proxy:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropproxy
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+
 workflows:
   build-debian-packages:
     jobs:
@@ -136,4 +149,4 @@ workflows:
                 - master
     jobs:
       - build-nightly-securedrop-client
-      - build-securedrop-proxy
+      - build-nightly-securedrop-proxy
