@@ -136,8 +136,7 @@ jobs:
 workflows:
   build-debian-packages:
     jobs:
-      - build-securedrop-client
-      - build-securedrop-proxy
+      - build-nightly-securedrop-proxy
 
   nightly:
     triggers:
