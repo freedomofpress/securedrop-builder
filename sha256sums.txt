@@ -30,6 +30,8 @@ b8d80623e9d4e348c59ea726ce3032a2eb15abca6a48d3828362d11c6014a0a7  PyYAML-5.1-cp3
 99dcfdaaeb17caf6e526f32b6a7b780461512ab3f1d992187801694cba42770c  requests-2.20.0.tar.gz
 4c6fca40013245b60118ffcd96ffd198c7114ebba978208a949f787f2dedfc69  securedrop_sdk-0.0.10-py3-none-any.whl
 07b9f9d91b26e2396ff5eb63b5e990ac969de57bbfb7c075d99ac5e269198cb0  securedrop-sdk-0.0.10.tar.gz
+1f4013d5a2d970efe28cc76ee2ebce25bc0c4d9b5d9157d3086939f8ab05648b  securedrop_sdk-0.0.11-py3-none-any.whl
+89a454a45eac15db702e06d24f5e4be64b8d033a5546aff056de762ecfc5f72a  securedrop-sdk-0.0.11.tar.gz
 50a6b980e2fcdbc78b00fa7b978cc91350364c94497f730b1c01f5ad446866c7  securedrop_sdk-0.0.4-py3-none-any.whl
 73b4148ea31681779c6a5aa127fce6764a80d241e791d54cec66c6834ac5ab3d  securedrop-sdk-0.0.4.tar.gz
 116e4461efcd3d0e6b18161a6908cec614f53fb04a5b7ef68f19207559b34d91  securedrop_sdk-0.0.8-py3-none-any.whl
