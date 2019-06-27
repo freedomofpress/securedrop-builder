@@ -21,7 +21,7 @@ set -e
 case "$1" in
     configure)
     # DKMS autoinstall the qubes kernel modules
-    dkms autoinstall 4.14.74-grsec
+    dkms autoinstall 4.14.128-grsec
     # enable and restart paxctld to set pax flags (incl grub)
     systemctl enable paxctld
     systemctl restart paxctld
