@@ -63,6 +63,15 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
+  - &clone_and_build_securedrop_core
+    run:
+      name: Clone and build SecureDrop core repository
+      command: |
+        git clone https://github.com/freedomofpress/securedrop.git
+        cd securedrop
+        git checkout $BUILD_TAG
+        make build-debs-notest
+
   - &updatedebianchangelog
     run:
       name: Update debian changelog
@@ -80,6 +89,38 @@ common-steps:
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
         ls ~/debbuild/packaging/*.deb
+
+  - &set_build_variables
+    run:
+      name: For tag-triggered build, extract the project to build and the tag to build.
+      command: |
+        export CIRCLE_TAG=$TEST_CIRCLE_TAG  # REMOVE ME, FOR TESTING ONLY
+
+        # Extract BUILD_PROJECT and BUILD_TAG
+        export BUILD_PROJECT=$(echo $CIRCLE_TAG | cut -f1 -d/)
+        export BUILD_TAG=$(echo $CIRCLE_TAG | cut -f2 -d/)
+
+        # Enable access to these variables in subsequent run steps
+        echo $BUILD_PROJECT > ~/build_project
+        echo $BUILD_TAG > ~/build_tag
+        echo 'export BUILD_PROJECT=$(cat ~/build_project)' >> $BASH_ENV
+        echo 'export BUILD_TAG=$(cat ~/build_tag)' >> $BASH_ENV
+
+  - &bail_if_not_securedrop_core
+    run:
+      name: Exit build job if BUILD_PROJECT is not securedrop-core (or if BUILD_TAG is not set).
+      command: |
+        if [[ ! $BUILD_PROJECT == "securedrop-core" ]]; then 
+          echo "BUILD_PROJECT is not securedrop-core, skipping"
+          exit 0  # Skip job but don't fail
+        fi
+
+        if [ -n "$BUILD_TAG" ]; then
+          echo "Will build $BUILD_PROJECT on tag $BUILD_TAG"
+        else
+          echo "Expected format of tag to trigger builds is BUILD_PROJECT/BUILD_TAG, exiting"
+          exit 1  # If BUILD_TAG is not set, fail the job because the RM set the CIRCLE_TAG incorrectly
+        fi
 
 version: 2.1
 jobs:
@@ -133,11 +174,25 @@ jobs:
       - *updatedebianchangelog
       - *builddebianpackage
 
+  build-securedrop-core:
+    docker:
+      - image: circleci/python:3.5-stretch
+    environment:
+      TEST_CIRCLE_TAG: securedrop-core/0.14.0-rc1 # For testing. A variable will be in place (CIRCLE_TAG) when we trigger this job on tag push
+    steps:
+      - checkout
+      - *set_build_variables
+      - *bail_if_not_securedrop_core  # In the future we will trigger other builds based on tag push
+      - run: sudo apt-get install -y enchant python-dev rsync
+      - setup_remote_docker
+      - *clone_and_build_securedrop_core
+
 workflows:
   build-debian-packages:
     jobs:
       - build-securedrop-client
       - build-securedrop-proxy
+      - build-securedrop-core
 
   nightly:
     triggers:
