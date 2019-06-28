@@ -48,6 +48,34 @@ Summarizing release manager steps:
 2. Do a test build following steps below
 3. Make any changes as necessary and create a PR into the repository to be packaged with the modifications from steps 1-3
 4. Push the release tag for use in building
+5. For a release candidate or alpha (pre-production) release, push the tag as described in the section below to trigger the build pipeline. For a production release, you should ask the person with production access to build the package and push.
+
+## Automated Builds
+
+The build and deployment of packages for release candidates, alpha releases, and nightlies is done via Circle CI. 
+
+### Nightly
+
+Nighly builds occur at 5 UTC (10 PM Pacific time) for:
+
+* `securedrop-proxy`
+* `securedrop-client`
+
+These packages will appear on `apt-test-qubes.freedom.press`
+
+### Release Candidates and Alpha Releases
+
+#### Workstation
+
+TK
+
+These packages will appear on `apt-test-qubes.freedom.press`.
+
+#### Core
+
+To trigger a build of packages corresponding to a release tag (rc or otherwise) which will be automatically deployed to `apt-test.freedom.press`, push a tag to _this_ repository containing `securedrop-core/BUILD_TAG` where `BUILD_TAG` is the tag you want the packages to be built on in the target repository.
+
+Note that only packages with the same versions but modified checksums will not be committed.
 
 ## Build a package
 
