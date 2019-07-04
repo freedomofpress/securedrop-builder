@@ -31,14 +31,81 @@ using `make requirements` are kept up to date in latest `master` of those reposi
 
 If new dependencies were added in the `requirements.txt` of that
 repo that are not in the FPF PyPI mirror, then the maintainer needs
-to:
+to do the following (we are taking `securedrop-client` project as example):
 
-1. Build those wheels using `make build-wheels`
-2. Push the tarball and wheel package of the new
-dependency to the FPF PyPI mirror using the steps described [here](https://github.com/freedomofpress/securedrop-debian-packaging-guide/issues/6).
-3. Make a PR updating the shasums and signature in this repository.
-4. Once this is done, `make requirements` can be used to update `build-requirements.txt`
-in the repository to be packaged.
+### 1. Sync the wheels locally
+
+Sync all of the latest wheels `make syncwheels`
+
+### 2. Create updated build-requirements.txt for the project
+
+From the `securedrop-debian-packaging` directory,
+
+```
+PKG_DIR=/home/user/code/securedrop-client make requirements
+```
+
+This will create the proper `requirements.txt` file in the project directory along with the binary wheel
+hashes from our own Python package index server.
+
+If we are missing any wheels from our cache/build/server, it will let you know with a following message.
+
+```
+The following dependent wheel(s) are missing:
+pytest==3.10.1
+
+Please build the wheel by using the following command.
+	PKG_DIR=/home/user/code/securedrop-client make build-wheels
+Then sync the newly built wheels and sources to the s3 bucket.
+Also update the index HTML files accordingly and sync to s3.
+After these steps, please rerun the command again.
+```
+
+So, the next step is to build the wheels. To do this step, you will need the
+GPG key of @kushaldas and @conorsch @redshiftzero @emkll on the same user as
+the actual list of hashes will be signed by one of us.
+
+
+```
+PKG_DIR=/home/user/code/securedrop-client make build-wheels
+```
+
+This above command will let you know about any new wheels+sources. It will build/download sources from PyPI (by verifying it against the sha256sums from the `Pipfile.lock` of the project).
+
+```
+python3 setup.py sdist
+```
+
+
+### 3. Sync the localwheels directory back to the s3 bucket. (if only any update)
+
+This has to be manual step for security reason. In future all of these wheel building steps should be done by a different system, not at the devloper's laptop.
+
+```
+cd localwheels/
+aws s3 sync . s3://dev-bin.ops.securedrop.org/localwheels/
+```
+### 4. Update the index files for the bucket (no need before release)
+
+If there is any new package (source/wheel), then we will have to update our index.
+
+```
+./scripts/createdirs.py ~/code/securedrop-client/requirements.txt
+```
+Then update the corresponding packages's `index.html`.
+
+If new package, then update the main index.
+
+```
+./scripts/updateindex.py
+```
+
+Finally sync the index.
+
+```
+cd simple/
+s3 sync . s3://dev-bin.ops.securedrop.org/simple/
+```
 
 ## Make a release
 
