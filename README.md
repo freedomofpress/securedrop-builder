@@ -79,7 +79,9 @@ cd securedrop-debian-packaging
 ```
 
 If you are releasing a new version (rather than rebuilding a package from a previous version),
-you must update the changelog:
+you must update the changelog.
+
+Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
 
 ```
 ./scripts/update-changelog securedrop-foobar
@@ -97,5 +99,5 @@ TODO
 
 ## Intro to packaging
 
-For an introduction to packaging Python projects into Debian packages, one can see the [SecureDrop Debian Packaging Guide](https://securedrop-debian-packaging-guide.readthedocs.io/en/latest/). Note that these guidelines on Read the Docs are for educational purposes only. The README you are currently reading is the canonical reference for SecureDrop Workstation packagers. 
+For an introduction to packaging Python projects into Debian packages, one can see the [SecureDrop Debian Packaging Guide](https://securedrop-debian-packaging-guide.readthedocs.io/en/latest/). Note that these guidelines on Read the Docs are for educational purposes only. The README you are currently reading is the canonical reference for SecureDrop Workstation packagers.
 
