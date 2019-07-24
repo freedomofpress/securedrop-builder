@@ -231,4 +231,7 @@ workflows:
       - build-nightly-securedrop-client:
           requires:
              - build-nightly-securedrop-proxy
-      - build-nightly-securedrop-export
+      - build-nightly-securedrop-export:
+          requires:
+             - build-nightly-securedrop-proxy
+             - build-nightly-securedrop-client
