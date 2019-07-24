@@ -63,6 +63,17 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
+  - &clonesecuredropexport
+    run:
+      name: Clone the repository to be packaged
+      command: |
+        mkdir ~/packaging && cd ~/packaging
+        git clone https://github.com/freedomofpress/securedrop-export.git
+        export PKG_NAME="securedrop-export"
+        # Enable access to this env car in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
   - &updatedebianchangelog
     run:
       name: Update debian changelog
@@ -172,11 +183,40 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
+  build-securedrop-export:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropexport
+      - *getlatestreleasedversion
+      - *makesourcetarball
+      - *builddebianpackage
+
+  build-nightly-securedrop-export:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropexport
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *installgitlfs
+      - *addsshkeys
+      - *commitworkstationdebs
+
 workflows:
   build-debian-packages:
     jobs:
       - build-securedrop-client
       - build-securedrop-proxy
+      - build-securedrop-export
 
   nightly:
     triggers:
@@ -191,3 +231,4 @@ workflows:
       - build-nightly-securedrop-client:
           requires:
              - build-nightly-securedrop-proxy
+      - build-nightly-securedrop-export
