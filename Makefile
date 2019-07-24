@@ -46,6 +46,7 @@ build-wheels: fetch-wheels ## Builds the wheels and adds them to the localwheels
 
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
+	rm -rf localwheels/*
 
 .PHONY: help
 help: ## Prints this message and exits
