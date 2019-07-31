@@ -38,7 +38,7 @@ common-steps:
       name: Create source tarball
       command: |
         cd ~/packaging/securedrop-*
-        git checkout $VERSION_TO_BUILD
+        git checkout master
         python3 setup.py sdist
 
   - &clonesecuredropclient
