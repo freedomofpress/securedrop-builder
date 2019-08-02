@@ -35,7 +35,7 @@ to do the following (we are taking `securedrop-client` project as example):
 
 ### 1. Sync the wheels locally
 
-Sync all of the latest wheels `make syncwheels`
+Sync all of the latest wheels `make fetch-wheels`
 
 ### 2. Create updated build-requirements.txt for the project
 
@@ -66,35 +66,42 @@ GPG key of @kushaldas and @conorsch @redshiftzero @emkll on the same user as
 the actual list of hashes will be signed by one of us.
 
 
-```
+```shell
 PKG_DIR=/home/user/code/securedrop-client make build-wheels
 ```
 
-This above command will let you know about any new wheels+sources. It will build/download sources from PyPI (by verifying it against the sha256sums from the `Pipfile.lock` of the project).
+This above command will let you know about any new wheels+sources. It will
+build/download sources from PyPI (by verifying it against the sha256sums from
+the `Pipfile.lock` of the project).
 
-```
+Then navigate back to the project's code directory and run the following command.
+
+```bash
 python3 setup.py sdist
 ```
 
 
-### 3. Sync the localwheels directory back to the s3 bucket. (if only any update)
+### 3. Sync the localwheels directory back to the s3 bucket. (if only any update of wheels)
 
-This has to be manual step for security reason. In future all of these wheel building steps should be done by a different system, not at the devloper's laptop.
+This has to be manual step for security reasons. In future all of these wheel
+building steps should be done by a different system, not with the devloper's
+laptop.
 
 ```
 cd localwheels/
 aws s3 sync . s3://dev-bin.ops.securedrop.org/localwheels/
 ```
-### 4. Update the index files for the bucket (no need before release)
 
-If there is any new package (source/wheel), then we will have to update our index.
+### 4. Update the index files for the bucket (required for Debian builds)
+
+If there is any completely new Python package (source/wheel), then only we will have to update our index.
 
 ```
 ./scripts/createdirs.py ~/code/securedrop-client/requirements.txt
 ```
 Then update the corresponding packages's `index.html`.
 
-If new package, then update the main index.
+If there is a new package, then update the main index.
 
 ```
 ./scripts/updateindex.py
