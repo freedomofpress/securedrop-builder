@@ -23,6 +23,9 @@ make install-deps
 make fetch-wheels
 ```
 
+**Note:** either run `make install-deps` each time you start your debian packaging AppVM, or make
+sure that you install them into the template for your debian packaging AppVM.
+
 ## Updating Python wheels
 
 Maintainers of `securedrop-client` and `securedrop-proxy` must ensure that
