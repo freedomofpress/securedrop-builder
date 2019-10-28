@@ -139,6 +139,18 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
+  build-securedrop-client-buster:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropclient
+      - *getlatestreleasedversion
+      - *makesourcetarball
+      - *builddebianpackage
+
   build-nightly-securedrop-client:
     docker:
       - image: circleci/python:3.5-stretch
@@ -215,6 +227,7 @@ workflows:
   build-debian-packages:
     jobs:
       - build-securedrop-client
+      - build-securedrop-client-buster
       - build-securedrop-proxy
       - build-securedrop-export
 
