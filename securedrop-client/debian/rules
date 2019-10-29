@@ -4,7 +4,7 @@
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
-	dh_virtualenv --python /usr/bin/python3.7 --setuptools -S --index-url https://dev-bin.ops.securedrop.org/simple --requirements build-requirements.txt
+	dh_virtualenv --python /usr/bin/python3 --setuptools -S --index-url https://dev-bin.ops.securedrop.org/simple --requirements build-requirements.txt
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
