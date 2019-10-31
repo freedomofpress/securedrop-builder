@@ -1,3 +1,15 @@
+securedrop-workstation-config (0.1.1+buster) unstable; urgency=medium
+
+  * Remove libgnomevfs2-bin from dependencies and bump to 0.1.1
+
+ -- SecureDrop Team <securedrop@freedom.press>  Thu, 31 Oct 2019 14:56:04 -0400
+
+securedrop-workstation-config (0.1.0+buster) unstable; urgency=medium
+
+  * Provides buster support through buster-specific package.
+
+ -- SecureDrop Team <securedrop@freedom.press>  Thu, 31 Oct 2019 12:22:23 -0400
+
 securedrop-workstation-config (0.1.0) unstable; urgency=medium
 
   * Initial release.
