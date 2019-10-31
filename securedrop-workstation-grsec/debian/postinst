@@ -20,13 +20,11 @@ set -e
 GRSEC_VERSION='4.14.151-grsec-workstation'
 
 # Sets default grub boot parameter to the kernel version specified
-# in $GRSEC_VERSION. The debian buster default kernel is 4.19, thus
-# superceeds this 4.14.x series grsecurity kernel at boot-time
+# by $GRSEC_VERSION. The debian buster default kernel is 4.19, thus
+# supersedes this 4.14.x series grsecurity kernel at boot-time
 set_grub_default() {
-    # set default grub boot parameter to this kernel: buster default
-    # kernel is 4.19
-    GRUB_OPT="\"Advanced options for Debian GNU\/Linux>Debian GNU\/Linux, with Linux $GRSEC_VERSION\""
-    perl -pi -e "s/^GRUB_DEFAULT=(.*)/GRUB_DEFAULT=$GRUB_OPT/" /etc/default/grub
+    GRUB_OPT="'Advanced options for Debian GNU/Linux>Debian GNU/Linux, with Linux $GRSEC_VERSION'"
+    perl -pi -e "s|^GRUB_DEFAULT=.*|GRUB_DEFAULT=$GRUB_OPT|" /etc/default/grub
 }
 
 # Ensure the paxctld daemon is running
