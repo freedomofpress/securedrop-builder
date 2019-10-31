@@ -1,3 +1,9 @@
+securedrop-workstation-grsec (4.14.151-3+buster) unstable; urgency=medium
+
+  * Add buster suffix to package version to ensure uniqueness
+
+ -- SecureDrop Team <securedrop@freedom.press>  Thu, 31 Oct 2019 13:25:49 -0400
+
 securedrop-workstation-grsec (4.14.151-2) unstable; urgency=medium
 
   * Improve grub default variable substitution in postint
