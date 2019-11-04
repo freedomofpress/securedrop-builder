@@ -76,14 +76,15 @@ def add_sha256sums(path: str, requirements_lines: str) -> None:
     missing_wheels = []
 
     # For each dependency in the requirements file
-    for line in requirements_lines:
-        package_name_and_version = line.strip().split()[0]
+    for mainline in requirements_lines:
+        package_name_and_version = mainline.strip().split()[0]
         package_name = package_name_and_version.split('==')[0]
         package_version = package_name_and_version.split('==')[1]
 
         wheel_name_prefix = '{}-{}'.format(package_name, package_version)
         package_othername = '{}-{}'.format(package_name.replace("-", "_"), package_version)
 
+        line = ""
         for name in files:
             lowername = name[1].lower()
             digest = name[0]
@@ -93,9 +94,14 @@ def add_sha256sums(path: str, requirements_lines: str) -> None:
                 package_othername
             ):
                 # Now add the hash to the line
-                line = "{} --hash=sha256:{}\n".format(
-                    package_name_and_version, digest)
+                if line.find("--hash") == -1:
+                    line = "{} --hash=sha256:{}".format(
+                        package_name_and_version, digest)
+                else:
+                    # Means a second wheel hash
+                    line += " --hash=sha256:{}".format(digest)
 
+        line += "\n"
         newlines.append(line)
         if line.find("--hash") == -1:  # Missing wheel
             missing_wheels.append(package_name_and_version)
