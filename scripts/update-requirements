@@ -50,19 +50,19 @@ def verify_sha256sums_file():
     cmd = ["./scripts/verify-sha256sum-signature"]
     subprocess.check_call(cmd)
 
-def add_sha256sums(path: str, requirements_lines: str) -> None:
+def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha256sums.txt") -> None:
     """Adds all the required sha256sums to the wheels
 
     :param path: path to the requirements file.
     :type path: str
     :param requirements_lines: cleaned lines from the requirements file.
-    :type requirements_lines: str
+    :type requirements_lines: list
     :return: None
     :rtype: None
     """
     files = []
 
-    with open("sha256sums.txt") as fobj:
+    with open(shasums_file) as fobj:
         lines = fobj.readlines()
 
     for line in lines:
@@ -74,6 +74,9 @@ def add_sha256sums(path: str, requirements_lines: str) -> None:
 
     newlines = []
     missing_wheels = []
+
+    if not isinstance(requirements_lines, list):
+        raise ValueError("requirements_lines must be a list")
 
     # For each dependency in the requirements file
     for line in requirements_lines:

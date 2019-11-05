@@ -127,6 +127,19 @@ common-steps:
 
 version: 2.1
 jobs:
+  tests:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - run:
+          name: install test requirements and run tests
+          command: |   
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install -r test-requirements.txt
+            make test
+
   build-securedrop-client:
     docker:
       - image: circleci/python:3.5-stretch
@@ -214,6 +227,7 @@ jobs:
 workflows:
   build-debian-packages:
     jobs:
+      - tests
       - build-securedrop-client
       - build-securedrop-proxy
       - build-securedrop-export
