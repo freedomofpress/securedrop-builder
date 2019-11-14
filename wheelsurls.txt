@@ -39,11 +39,13 @@ https://dev-bin.ops.securedrop.org/localwheels/requests-2.20.0-py2.py3-none-any.
 https://dev-bin.ops.securedrop.org/localwheels/requests-2.20.0.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/securedrop-sdk-0.0.10.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/securedrop-sdk-0.0.11.tar.gz
+https://dev-bin.ops.securedrop.org/localwheels/securedrop-sdk-0.0.12.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/securedrop-sdk-0.0.4.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/securedrop-sdk-0.0.8.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/securedrop-sdk-0.0.9.tar.gz
 https://dev-bin.ops.securedrop.org/localwheels/securedrop_sdk-0.0.10-py3-none-any.whl
 https://dev-bin.ops.securedrop.org/localwheels/securedrop_sdk-0.0.11-py3-none-any.whl
+https://dev-bin.ops.securedrop.org/localwheels/securedrop_sdk-0.0.12-py3-none-any.whl
 https://dev-bin.ops.securedrop.org/localwheels/securedrop_sdk-0.0.4-py3-none-any.whl
 https://dev-bin.ops.securedrop.org/localwheels/securedrop_sdk-0.0.8-py3-none-any.whl
 https://dev-bin.ops.securedrop.org/localwheels/securedrop_sdk-0.0.9-py3-none-any.whl
