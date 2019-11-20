@@ -12,7 +12,6 @@ set -e
 set -u
 set -o pipefail
 
-
 # Store root of repo, since we'll change dirs several times.
 CUR_DIR="$(git rev-parse --show-toplevel)"
 
@@ -65,6 +64,9 @@ tar --strip-components=1 -C "$TOP_BUILDDIR/$PKG_NAME" -xvf "$PKG_PATH"
 # Copy over the debian directory (including new changelog) from repo
 cp -r "$CUR_DIR/$PKG_NAME/debian" "$TOP_BUILDDIR/$PKG_NAME/"
 
+# Move changelog into place (we have separate changelogs for each platform)
+PLATFORM="$(lsb_release -sc)"
+mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$PLATFORM" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
 
 # Hop into the package build dir, to run dpkg-buildpackage
 cd "$TOP_BUILDDIR/$PKG_NAME/"
