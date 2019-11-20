@@ -1,4 +1,4 @@
-securedrop-client (0.0.10) unstable; urgency=medium
+securedrop-client (0.0.10+stretch) unstable; urgency=medium
 
   * Add Python 3.7/buster support (#568, #609)
   * Add export to USB support (#611, #547, #562, #563, #564)
