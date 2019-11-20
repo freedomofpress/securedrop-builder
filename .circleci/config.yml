@@ -148,7 +148,7 @@ jobs:
       - *installdeps
       - *fetchwheels
       - *clonesecuredropclient
-      - *getnightlyversion
+      - *getlatestreleasedversion
       - *makesourcetarball
       - *builddebianpackage
 
@@ -160,7 +160,7 @@ jobs:
       - *installdeps
       - *fetchwheels
       - *clonesecuredropclient
-      - *getnightlyversion
+      - *getlatestreleasedversion
       - *makesourcetarball
       - *builddebianpackage
 
