@@ -109,6 +109,16 @@ common-steps:
       fingerprints:
         - "e5:b5:6e:d0:4e:ce:52:40:33:30:5e:6f:c5:73:38:20"
 
+  - &setsvsdispname
+    run:
+      name: Set package name to securedrop-workstation-svs-disp
+      command: |
+        mkdir ~/packaging
+        export PKG_NAME="securedrop-workstation-svs-disp"
+        # Enable access to this env car in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
@@ -134,7 +144,7 @@ jobs:
       - checkout
       - run:
           name: install test requirements and run tests
-          command: |   
+          command: |
             virtualenv .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
@@ -236,6 +246,24 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
+  build-stretch-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *setsvsdispname
+      - *builddebianpackage
+
+  build-buster-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *setsvsdispname
+      - *builddebianpackage
+
 workflows:
   build-debian-packages:
     jobs:
@@ -244,6 +272,8 @@ workflows:
       - build-buster-securedrop-client
       - build-securedrop-proxy
       - build-securedrop-export
+      - build-stretch-securedrop-workstation-svs-disp
+      - build-buster-securedrop-workstation-svs-disp
 
   nightly:
     triggers:
