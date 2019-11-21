@@ -134,7 +134,7 @@ jobs:
       - checkout
       - run:
           name: install test requirements and run tests
-          command: |   
+          command: |
             virtualenv .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
@@ -194,7 +194,7 @@ jobs:
 
   build-securedrop-proxy-buster:
     docker:
-      - image: circleci/python3.7-buster
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
