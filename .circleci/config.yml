@@ -140,9 +140,21 @@ jobs:
             pip install -r test-requirements.txt
             make test
 
-  build-securedrop-client:
+  build-stretch-securedrop-client:
     docker:
       - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropclient
+      - *getlatestreleasedversion
+      - *makesourcetarball
+      - *builddebianpackage
+
+  build-buster-securedrop-client:
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
@@ -228,7 +240,8 @@ workflows:
   build-debian-packages:
     jobs:
       - tests
-      - build-securedrop-client
+      - build-stretch-securedrop-client
+      - build-buster-securedrop-client
       - build-securedrop-proxy
       - build-securedrop-export
 
@@ -244,8 +257,8 @@ workflows:
       - build-nightly-securedrop-proxy
       - build-nightly-securedrop-client:
           requires:
-             - build-nightly-securedrop-proxy
+            - build-nightly-securedrop-proxy
       - build-nightly-securedrop-export:
           requires:
-             - build-nightly-securedrop-proxy
-             - build-nightly-securedrop-client
+            - build-nightly-securedrop-proxy
+            - build-nightly-securedrop-client

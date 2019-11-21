@@ -37,12 +37,13 @@ if [[ -z "${PKG_VERSION:-}" ]]; then
     exit 3
 fi
 
+PLATFORM="$(lsb_release -sc)"
 
 # Update the changelog.
-changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog"
+changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-${PLATFORM}"
 if [[ ! -f "$changelog" ]]; then
     printf 'Could not find changelog at %s\n' "$changelog"
     exit 4
 fi
 
-dch --newversion "${PKG_VERSION}" --distribution unstable -c "$changelog"
+dch --newversion "${PKG_VERSION}+${PLATFORM}" --distribution unstable -c "$changelog"
