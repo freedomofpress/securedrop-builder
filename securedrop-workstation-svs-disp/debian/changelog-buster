@@ -1,0 +1,5 @@
+securedrop-workstation-svs-disp (0.1.3+buster) unstable; urgency=medium
+
+  * Provides Debian 10 (Buster) compatibility.
+
+ -- SecureDrop Team <securedrop@freedom.press>  Thu, 21 Nov 2019 14:15:47 -0400
