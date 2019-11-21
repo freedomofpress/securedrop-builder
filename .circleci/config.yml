@@ -166,7 +166,7 @@ jobs:
 
   build-nightly-securedrop-client:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: circleci/python:3.5-stretch
     steps:
       - checkout
       - *installdeps
