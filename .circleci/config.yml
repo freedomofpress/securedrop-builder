@@ -119,6 +119,17 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
+  - &setmetapackageversion
+      run:
+        name: Get metapackage version via distribution changelog
+        command: |
+          PLATFORM="$(lsb_release -sc)"
+          CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${PLATFORM} | head -n1)
+          export VERSION_TO_BUILD="$CURRENT_VERSION"
+          # Enable access to this env var in subsequent run steps
+          echo $VERSION_TO_BUILD > ~/packaging/sd_version
+          echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
@@ -252,7 +263,9 @@ jobs:
     steps:
       - checkout
       - *installdeps
+      - *fetchwheels
       - *setsvsdispname
+      - *setmetapackageversion
       - *builddebianpackage
 
   build-buster-securedrop-workstation-svs-disp:
@@ -261,7 +274,9 @@ jobs:
     steps:
       - checkout
       - *installdeps
+      - *fetchwheels
       - *setsvsdispname
+      - *setmetapackageversion
       - *builddebianpackage
 
 workflows:
