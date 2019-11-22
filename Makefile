@@ -22,6 +22,10 @@ securedrop-workstation-config: ## Builds Debian metapackage for Qubes Workstatio
 .PHONY: securedrop-workstation-grsec
 securedrop-workstation-grsec: ## Builds Debian metapackage for Qubes Workstation hardened kernel
 
+.PHONY: securedrop-workstation-svs-disp
+securedrop-workstation-svs-disp: ## Builds Debian metapackage for Disposable VM dependencies and tooling
+	PKG_NAME="securedrop-workstation-svs-disp" ./scripts/build-debianpackage
+
 .PHONY: securedrop-export
 securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
 	PKG_NAME="securedrop-export" ./scripts/build-debianpackage

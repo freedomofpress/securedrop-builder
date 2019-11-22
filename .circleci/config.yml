@@ -109,6 +109,27 @@ common-steps:
       fingerprints:
         - "e5:b5:6e:d0:4e:ce:52:40:33:30:5e:6f:c5:73:38:20"
 
+  - &setsvsdispname
+    run:
+      name: Set package name to securedrop-workstation-svs-disp
+      command: |
+        mkdir ~/packaging
+        export PKG_NAME="securedrop-workstation-svs-disp"
+        # Enable access to this env car in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
+  - &setmetapackageversion
+      run:
+        name: Get metapackage version via distribution changelog
+        command: |
+          PLATFORM="$(lsb_release -sc)"
+          CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${PLATFORM} | head -n1)
+          export VERSION_TO_BUILD="$CURRENT_VERSION"
+          # Enable access to this env var in subsequent run steps
+          echo $VERSION_TO_BUILD > ~/packaging/sd_version
+          echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
@@ -248,6 +269,28 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
+  build-stretch-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *setsvsdispname
+      - *setmetapackageversion
+      - *builddebianpackage
+
+  build-buster-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *setsvsdispname
+      - *setmetapackageversion
+      - *builddebianpackage
+
 workflows:
   build-debian-packages:
     jobs:
@@ -257,6 +300,8 @@ workflows:
       - build-securedrop-proxy-stretch
       - build-securedrop-proxy-buster
       - build-securedrop-export
+      - build-stretch-securedrop-workstation-svs-disp
+      - build-buster-securedrop-workstation-svs-disp
 
   nightly:
     triggers:
