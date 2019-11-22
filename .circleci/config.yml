@@ -201,7 +201,7 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-securedrop-proxy-stretch:
+  build-stretch-securedrop-proxy:
     docker:
       - image: circleci/python:3.5-stretch
     steps:
@@ -213,7 +213,7 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
-  build-securedrop-proxy-buster:
+  build-buster-securedrop-proxy:
     docker:
       - image: circleci/python:3.7-buster
     steps:
@@ -241,9 +241,21 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-securedrop-export:
+  build-stretch-securedrop-export:
     docker:
       - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropexport
+      - *getlatestreleasedversion
+      - *makesourcetarball
+      - *builddebianpackage
+
+  build-buster-securedrop-export:
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
@@ -297,11 +309,12 @@ workflows:
       - tests
       - build-stretch-securedrop-client
       - build-buster-securedrop-client
-      - build-securedrop-proxy-stretch
-      - build-securedrop-proxy-buster
-      - build-securedrop-export
+      - build-stretch-securedrop-proxy
+      - build-buster-securedrop-proxy
       - build-stretch-securedrop-workstation-svs-disp
       - build-buster-securedrop-workstation-svs-disp
+      - build-stretch-securedrop-export
+      - build-buster-securedrop-export
 
   nightly:
     triggers:
