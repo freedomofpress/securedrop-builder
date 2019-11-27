@@ -81,6 +81,8 @@ common-steps:
         cd ~/project/$PKG_NAME
         export DEBFULLNAME='Automated builds'
         export DEBEMAIL=securedrop@freedom.press
+        export PLATFORM="$(lsb_release -sc)"
+        cp ~/project/$PKG_NAME/debian/changelog-$PLATFORM ~/project/$PKG_NAME/debian/changelog
         dch --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD "This is an automated build."
 
   - &builddebianpackage
@@ -303,18 +305,23 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  jen-tests-ci:
+    docker:
+      - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropexport
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+
 workflows:
   build-debian-packages:
     jobs:
-      - tests
-      - build-stretch-securedrop-client
-      - build-buster-securedrop-client
-      - build-stretch-securedrop-proxy
-      - build-buster-securedrop-proxy
-      - build-stretch-securedrop-workstation-svs-disp
-      - build-buster-securedrop-workstation-svs-disp
-      - build-stretch-securedrop-export
-      - build-buster-securedrop-export
+      - jen-tests-ci
 
   nightly:
     triggers:
