@@ -81,6 +81,8 @@ common-steps:
         cd ~/project/$PKG_NAME
         export DEBFULLNAME='Automated builds'
         export DEBEMAIL=securedrop@freedom.press
+        export PLATFORM="$(lsb_release -sc)"
+        cp ~/project/$PKG_NAME/debian/changelog-$PLATFORM ~/project/$PKG_NAME/debian/changelog
         dch --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD "This is an automated build."
 
   - &builddebianpackage
