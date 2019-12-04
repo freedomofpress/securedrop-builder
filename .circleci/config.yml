@@ -365,6 +365,22 @@ workflows:
       - build-buster-securedrop-workstation-svs-disp
       - build-stretch-securedrop-export
       - build-buster-securedrop-export
+      - build-nightly-stretch-securedrop-proxy
+      - build-nightly-stretch-securedrop-client:
+          requires:
+            - build-nightly-stretch-securedrop-proxy
+      - build-nightly-stretch-securedrop-export:
+          requires:
+            - build-nightly-stretch-securedrop-client
+      - build-nightly-buster-securedrop-client:
+          requires:
+            - build-nightly-stretch-securedrop-export
+      - build-nightly-buster-securedrop-proxy:
+          requires:
+            - build-nightly-buster-securedrop-client
+      - build-nightly-buster-securedrop-export:
+          requires:
+            - build-nightly-buster-securedrop-proxy
 
 # Nightly jobs for each package are run in series to ensure there are no
 # conflicts or race conditions when committing deb packages to git-lfs.
