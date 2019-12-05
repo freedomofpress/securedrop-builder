@@ -78,12 +78,11 @@ common-steps:
     run:
       name: Update debian changelog
       command: |
-        cd ~/project/$PKG_NAME
+        cd ~/project/$PKG_NAME/debian
         export DEBFULLNAME='Automated builds'
         export DEBEMAIL=securedrop@freedom.press
         export PLATFORM="$(lsb_release -sc)"
-        cp ~/project/$PKG_NAME/debian/changelog-$PLATFORM ~/project/$PKG_NAME/debian/changelog
-        dch --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD "This is an automated build."
+        dch --changelog changelog-${PLATFORM} --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+${PLATFORM} "This is an automated build."
 
   - &builddebianpackage
     run:
@@ -136,6 +135,7 @@ common-steps:
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
       command: |
+        PLATFORM="$(lsb_release -sc)"
         git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
         cd securedrop-dev-packages-lfs
 
@@ -143,8 +143,8 @@ common-steps:
         git config user.name "sdcibot"
 
         # Copy built debian packages to the relevant workstation repo and git push.
-        cp ~/debbuild/packaging/*.deb ./workstation/stretch/
-        git add workstation/stretch/*.deb
+        cp ~/debbuild/packaging/*.deb ./workstation/${PLATFORM}/
+        git add workstation/${PLATFORM}/*.deb
         git commit -m "Automated SecureDrop workstation build"
         git push origin master
 
@@ -187,9 +187,25 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
-  build-nightly-securedrop-client:
+  build-nightly-stretch-securedrop-client:
     docker:
       - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropclient
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *installgitlfs
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-buster-securedrop-client:
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
@@ -227,9 +243,25 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
-  build-nightly-securedrop-proxy:
+  build-nightly-stretch-securedrop-proxy:
     docker:
       - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropproxy
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *installgitlfs
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-buster-securedrop-proxy:
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
@@ -267,9 +299,25 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
-  build-nightly-securedrop-export:
+  build-nightly-stretch-securedrop-export:
     docker:
       - image: circleci/python:3.5-stretch
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredropexport
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *installgitlfs
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-buster-securedrop-export:
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
@@ -318,6 +366,9 @@ workflows:
       - build-stretch-securedrop-export
       - build-buster-securedrop-export
 
+# Nightly jobs for each package are run in series to ensure there are no
+# conflicts or race conditions when committing deb packages to git-lfs.
+# Each nightly job requires the completion of the previous task in the sequence.
   nightly:
     triggers:
       - schedule:
@@ -327,11 +378,19 @@ workflows:
               only:
                 - master
     jobs:
-      - build-nightly-securedrop-proxy
-      - build-nightly-securedrop-client:
+      - build-nightly-stretch-securedrop-proxy
+      - build-nightly-stretch-securedrop-client:
           requires:
-            - build-nightly-securedrop-proxy
-      - build-nightly-securedrop-export:
+            - build-nightly-stretch-securedrop-proxy
+      - build-nightly-stretch-securedrop-export:
           requires:
-            - build-nightly-securedrop-proxy
-            - build-nightly-securedrop-client
+            - build-nightly-stretch-securedrop-client
+      - build-nightly-buster-securedrop-client:
+          requires:
+            - build-nightly-stretch-securedrop-export
+      - build-nightly-buster-securedrop-proxy:
+          requires:
+            - build-nightly-buster-securedrop-client
+      - build-nightly-buster-securedrop-export:
+          requires:
+            - build-nightly-buster-securedrop-proxy
