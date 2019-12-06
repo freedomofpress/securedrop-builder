@@ -1,0 +1,16 @@
+Source: securedrop-log
+Section: utils
+Priority: optional
+Maintainer: SecureDrop Team <securedrop@freedom.press>
+Build-Depends: debhelper (>= 9), dh-python, python3-all, python3-setuptools, dh-virtualenv
+Standards-Version: 3.9.8
+Homepage: https://github.com/freedomofpress/securedrop-log
+Vcs-Git: https://github.com/freedomofpress/securedrop-log.git
+X-Python-3-Version: >= 3.7
+
+Package: securedrop-log
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends}
+Description: Python module and qrexec service to store logs for SecureDrop Workstation
+ This package provides Python module and qrexec service files to create a logging VM in
+ SecureDrop Workstation project in Qubes.

@@ -30,6 +30,10 @@ securedrop-workstation-svs-disp: ## Builds Debian metapackage for Disposable VM 
 securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
 	PKG_NAME="securedrop-export" ./scripts/build-debianpackage
 
+.PHONY: securedrop-log
+securedrop-log: ## Builds Debian package for Qubes Workstation securedrop-log scripts
+	PKG_NAME="securedrop-log" ./scripts/build-debianpackage
+
 .PHONY: install-deps
 install-deps: ## Install initial Debian packaging dependencies
 	./scripts/install-deps
