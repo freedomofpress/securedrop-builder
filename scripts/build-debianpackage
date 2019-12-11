@@ -44,7 +44,7 @@ cp -r "$CUR_DIR/$PKG_NAME/" "$TOP_BUILDDIR/"
 
 # If the package is contained in the list, it should be a python package. In
 # that case, we should extract tarball, and validate wheel hashes.
-if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export)$ ]]; then
+if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|securedrop-log)$ ]]; then
     echo "${PKG_NAME} is a Python package"
 
     if [[ -z "${PKG_PATH:-}" ]]; then

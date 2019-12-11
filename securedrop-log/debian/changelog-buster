@@ -1,0 +1,5 @@
+securedrop-log (0.0.1+buster) unstable; urgency=medium
+
+  * Initial release on Debian buster
+
+ -- Kushal Das <kushal@freedom.press>  Fri, 06 Dec 2019 11:05:38 +0530
