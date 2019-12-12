@@ -186,6 +186,22 @@ jobs:
       - *makesourcetarball
       - *builddebianpackage
 
+  build-nightly-buster-securedrop-log:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *fetchwheels
+      - *clonesecuredroplog
+      - *getnightlyversion
+      - *makesourcetarball
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *installgitlfs
+      - *addsshkeys
+      - *commitworkstationdebs
+
   build-stretch-securedrop-client:
     docker:
       - image: circleci/python:3.5-stretch
@@ -418,3 +434,6 @@ workflows:
       - build-nightly-buster-securedrop-export:
           requires:
             - build-nightly-buster-securedrop-proxy
+      - build-nightly-buster-securedrop-log:
+          requires:
+            - build-nightly-buster-securedrop-export
