@@ -4,7 +4,15 @@
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
-	dh_virtualenv --python /usr/bin/python3 --setuptools -S --index-url https://dev-bin.ops.securedrop.org/simple --requirements build-requirements.txt
+	dh_virtualenv \
+		--python /usr/bin/python3 \
+		--setuptools \
+		--use-system-packages \
+		--index-url https://dev-bin.ops.securedrop.org/simple \
+		--extra-pip-arg "--ignore-installed" \
+		--extra-pip-arg "--no-deps" \
+		--extra-pip-arg "--no-cache-dir" \
+		--requirements build-requirements.txt
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
