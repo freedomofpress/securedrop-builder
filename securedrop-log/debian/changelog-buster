@@ -1,3 +1,9 @@
+securedrop-log (0.0.2+buster) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- redshiftzero <jen@freedom.press>  Thu, 12 Dec 2019 19:30:18 -0500
+
 securedrop-log (0.0.1+buster) unstable; urgency=medium
 
   * Initial release on Debian buster
