@@ -9,5 +9,5 @@ X-Python3-Version: >= 3.5
 
 Package: securedrop-client
 Architecture: all
-Depends: ${python3:Depends},${misc:Depends}, python3-pyqt5, python3-pyqt5.qtsvg
+Depends: ${python3:Depends},${misc:Depends}, python3-pyqt5, python3-pyqt5.qtsvg, apparmor-utils
 Description: securedrop client for qubes workstation
