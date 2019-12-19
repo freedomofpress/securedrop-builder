@@ -22,6 +22,8 @@ case "$1" in
     configure)
 
     update-desktop-database /usr/share/applications
+    # enforce the apparmor profile for the client
+    aa-enforce /etc/apparmor.d/usr.bin.securedrop-client
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

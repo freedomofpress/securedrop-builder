@@ -8,3 +8,4 @@ files/open-in-dvm.desktop usr/share/applications/
 files/sd-svs-qubes-gpg-domain.sh etc/profile.d/
 files/securedrop-client usr/bin/
 files/securedrop-client.desktop usr/share/applications/
+files/usr.bin.securedrop-client /etc/apparmor.d/
