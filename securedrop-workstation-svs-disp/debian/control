@@ -8,5 +8,5 @@ Homepage: https://github.com/freedomofpress/securedrop-debian-packaging
 
 Package: securedrop-workstation-svs-disp
 Architecture: all
-Depends: securedrop-workstation-config,securedrop-workstation-grsec,audacious,eog,file-roller,totem
+Depends: securedrop-workstation-config,securedrop-workstation-grsec,audacious,eog,file-roller,totem,apparmor-utils,apparmor-profiles,apparmor-profiles-extra
 Description: This is the SecureDrop workstation SVS Disposable VM template configuration package. This package provides dependencies and configuration for the Qubes SecureDrop workstation sd-svs-disp Template VM.
