@@ -1,6 +1,6 @@
 #!/bin/bash
-# Wrapper to verify that the checksums file used to track the integrity
-# of the assets in the PyPI mirror, hosted on S3, has a valid signature.
+# Wrapper to verify that the checksums file, used to track the integrity
+# of the assets in the PyPI mirror, has a valid signature.
 #
 # We expect a valid signature to correspond to a SecureDrop Maintainer,
 # so we create a temporary keyring in order to force gpg to use *only*
@@ -36,7 +36,7 @@ function verify_sha256sum_signature() {
 }
 
 function verify_sha256sum_no_changes() {
-    # Create a temporary file to store the checksums as gathered from S3.
+    # Create a temporary file to store the checksums as gathered from the mirror.
     # We'll compare this to the signed file for validation.
     temp_sha256sum="$(mktemp)"
     localwheels="${repo_root}/localwheels"
@@ -50,7 +50,7 @@ function verify_sha256sum_no_changes() {
 }
 
 verify_sha256sum_signature
-printf 'Checking that SHA256SUMs from S3 match signed file... '
+printf 'Checking that SHA256SUMs from mirror match signed file... '
 verify_sha256sum_no_changes
 printf ' OK\n'
 

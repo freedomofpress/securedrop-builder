@@ -2,7 +2,7 @@
 
 # This script finds the currently available sources
 # and wheels built by SecureDrop team and creates
-# a list of URLs to download them from the s3.
+# a list of URLs to download them from the public PyPI mirror.
 
 import os
 

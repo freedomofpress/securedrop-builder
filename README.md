@@ -20,7 +20,6 @@ In a Debian AppVM in Qubes:
 
 ```
 make install-deps
-make fetch-wheels
 ```
 
 **Note:** either run `make install-deps` each time you start your debian packaging AppVM, or make
@@ -36,11 +35,7 @@ If new dependencies were added in the `requirements.txt` of that
 repo that are not in the FPF PyPI mirror, then the maintainer needs
 to do the following (we are taking `securedrop-client` project as example):
 
-### 1. Sync the wheels locally
-
-Sync all of the latest wheels `make fetch-wheels`
-
-### 2. Create updated build-requirements.txt for the project
+### 1. Create updated build-requirements.txt for the project
 
 From the `securedrop-debian-packaging` directory,
 
@@ -59,8 +54,8 @@ pytest==3.10.1
 
 Please build the wheel by using the following command.
 	PKG_DIR=/home/user/code/securedrop-client make build-wheels
-Then sync the newly built wheels and sources to the s3 bucket.
-Also update the index HTML files accordingly and sync to s3.
+Then add the newly built wheels and sources to ./localwheels/.
+Also update the index HTML files accordingly commit your changes.
 After these steps, please rerun the command again.
 ```
 
@@ -84,18 +79,18 @@ python3 setup.py sdist
 ```
 
 
-### 3. Sync the localwheels directory back to the s3 bucket. (if only any update of wheels)
+### 2. Commit changes to the localwheels directory (if only any update of wheels)
 
 This has to be manual step for security reasons. In future all of these wheel
 building steps should be done by a different system, not with the devloper's
 laptop.
 
 ```
-cd localwheels/
-aws s3 sync . s3://dev-bin.ops.securedrop.org/localwheels/
+git add localwheels/
+git commit
 ```
 
-### 4. Update the index files for the bucket (required for Debian builds)
+### 3. Update the index files for the bucket (required for Debian builds)
 
 If there is any completely new Python package (source/wheel), then only we will have to update our index.
 
@@ -110,12 +105,17 @@ If there is a new package, then update the main index.
 ./scripts/updateindex.py
 ```
 
-Finally sync the index.
+Finally, submit a PR containing the new wheels and updated files.
+If you wish to test the new wheels in a local build before submitting a PR,
+or as part of PR review, you can do so by:
 
 ```
-cd simple/
-s3 sync . s3://dev-bin.ops.securedrop.org/simple/
+python3 -m http.server # serve local wheels via HTTP
+vim $PKG_NAME/debian/rules # edit index URL to http://localhost:8000/simple
 ```
+
+Then run e.g. `PKG_VERSION=0.0.11 make securedrop-client`, and you'll see the GET
+requests in the console running the HTTP server.
 
 ## Make a release
 

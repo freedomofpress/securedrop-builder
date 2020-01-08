@@ -1,12 +1,8 @@
 DEFAULT_GOAL: help
 
 .PHONY: wheel-urls
-wheel-urls: ## Creates download URLs from s3 bucket from sha256sums.txt file
+wheel-urls: ## Creates download URLs for PyPI mirror from sha256sums.txt file
 	./scripts/createdownloadurls.py > wheelsurls.txt
-
-.PHONY: fetch-wheels
-fetch-wheels: ## Downloads wheels and sources from the remote server
-	./scripts/fetch-wheels
 
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
@@ -44,7 +40,7 @@ requirements: ## Creates requirements files for the Python projects
 	./scripts/update-requirements
 
 .PHONY: build-wheels
-build-wheels: fetch-wheels ## Builds the wheels and adds them to the localwheels directory
+build-wheels: ## Builds the wheels and adds them to the localwheels directory
 	./scripts/verify-sha256sum-signature
 	./scripts/build-sync-wheels -p ${PKG_DIR}
 	./scripts/sync-sha256sums
