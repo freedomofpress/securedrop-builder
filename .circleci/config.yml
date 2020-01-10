@@ -186,11 +186,11 @@ common-steps:
         git config user.email "securedrop@freedom.press"
         git config user.name "sdcibot"
 
-        # Copy built debian packages to the relevant workstation repo and git push.
-        cp ~/debbuild/packaging/*.rpm ./workstation/
-        git add workstation/*.rpm
+        # Copy built RPM packages to the relevant workstation repo and git push.
+        cp ~/rpm-build/RPMS/noarch/*.rpm ./workstation/dom0/f25/
+        git add workstation/dom0/f25/*.rpm
         git commit -m "Automated SecureDrop workstation build"
-        #git push origin master
+        git push origin master
 
   - &buildrpm
     run:
@@ -340,7 +340,6 @@ jobs:
       - checkout
       - *clonesecuredropworkstation
       - *getrpmnightlyversion
-      # Add changelog entry step?
       - *buildrpm
       - *installgitlfs
       # - *addsshkeys
