@@ -17,11 +17,24 @@ common-steps:
 
   - &getnightlyversion
     run:
-      name: Create nightly version
+      name: Create nightly version for debian packages
       command: |
         cd ~/packaging/securedrop-*
         # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
         export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        # Enable access to this env var in subsequent run steps
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+        ./update_version.sh $VERSION_TO_BUILD
+        git tag $VERSION_TO_BUILD
+
+  - &getrpmnightlyversion
+    run:
+      name: Create nightly version for rpm packages
+      command: |
+        cd ~/packaging/securedrop-*
+        # Nightly versioning format for RPMs is since rpm does not like '-' in versions: LATEST_TAG.YYMMDD.HHMMSS
+        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).$(date +%Y%m%d).$(date +%H%M%S)"
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
@@ -326,8 +339,8 @@ jobs:
     steps:
       - checkout
       - *clonesecuredropworkstation
-      - *getnightlyversion
-      # Add changelog entry step
+      - *getrpmnightlyversion
+      # Add changelog entry step?
       - *buildrpm
       - *installgitlfs
       # - *addsshkeys
