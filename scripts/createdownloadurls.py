@@ -6,9 +6,9 @@
 
 import os
 
-DEV_WHEELS_BUCKET_BASE_URL = "https://dev-bin.ops.securedrop.org/localwheels"
+WHEELS_BUCKET_BASE_URL = "https://pypi.securedrop.org/localwheels"
 WHEELS_BUCKET_BASE_URL = os.environ.get(
-    "WHEELS_BUCKET_BASE_URL", DEV_WHEELS_BUCKET_BASE_URL
+    "WHEELS_BUCKET_BASE_URL", WHEELS_BUCKET_BASE_URL
 )
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv --python /usr/bin/python3 --setuptools --index-url https://dev-bin.ops.securedrop.org/simple --requirements build-requirements.txt
+	dh $@ --with python-virtualenv --python /usr/bin/python3 --setuptools --index-url https://pypi.securedrop.org/simple --requirements build-requirements.txt
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete

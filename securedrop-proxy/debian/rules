@@ -7,7 +7,7 @@ override_dh_virtualenv:
 	dh_virtualenv \
 		--python /usr/bin/python3 \
 		--setuptools \
-		--index-url https://dev-bin.ops.securedrop.org/simple \
+		--index-url https://pypi.securedrop.org/simple \
 		--extra-pip-arg "--ignore-installed" \
 		--extra-pip-arg "--no-deps" \
 		--extra-pip-arg "--no-cache-dir" \
