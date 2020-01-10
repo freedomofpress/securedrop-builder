@@ -33,8 +33,8 @@ common-steps:
       name: Create nightly version for rpm packages
       command: |
         cd ~/packaging/securedrop-*
-        # Nightly versioning format for RPMs is since rpm does not like '-' in versions: LATEST_TAG.YYMMDD.HHMMSS
-        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).$(date +%Y%m%d).$(date +%H%M%S)"
+        # Nightly versioning format for RPMs is since rpm does not like '-' in versions: LATEST_TAG.dev.YYMMDD.HHMMSS
+        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).dev.$(date +%Y%m%d).$(date +%H%M%S)"
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
