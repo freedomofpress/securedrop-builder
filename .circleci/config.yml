@@ -5,11 +5,6 @@ common-steps:
       name: Install Debian packaging dependencies
       command: make install-deps
 
-  - &fetchwheels
-    run:
-      name: Download wheels and sources
-      command: make fetch-wheels
-
   - &getlatestreleasedversion
     run:
       name: Get latest released version of the project
@@ -115,6 +110,10 @@ common-steps:
         tar xzf git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
         sudo mv git-lfs /usr/local/bin/git-lfs
         git lfs install
+        # Re-fetch assets to resolve pointers to actual files
+        rm -r localwheels/
+        git checkout localwheels/
+        git lfs fetch
 
   - &addsshkeys
     add_ssh_keys:
@@ -189,8 +188,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredroplog
       - *getlatestreleasedversion
       - *makesourcetarball
@@ -201,8 +200,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredroplog
       - *getnightlyversion
       - *makesourcetarball
@@ -217,8 +216,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredropclient
       - *getlatestreleasedversion
       - *makesourcetarball
@@ -229,8 +228,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredropclient
       - *getnightlyversion
       - *makesourcetarball
@@ -245,8 +244,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredropproxy
       - *getlatestreleasedversion
       - *makesourcetarball
@@ -257,8 +256,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredropproxy
       - *getnightlyversion
       - *makesourcetarball
@@ -273,8 +272,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredropexport
       - *getlatestreleasedversion
       - *makesourcetarball
@@ -285,8 +284,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *clonesecuredropexport
       - *getnightlyversion
       - *makesourcetarball
@@ -301,8 +300,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *setsvsdispname
       - *setmetapackageversion
       - *builddebianpackage
@@ -312,8 +311,8 @@ jobs:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
+      - *installgitlfs
       - *installdeps
-      - *fetchwheels
       - *setsdgrsecname
       - *setmetapackageversion
       - *builddebianpackage
