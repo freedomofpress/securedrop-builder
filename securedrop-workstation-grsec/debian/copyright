@@ -2,11 +2,11 @@ Upstream-Name: securedrop-workstation-grsec
 Source: https://github.com/freedomofpress/securedrop-workstation
 
 Files: *
-Copyright: 2018 Freedom of the Press Foundation
+Copyright: 2020 Freedom of the Press Foundation <securedrop@freedom.press>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2018 Freedom of the Press Foundation <securedrop@freedom.press>
+Copyright: 2020 Freedom of the Press Foundation <securedrop@freedom.press>
 License: GPL-3.0+
 
 License: GPL-3.0+
