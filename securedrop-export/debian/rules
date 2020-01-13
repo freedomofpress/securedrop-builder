@@ -1,11 +1,20 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv --python /usr/bin/python3 --setuptools --index-url https://dev-bin.ops.securedrop.org/simple --requirements build-requirements.txt
+	dh $@ --with python-virtualenv
+
+override_dh_virtualenv:
+	dh_virtualenv \
+		--python /usr/bin/python3 \
+		--setuptools \
+		--index-url https://dev-bin.ops.securedrop.org/simple \
+		--extra-pip-arg "--ignore-installed" \
+		--extra-pip-arg "--no-deps" \
+		--extra-pip-arg "--no-cache-dir" \
+		--requirements build-requirements.txt
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
 	find ./debian/ -type f -name 'pip-selfcheck.json' -delete
 	find -type f -name RECORD -exec sed -i -e '/.*\.pyc.*/d' {} +
 	dh_strip_nondeterminism $@
-
