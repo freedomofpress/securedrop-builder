@@ -212,18 +212,6 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-stretch-securedrop-client:
-    docker:
-      - image: circleci/python:3.5-stretch
-    steps:
-      - checkout
-      - *installdeps
-      - *fetchwheels
-      - *clonesecuredropclient
-      - *getlatestreleasedversion
-      - *makesourcetarball
-      - *builddebianpackage
-
   build-buster-securedrop-client:
     docker:
       - image: circleci/python:3.7-buster
@@ -235,22 +223,6 @@ jobs:
       - *getlatestreleasedversion
       - *makesourcetarball
       - *builddebianpackage
-
-  build-nightly-stretch-securedrop-client:
-    docker:
-      - image: circleci/python:3.5-stretch
-    steps:
-      - checkout
-      - *installdeps
-      - *fetchwheels
-      - *clonesecuredropclient
-      - *getnightlyversion
-      - *makesourcetarball
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *installgitlfs
-      - *addsshkeys
-      - *commitworkstationdebs
 
   build-nightly-buster-securedrop-client:
     docker:
@@ -296,18 +268,6 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-stretch-securedrop-export:
-    docker:
-      - image: circleci/python:3.5-stretch
-    steps:
-      - checkout
-      - *installdeps
-      - *fetchwheels
-      - *clonesecuredropexport
-      - *getlatestreleasedversion
-      - *makesourcetarball
-      - *builddebianpackage
-
   build-buster-securedrop-export:
     docker:
       - image: circleci/python:3.7-buster
@@ -319,22 +279,6 @@ jobs:
       - *getlatestreleasedversion
       - *makesourcetarball
       - *builddebianpackage
-
-  build-nightly-stretch-securedrop-export:
-    docker:
-      - image: circleci/python:3.5-stretch
-    steps:
-      - checkout
-      - *installdeps
-      - *fetchwheels
-      - *clonesecuredropexport
-      - *getnightlyversion
-      - *makesourcetarball
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *installgitlfs
-      - *addsshkeys
-      - *commitworkstationdebs
 
   build-nightly-buster-securedrop-export:
     docker:
@@ -352,17 +296,6 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-stretch-securedrop-workstation-svs-disp:
-    docker:
-      - image: circleci/python:3.5-stretch
-    steps:
-      - checkout
-      - *installdeps
-      - *fetchwheels
-      - *setsvsdispname
-      - *setmetapackageversion
-      - *builddebianpackage
-
   build-buster-securedrop-workstation-svs-disp:
     docker:
       - image: circleci/python:3.7-buster
@@ -371,17 +304,6 @@ jobs:
       - *installdeps
       - *fetchwheels
       - *setsvsdispname
-      - *setmetapackageversion
-      - *builddebianpackage
-
-  build-stretch-securedrop-workstation-grsec:
-    docker:
-      - image: circleci/python:3.5-stretch
-    steps:
-      - checkout
-      - *installdeps
-      - *fetchwheels
-      - *setsdgrsecname
       - *setmetapackageversion
       - *builddebianpackage
 
@@ -400,15 +322,11 @@ workflows:
   build-debian-packages:
     jobs:
       - tests
-      - build-stretch-securedrop-client
       - build-buster-securedrop-client
       - build-buster-securedrop-proxy
-      - build-stretch-securedrop-workstation-svs-disp
       - build-buster-securedrop-workstation-svs-disp
-      - build-stretch-securedrop-export
       - build-buster-securedrop-export
       - build-buster-securedrop-log
-      - build-stretch-securedrop-workstation-grsec
       - build-buster-securedrop-workstation-grsec
 
 # Nightly jobs for each package are run in series to ensure there are no
@@ -423,13 +341,7 @@ workflows:
               only:
                 - master
     jobs:
-      - build-nightly-stretch-securedrop-client
-      - build-nightly-stretch-securedrop-export:
-          requires:
-            - build-nightly-stretch-securedrop-client
-      - build-nightly-buster-securedrop-client:
-          requires:
-            - build-nightly-stretch-securedrop-export
+      - build-nightly-buster-securedrop-client
       - build-nightly-buster-securedrop-proxy:
           requires:
             - build-nightly-buster-securedrop-client
