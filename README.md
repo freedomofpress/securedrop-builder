@@ -25,6 +25,9 @@ make install-deps
 **Note:** either run `make install-deps` each time you start your debian packaging AppVM, or make
 sure that you install them into the template for your debian packaging AppVM.
 
+The install target will configure [git-lfs](https://git-lfs.github.com/), used for storing
+binary wheel files.
+
 ## Updating Python wheels
 
 Maintainers of `securedrop-client` and `securedrop-proxy` must ensure that
