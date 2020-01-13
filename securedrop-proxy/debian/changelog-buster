@@ -2,4 +2,4 @@ securedrop-proxy (0.1.5+buster) unstable; urgency=medium
 
   * Update python3.5 to python3 and add changelog for buster builds
 
- -- Allie Crevier <allie@freedom.press>  Thur, 21 Nov 2019 19:25:41 -0500
+ -- Allie Crevier <allie@freedom.press>  Thu, 21 Nov 2019 19:25:41 -0500

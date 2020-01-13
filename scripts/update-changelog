@@ -11,12 +11,8 @@ TOPLEVEL="$(git rev-parse --show-toplevel)"
 # These env vars are only required when updating changelogs,
 # otherwise the developer must edit the fields by hand, lest
 # they commit "user@localhost" entries.
-if [[ -z "${DEBEMAIL:-}" || -z "${DEBFULLNAME:-}" ]]; then
-    echo "Error: cannot find env vars DEBEMAIL and DEBFULLNAME"
-    echo "Export those env vars in order to update changelogs"
-    exit 1
-fi
-
+DEBEMAIL=${DEBEMAIL:-"securedrop@freedom.press"}
+DEBFULLNAME=${DEBFULLNAME:-"SecureDrop Team"}
 
 # Determine which package we want to update the changelog for.
 # As with the other tools, we'll support the PKG_NAME env var.
