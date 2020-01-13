@@ -2,11 +2,11 @@ Upstream-Name: securedrop-log
 Source: https://github.com/freedomofpress/securedrop-log
 
 Files: *
-Copyright: 2019 Freedom of the Press Foundation
+Copyright: 2020 Freedom of the Press Foundation
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2019 Freedom of the Press Foundation <securedrop@freedom.press>
+Copyright: 2020 Freedom of the Press Foundation <securedrop@freedom.press>
 License: GPL-3.0+
 
 License: GPL-3.0+
