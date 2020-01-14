@@ -117,8 +117,8 @@ def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha2
 
         print("\nPlease build the wheel by using the following command:\n")
         print("\tPKG_DIR={0} make build-wheels\n".format(os.environ["PKG_DIR"]))
-        print("Then sync the newly built wheels and sources to the s3 bucket.")
-        print("Also update the index HTML files accordingly and sync to s3.")
+        print("Then add the newly built wheels and sources to ./localwheels/.")
+        print("Also update the index HTML files accordingly commit your changes.")
         print("After these steps, please rerun the command again.")
 
         sys.exit(1)

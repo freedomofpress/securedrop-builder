@@ -2,13 +2,13 @@
 
 # This script finds the currently available sources
 # and wheels built by SecureDrop team and creates
-# a list of URLs to download them from the s3.
+# a list of URLs to download them from the public PyPI mirror.
 
 import os
 
-DEV_WHEELS_BUCKET_BASE_URL = "https://dev-bin.ops.securedrop.org/localwheels"
+WHEELS_BUCKET_BASE_URL = "https://pypi.securedrop.org/localwheels"
 WHEELS_BUCKET_BASE_URL = os.environ.get(
-    "WHEELS_BUCKET_BASE_URL", DEV_WHEELS_BUCKET_BASE_URL
+    "WHEELS_BUCKET_BASE_URL", WHEELS_BUCKET_BASE_URL
 )
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Installs required dependencies for building SecureDrop Worsktation packages.
-# Assumes a Debian 9 machine, ideally a Qubes AppVM.
+# Assumes a Debian 10 machine, ideally a Qubes AppVM.
 
 sudo apt-get update
 sudo apt-get install  \
@@ -10,7 +10,21 @@ sudo apt-get install  \
     dh-make \
     dh-python \
     dh-virtualenv \
+    git-lfs \
     libffi-dev \
     libssl-dev \
     python3-all \
     python3-setuptools
+
+
+# Inspect the wheel files present locally. If repo was cloned
+# without git-lfs, they'll be "text/plain", rather than "application/zip".
+wheel_mime_types="$(find localwheels/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
+if [[ "$wheel_mime_types" != "application/zip" ]]; then
+    echo "Re-fetching git-lfs assets..."
+    git lfs install
+    # Re-fetch assets to resolve pointers to actual files
+    rm -r localwheels/
+    git checkout localwheels/
+    git lfs fetch
+fi
