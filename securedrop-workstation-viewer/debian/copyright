@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: securedrop-workstation-svs-disp
+Upstream-Name: securedrop-workstation-viewer
 Source: https://github.com/freedomofpress/securedrop-debian-packaging
 
 Files: *

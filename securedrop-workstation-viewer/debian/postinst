@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for securedrop-workstation-svs-disp
+# postinst script for securedrop-workstation-viewer
 #
 # see: dh_installdeb(1)
 
@@ -21,7 +21,7 @@ set -e
 case "$1" in
     configure)
     # move pax flags and restart paxctld
-    mv /opt/paxctld.conf.svsdisp /etc/paxctld.conf
+    mv /opt/paxctld.conf.sd-viewer /etc/paxctld.conf
     systemctl restart paxctld
     ;;
 

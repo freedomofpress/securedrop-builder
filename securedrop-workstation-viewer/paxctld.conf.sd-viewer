@@ -1,4 +1,4 @@
-# This file was provisioned via securedrop-workstation-svs-disp
+# This file was provisioned via securedrop-workstation-viewer
 # grub
 
 /usr/bin/grub-script-check	E
