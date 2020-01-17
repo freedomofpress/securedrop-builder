@@ -159,6 +159,18 @@ common-steps:
           echo $VERSION_TO_BUILD > ~/packaging/sd_version
           echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
+  - &installgitlfs
+    run:
+      name: Install Git LFS.
+      command: |
+        export GIT_LFS_VERSION=2.9.2
+        export GIT_LFS_CHECKSUM=04346234130e518d165bdc7e9964375bbeb3b98efabd042084530cc34288274c
+        wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
+        sha256sum git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz | grep $GIT_LFS_CHECKSUM
+        tar xzf git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
+        sudo mv git-lfs /usr/local/bin/git-lfs
+        git lfs install
+
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
@@ -335,9 +347,11 @@ jobs:
       - *builddebianpackage
 
   build-nightly-dom0-rpm:
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - *installgitlfs
       - *clonesecuredropworkstation
       - *getrpmnightlyversion
       - *buildrpm
