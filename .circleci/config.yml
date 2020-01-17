@@ -104,12 +104,12 @@ common-steps:
       fingerprints:
         - "e5:b5:6e:d0:4e:ce:52:40:33:30:5e:6f:c5:73:38:20"
 
-  - &setsvsdispname
+  - &setviewerpackagename
     run:
-      name: Set package name to securedrop-workstation-svs-disp
+      name: Set package name to securedrop-workstation-viewer
       command: |
         mkdir ~/packaging
-        export PKG_NAME="securedrop-workstation-svs-disp"
+        export PKG_NAME="securedrop-workstation-viewer"
         # Enable access to this env car in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
@@ -267,13 +267,13 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-buster-securedrop-workstation-svs-disp:
+  build-buster-securedrop-workstation-viewer:
     docker:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *installdeps
-      - *setsvsdispname
+      - *setviewerpackagename
       - *setmetapackageversion
       - *builddebianpackage
 
@@ -293,7 +293,7 @@ workflows:
       - tests
       - build-buster-securedrop-client
       - build-buster-securedrop-proxy
-      - build-buster-securedrop-workstation-svs-disp
+      - build-buster-securedrop-workstation-viewer
       - build-buster-securedrop-export
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
