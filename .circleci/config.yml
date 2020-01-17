@@ -188,6 +188,12 @@ common-steps:
         git commit -m "Automated SecureDrop workstation build"
         git push origin master
 
+  - &sign_rpm
+    run: 
+      name: Sign rpms with test GPG key
+      command: |
+        ./devops/ci-sign-rpm
+
   - &commitworkstationrpms
     run:
       name: Commit workstation rpms for deployment to yum-test.securedrop.org
@@ -199,7 +205,7 @@ common-steps:
         git config user.name "sdcibot"
 
         # Copy built RPM packages to the relevant workstation repo and git push.
-        cp ~/rpm-build/RPMS/noarch/*.rpm ./workstation/dom0/f25/
+        cp ~/packaging/securedrop-workstation/rpm-build/RPMS/noarch/*.rpm ./workstation/dom0/f25/
         git add workstation/dom0/f25/*.rpm
         git commit -m "Automated SecureDrop workstation build"
         git push origin master
@@ -355,7 +361,7 @@ jobs:
       - *clonesecuredropworkstation
       - *getrpmnightlyversion
       - *buildrpm
-      - *installgitlfs
+      - *sign_rpm
       # - *addsshkeys
       # - *commitworkstationrpms
 

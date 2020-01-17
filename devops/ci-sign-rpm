@@ -1,0 +1,34 @@
+set -u
+set -e
+
+export FEDORA_PKGR_VER=0.6.0.1-1.fc25
+export USER_RPMDIR="/home/circleci/packaging/securedrop-workstation/rpm-build"
+export CI_DEVOPS_FOLDER="/home/circleci/project/devops"
+
+function build_docker_container {
+    docker build ${CI_DEVOPS_FOLDER} \
+                 --build-arg FEDORA_PKGR_VER=${FEDORA_PKGR_VER} \
+                 --tag rpm-sign
+}
+
+function docker_cmd_wrapper() {
+    docker run -it \
+               --network=none \
+               -e SD_TEST_GPG_PRIVKEY \
+               -v "${USER_RPMDIR}:/home/circleci/rpm-build" \
+               rpm-sign \
+               /bin/bash -c "$@"
+}
+
+build_docker_container
+
+# If a gpg key has already been imported, gpg --import will return 2, hence the | true
+# to ensure a 0 exit code in the import.
+# Importing test key...
+RPM_PATH=/home/circleci/rpm-build/RPMS/noarch/*.rpm
+docker_cmd_wrapper "echo $SD_TEST_GPG_PRIVKEY | base64 -di | gpg2 --import | true && \
+                    gpg2 --export --armor 4A3BE4A92211B03C > pubkey.asc && \
+                    sudo rpm --import pubkey.asc && \
+                    sudo chown -R circleci ~/rpm-build && \
+                    rpmsign --define \"_gpg_name SecureDrop TESTING key <securedrop@freedom.press>\" --resign $RPM_PATH && \
+                    rpm --checksig -v $RPM_PATH"
