@@ -188,6 +188,13 @@ common-steps:
         git commit -m "Automated SecureDrop workstation build"
         git push origin master
 
+  - &sign_rpm
+    run: 
+      name: Sign rpms with test GPG key
+      command: |
+        echo "$SD_TEST_GPG_PRIVKEY" | base64 -d | gpg --import
+        # TODO: rpm --resign goes here but needs to be done in container
+
   - &commitworkstationrpms
     run:
       name: Commit workstation rpms for deployment to yum-test.securedrop.org
@@ -355,6 +362,7 @@ jobs:
       - *clonesecuredropworkstation
       - *getrpmnightlyversion
       - *buildrpm
+      - *sign_rpm
       - *installgitlfs
       # - *addsshkeys
       # - *commitworkstationrpms
