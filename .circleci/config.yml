@@ -33,7 +33,7 @@ common-steps:
       name: Create source tarball
       command: |
         cd ~/packaging/securedrop-*
-        git checkout $VERSION_TO_BUILD
+        git checkout vm-rename
         python3 setup.py sdist
 
   - &clonesecuredropclient
@@ -41,7 +41,7 @@ common-steps:
       name: Clone the repository to be packaged
       command: |
         mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-client.git
+        git clone -b vm-rename https://github.com/freedomofpress/securedrop-client.git
         export PKG_NAME="securedrop-client"
         # Enable access to this env var in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
