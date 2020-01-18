@@ -1,3 +1,15 @@
+securedrop-client (0.0.12+buster) unstable; urgency=medium
+
+  * Use revised VM names (securedrop-workstation #285)
+  * Delete sources using the general queue (#402)
+  * Add a preview snippet for sources (#135)
+  * Add a show/hide password feature on the login screen (#659)
+  * Disable sync icon during active sync (#388)
+  * Add keyboard shortcuts for sending replies (#606)
+  * Add hover states for UI elements (#591)
+
+ -- SecureDrop Team <securedrop@freedom.press>  Fri, 17 Jan 2020 18:20:20 -0800
+
 securedrop-client (0.0.11+buster) unstable; urgency=medium
 
   * Add apparmor profile (#673)
