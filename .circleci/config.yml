@@ -198,17 +198,21 @@ common-steps:
     run:
       name: Commit workstation rpms for deployment to yum-test.securedrop.org
       command: |
-        git clone git@github.com:freedomofpress/securedrop-dev-rpm-packages-lfs.git
-        cd securedrop-dev-rpm-packages-lfs
+        git clone git@github.com:freedomofpress/securedrop-workstation-dev-rpm-packages-lfs.git
+        cd securedrop-workstation-dev-rpm-packages-lfs
 
         git config user.email "securedrop@freedom.press"
         git config user.name "sdcibot"
+
+        git checkout -b test  # TODO: REMOVE
 
         # Copy built RPM packages to the relevant workstation repo and git push.
         cp ~/packaging/securedrop-workstation/rpm-build/RPMS/noarch/*.rpm ./workstation/dom0/f25/
         git add workstation/dom0/f25/*.rpm
         git commit -m "Automated SecureDrop workstation build"
-        git push origin master
+
+        # TODO: Replace branch below with master
+        git push origin test
 
   - &buildrpm
     run:
@@ -362,8 +366,8 @@ jobs:
       - *getrpmnightlyversion
       - *buildrpm
       - *sign_rpm
-      # - *addsshkeys
-      # - *commitworkstationrpms
+      - *addsshkeys
+      - *commitworkstationrpms
 
 workflows:
   build-packages:
