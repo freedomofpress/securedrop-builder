@@ -297,6 +297,7 @@ workflows:
       - build-buster-securedrop-export
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
+      - build-nightly-buster-securedrop-client
 
 # Nightly jobs for each package are run in series to ensure there are no
 # conflicts or race conditions when committing deb packages to git-lfs.
