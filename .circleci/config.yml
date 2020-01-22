@@ -366,6 +366,17 @@ jobs:
       - *addsshkeys
       - *commitworkstationrpms
 
+  make-dom0-rpm:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - *installgitlfs
+      - *clonesecuredropworkstation
+      - *getlatestreleasedversion
+      - *buildrpm
+      - *sign_rpm
+
 workflows:
   build-packages:
     jobs:
@@ -376,6 +387,7 @@ workflows:
       - build-buster-securedrop-export
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
+      - make-dom0-rpm
 
 # Nightly jobs for each package are run in series to ensure there are no
 # conflicts or race conditions when committing deb packages to git-lfs.
