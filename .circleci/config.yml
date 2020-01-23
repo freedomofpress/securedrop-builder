@@ -17,11 +17,24 @@ common-steps:
 
   - &getnightlyversion
     run:
-      name: Create nightly version
+      name: Create nightly version for debian packages
       command: |
         cd ~/packaging/securedrop-*
         # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
         export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        # Enable access to this env var in subsequent run steps
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+        ./update_version.sh $VERSION_TO_BUILD
+        git tag $VERSION_TO_BUILD
+
+  - &getrpmnightlyversion
+    run:
+      name: Create nightly version for rpm packages
+      command: |
+        cd ~/packaging/securedrop-*
+        # Nightly versioning format for RPMs is since rpm does not like '-' in versions: LATEST_TAG.dev.YYMMDD.HHMMSS
+        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).dev.$(date +%Y%m%d).$(date +%H%M%S)"
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
@@ -76,6 +89,17 @@ common-steps:
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-export.git
         export PKG_NAME="securedrop-export"
+        # Enable access to this env car in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
+  - &clonesecuredropworkstation
+    run:
+      name: Clone the repository to be packaged
+      command: |
+        mkdir ~/packaging && cd ~/packaging
+        git clone https://github.com/freedomofpress/securedrop-workstation.git
+        export PKG_NAME="securedrop-workstation"
         # Enable access to this env car in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
@@ -135,6 +159,18 @@ common-steps:
           echo $VERSION_TO_BUILD > ~/packaging/sd_version
           echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
+  - &installgitlfs
+    run:
+      name: Install Git LFS.
+      command: |
+        export GIT_LFS_VERSION=2.9.2
+        export GIT_LFS_CHECKSUM=04346234130e518d165bdc7e9964375bbeb3b98efabd042084530cc34288274c
+        wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
+        sha256sum git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz | grep $GIT_LFS_CHECKSUM
+        tar xzf git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
+        sudo mv git-lfs /usr/local/bin/git-lfs
+        git lfs install
+
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
@@ -151,6 +187,36 @@ common-steps:
         git add workstation/${PLATFORM}/*.deb
         git commit -m "Automated SecureDrop workstation build"
         git push origin master
+
+  - &sign_rpm
+    run:
+      name: Sign rpms with test GPG key
+      command: |
+        ./devops/ci-sign-rpm
+
+  - &commitworkstationrpms
+    run:
+      name: Commit workstation rpms for deployment to yum-test.securedrop.org
+      command: |
+        git clone git@github.com:freedomofpress/securedrop-workstation-dev-rpm-packages-lfs.git
+        cd securedrop-workstation-dev-rpm-packages-lfs
+
+        git config user.email "securedrop@freedom.press"
+        git config user.name "sdcibot"
+
+        # Copy built RPM packages to the relevant workstation repo and git push.
+        cp ~/packaging/securedrop-workstation/rpm-build/RPMS/noarch/*.rpm ./workstation/dom0/f25/
+        git add workstation/dom0/f25/*.rpm
+        git commit -m "Automated SecureDrop workstation build"
+
+        git push origin master
+
+  - &buildrpm
+    run:
+      name: Build dom0 rpm
+      command: |
+        cd ~/packaging/$PKG_NAME
+        make dom0-rpm
 
 version: 2.1
 jobs:
@@ -287,8 +353,32 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  build-nightly-dom0-rpm:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - *installgitlfs
+      - *clonesecuredropworkstation
+      - *getrpmnightlyversion
+      - *buildrpm
+      - *sign_rpm
+      - *addsshkeys
+      - *commitworkstationrpms
+
+  make-dom0-rpm:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - *installgitlfs
+      - *clonesecuredropworkstation
+      - *getlatestreleasedversion
+      - *buildrpm
+      - *sign_rpm
+
 workflows:
-  build-debian-packages:
+  build-packages:
     jobs:
       - tests
       - build-buster-securedrop-client
@@ -297,6 +387,7 @@ workflows:
       - build-buster-securedrop-export
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
+      - make-dom0-rpm
 
 # Nightly jobs for each package are run in series to ensure there are no
 # conflicts or race conditions when committing deb packages to git-lfs.
@@ -320,3 +411,6 @@ workflows:
       - build-nightly-buster-securedrop-log:
           requires:
             - build-nightly-buster-securedrop-export
+      - build-nightly-dom0-rpm:
+          requires:
+            - build-nightly-buster-securedrop-log
