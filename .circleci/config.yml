@@ -426,4 +426,6 @@ workflows:
       - build-nightly-dom0-rpm:
           requires:
             - build-nightly-buster-securedrop-log
-      - build-nightly-buster-securedrop-workstation-svs-disp
+      - build-nightly-buster-securedrop-workstation-svs-disp:
+          requires:
+            - build-nightly-dom0-rpm
