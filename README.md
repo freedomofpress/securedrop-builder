@@ -38,7 +38,7 @@ If new dependencies were added in the `requirements.txt` of that
 repo that are not in the FPF PyPI mirror, then the maintainer needs
 to do the following (we are taking `securedrop-client` project as example):
 
-### 1. Create updated build-requirements.txt for the project
+### 0. Create updated build-requirements.txt for the project
 
 From the `securedrop-debian-packaging` directory,
 
@@ -62,18 +62,21 @@ Also update the index HTML files accordingly commit your changes.
 After these steps, please rerun the command again.
 ```
 
-So, the next step is to build the wheels. To do this step, you will need the
-GPG key of @kushaldas and @conorsch @redshiftzero @emkll on the same user as
-the actual list of hashes will be signed by one of us.
+The next step is to build the wheels. To do this step, you will need an owner
+of the SecureDrop release key to build the wheel and sign the updated sha256sums file
+with the release key. If you're not sure who to ask, ping @redshiftzero for a pointer.
 
+### 1. Build wheels
+
+This must be done in an environment for building production artifacts:
 
 ```shell
 PKG_DIR=/home/user/code/securedrop-client make build-wheels
 ```
 
-This above command will let you know about any new wheels+sources. It will
+This above command will let you know about any new wheels + sources. It will
 build/download sources from PyPI (by verifying it against the sha256sums from
-the `Pipfile.lock` of the project).
+the `requirements.txt` of the project).
 
 Then navigate back to the project's code directory and run the following command.
 
@@ -81,12 +84,9 @@ Then navigate back to the project's code directory and run the following command
 python3 setup.py sdist
 ```
 
-
 ### 2. Commit changes to the localwheels directory (if only any update of wheels)
 
-This has to be manual step for security reasons. In future all of these wheel
-building steps should be done by a different system, not with the devloper's
-laptop.
+Now add these built artifacts to version control:
 
 ```
 git add localwheels/
