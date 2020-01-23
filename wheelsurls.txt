@@ -35,6 +35,8 @@ https://pypi.securedrop.org/localwheels/python-dateutil-2.7.5.tar.gz
 https://pypi.securedrop.org/localwheels/python-editor-1.0.3.tar.gz
 https://pypi.securedrop.org/localwheels/python_dateutil-2.7.5-py2.py3-none-any.whl
 https://pypi.securedrop.org/localwheels/python_editor-1.0.3-py3-none-any.whl
+https://pypi.securedrop.org/localwheels/redis-3.3.11-py2.py3-none-any.whl
+https://pypi.securedrop.org/localwheels/redis-3.3.11.tar.gz
 https://pypi.securedrop.org/localwheels/requests-2.20.0-py2.py3-none-any.whl
 https://pypi.securedrop.org/localwheels/requests-2.20.0.tar.gz
 https://pypi.securedrop.org/localwheels/securedrop-sdk-0.0.10.tar.gz
