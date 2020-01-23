@@ -25,8 +25,7 @@ function verify_sha256sum_signature() {
     # Ensure temporary keyring is cleaned up afterward.
     trap 'rm -f "${temp_keyring}"' EXIT
 
-    # Import the public keys for SecureDrop Maintainers, for inclusion
-    # in keyring during verification.
+    # Import SecureDrop release key for verification.
     gpg --batch --no-default-keyring --keyring "${temp_keyring}" \
         --import "${repo_root}/pubkeys/"*.pub
 
