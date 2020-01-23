@@ -189,7 +189,7 @@ common-steps:
         git push origin master
 
   - &sign_rpm
-    run: 
+    run:
       name: Sign rpms with test GPG key
       command: |
         ./devops/ci-sign-rpm
