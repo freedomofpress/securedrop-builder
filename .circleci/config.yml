@@ -366,7 +366,7 @@ jobs:
       - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
-      - *commitworkstationdebs
+      # - *commitworkstationdebs
 
   build-buster-securedrop-workstation-grsec:
     docker:
@@ -413,6 +413,7 @@ workflows:
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
       - make-dom0-rpm
+      - build-nightly-buster-securedrop-workstation-svs-disp
 
 # Nightly jobs for each package are run in series to ensure there are no
 # conflicts or race conditions when committing deb packages to git-lfs.
