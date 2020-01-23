@@ -17,7 +17,7 @@ common-steps:
 
   - &getnightlyversion
     run:
-      name: Create nightly version for debian packages
+      name: Create nightly version for python packages
       command: |
         cd ~/packaging/securedrop-*
         # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
@@ -40,6 +40,18 @@ common-steps:
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
         ./update_version.sh $VERSION_TO_BUILD
         git tag $VERSION_TO_BUILD
+
+  - &getnightlymetapackageversion
+    run:
+      name: Create nightly version for metapackages
+      command: |
+        PLATFORM="$(lsb_release -sc)"
+        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-${PLATFORM} | head -n1)
+        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
+        export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        # Enable access to this env var in subsequent run steps
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
   - &makesourcetarball
     run:
@@ -350,7 +362,8 @@ jobs:
       - checkout
       - *installdeps
       - *setsvsdispname
-      - *setmetapackageversion
+      - *getnightlymetapackageversion
+      - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
