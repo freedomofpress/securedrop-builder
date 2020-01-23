@@ -343,6 +343,18 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  build-nightly-buster-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *setsvsdispname
+      - *setmetapackageversion
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
   build-buster-securedrop-workstation-grsec:
     docker:
       - image: circleci/python:3.7-buster
@@ -414,3 +426,4 @@ workflows:
       - build-nightly-dom0-rpm:
           requires:
             - build-nightly-buster-securedrop-log
+      - build-nightly-buster-securedrop-workstation-svs-disp
