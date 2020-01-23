@@ -1,3 +1,9 @@
+securedrop-log (0.0.4+buster) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- Kushal Das <kushal@freedom.press>  Tue, 22 Jan 2019 13:05:38 +0530
+
 securedrop-log (0.0.3+buster) unstable; urgency=medium
 
   * See changelog.md

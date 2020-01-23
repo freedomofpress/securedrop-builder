@@ -1,1 +1,5 @@
 securedrop.Log etc/qubes-rpc/
+sd-rsyslog usr/sbin/
+securedrop-log.service etc/systemd/system
+sdlog.conf etc/rsyslog.d/
+
