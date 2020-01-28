@@ -1,3 +1,14 @@
+securedrop-proxy (0.1.6+buster) unstable; urgency=medium
+
+  * Fixes CI for git-lfs based package builds (#60)
+  * Rename VMs (#59)
+  * Restructures the code base with more object methods (#55)
+  * Add quality control tools (#54)
+  * Improve error handling, tests (#53)
+  * Adds buster packaging in CI (#52)
+
+ -- John Hensley <john@freedom.press>  Tue, 28 Jan 2020 15:52:15 -0500
+
 securedrop-proxy (0.1.5+buster) unstable; urgency=medium
 
   * Update python3.5 to python3 and add changelog for buster builds
