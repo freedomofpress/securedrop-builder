@@ -17,7 +17,7 @@ set -e
 # for details, see https://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-GRSEC_VERSION='4.14.158-grsec-workstation'
+GRSEC_VERSION='4.14.169-grsec-workstation'
 
 # Sets default grub boot parameter to the kernel version specified
 # by $GRSEC_VERSION. The debian buster default kernel is 4.19, thus
