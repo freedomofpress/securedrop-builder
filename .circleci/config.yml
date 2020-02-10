@@ -165,6 +165,16 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
+  - &setsdconfigname
+    run:
+      name: Set package name to securedrop-workstation-config
+      command: |
+        mkdir ~/packaging
+        export PKG_NAME="securedrop-workstation-config"
+        # Enable access to this env car in subsequent run steps
+        echo $PKG_NAME > ~/packaging/sd_package_name
+        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+
   - &setmetapackageversion
     run:
       name: Get metapackage version via distribution changelog
@@ -417,6 +427,16 @@ jobs:
       - *buildrpm
       - *sign_rpm
 
+  build-buster-securedrop-workstation-config:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdconfigname
+      - *setmetapackageversion
+      - *builddebianpackage
+
 workflows:
   build-packages:
     jobs:
@@ -427,6 +447,7 @@ workflows:
       - build-buster-securedrop-export
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
+      - build-buster-securedrop-workstation-config
       - make-dom0-rpm
 
   # Nightly jobs for each package are run in series to ensure there are no
