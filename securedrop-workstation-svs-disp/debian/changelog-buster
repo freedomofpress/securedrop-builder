@@ -1,3 +1,9 @@
+securedrop-workstation-svs-disp (0.2.0+buster) unstable; urgency=medium
+
+  * Initial beta release.
+
+ -- redshiftzero <jen@freedom.press>  Fri, 21 Feb 2020 13:47:39 -0500
+
 securedrop-workstation-svs-disp (0.1.5+buster) unstable; urgency=medium
 
   * Use evince as default pdf application
