@@ -1,3 +1,9 @@
+securedrop-export (0.2.0+buster) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- redshiftzero <jen@freedom.press>  Fri, 21 Feb 2020 13:36:28 -0500
+
 securedrop-export (0.1.2+buster) unstable; urgency=medium
 
   * Initial release on Debian buster

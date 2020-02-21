@@ -1,3 +1,9 @@
+securedrop-client (0.1.0+buster) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- redshiftzero <jen@freedom.press>  Fri, 21 Feb 2020 13:34:42 -0500
+
 securedrop-client (0.0.13+buster) unstable; urgency=medium
 
   * remove user refresh and replace with sync icon (#732)
