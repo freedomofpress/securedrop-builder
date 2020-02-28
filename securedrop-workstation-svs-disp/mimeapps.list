@@ -3,7 +3,7 @@ text/plain=org.gnome.gedit.desktop
 text/csv=libreoffice-base.desktop
 application/vnd.oasis.opendocument.text=libreoffice-base.desktop
 application/vnd.oasis.opendocument.spreadsheet=libreoffice-base.desktop
-application/vnd.oasis.opendocument.presentation-libreoffice-base.desktop
+application/vnd.oasis.opendocument.presentation=libreoffice-base.desktop
 application/msword=libreoffice-base.desktop
 application/vnd.ms-excel=libreoffice-base.desktop
 application/vnd.ms-powerpoint=libreoffice-base.desktop
