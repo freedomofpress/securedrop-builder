@@ -1,3 +1,5 @@
 files/application-x-sd-export.xml usr/share/mime/packages
 files/send-to-usb.desktop usr/share/applications
 files/sd-logo.png usr/share/securedrop/icons
+files/mimeapps.list usr/share/applications/
+files/open-in-dvm.desktop usr/share/applications/
