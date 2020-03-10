@@ -1,3 +1,9 @@
+securedrop-client (0.1.2+buster) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- redshiftzero <jen@freedom.press>  Tue, 10 Mar 2020 13:12:54 -0400
+
 securedrop-client (0.1.1+buster) unstable; urgency=medium
 
   * See changelog.md
