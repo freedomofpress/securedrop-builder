@@ -11,8 +11,8 @@ TOPLEVEL="$(git rev-parse --show-toplevel)"
 # These env vars are only required when updating changelogs,
 # otherwise the developer must edit the fields by hand, lest
 # they commit "user@localhost" entries.
-DEBEMAIL=${DEBEMAIL:-"securedrop@freedom.press"}
-DEBFULLNAME=${DEBFULLNAME:-"SecureDrop Team"}
+export DEBEMAIL=${DEBEMAIL:-"securedrop@freedom.press"}
+export DEBFULLNAME=${DEBFULLNAME:-"SecureDrop Team"}
 
 # Determine which package we want to update the changelog for.
 # As with the other tools, we'll support the PKG_NAME env var.
