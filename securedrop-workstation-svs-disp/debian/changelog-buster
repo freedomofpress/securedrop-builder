@@ -2,7 +2,7 @@ securedrop-workstation-svs-disp (0.2.2+buster) unstable; urgency=medium
 
   * Fix mime type handling for desktop files
 
- -- SecureDrop Team <user@localhost>  Fri, 20 Mar 2020 10:43:41 -0400
+ -- SecureDrop Team <securedrop@freedom.press>  Fri, 20 Mar 2020 10:43:41 -0400
 
 securedrop-workstation-svs-disp (0.2.1+buster) unstable; urgency=medium
 
