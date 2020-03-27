@@ -92,4 +92,9 @@ export SOURCE_DATE_EPOCH=`dpkg-parsechangelog -STimestamp`
 dpkg-buildpackage -us -uc
 
 # Tell the user the path of the files buillt
-echo "Find the .deb and other build files at $TOP_BUILDDIR/$PKG_NAME"
+pkg_path="$(find "$TOP_BUILDDIR" -type f -iname "${PKG_NAME}_${PKG_VERSION}*.deb" | head -n1)"
+if [[ -f "$pkg_path" ]]; then
+    echo "Package location: $pkg_path"
+else
+    echo "Could not find package, look in $TOP_BUILDDIR"
+fi
