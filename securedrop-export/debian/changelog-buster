@@ -1,3 +1,9 @@
+securedrop-export (0.2.3+buster) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- SecureDrop Team <securedrop@freedom.press>  Fri, 27 Mar 2020 17:26:30 -0400
+
 securedrop-export (0.2.2+buster) unstable; urgency=medium
 
   * See changelog.md
