@@ -124,10 +124,16 @@ requests in the console running the HTTP server.
 
 Summarizing release manager steps:
 
-1. Update versions as necessary
-2. Do a test build following steps below
-3. Make any changes as necessary and create a PR into the repository to be packaged with the modifications from steps 1-3
+1. Update versions as necessary in the project's repository, and open a pull request
+2. Do a test build following steps in "Build a package" section below
+3. Create a PR to this repository with updated build logic (if necessary) and updated debian changelog (using `./scripts/update-changelog`). Note around the time this PR is merged, there should be a corresponding tag in the associated package code's repository. Otherwise, nightly builds will fail
 4. Push the release tag for use in building
+5. Merge the project's repository code
+6. Re-run CI in this repository, it will use the latest tag and build logic to test the build
+7. Merge the packaging changes to this repository
+8. Prior to releasing to production, signed source tarballs need to be committed and merged to this repository in the `tarballs/` directory
+9. Tag this repository whenever releasing any packages, to verify integrity prior to building
+8. Observe nightlies the next day to ensure *all* packages are built properly
 
 ## Build a package
 
