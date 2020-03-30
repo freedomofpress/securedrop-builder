@@ -122,7 +122,7 @@ requests in the console running the HTTP server.
 
 ## Make a release
 
-Summarizing release manager steps:
+Summarizing release manager steps, at a high level, for changes into this repository. Further detail is available in the [SecureDrop Workstation Release Management documentation](https://github.com/freedomofpress/securedrop-workstation#release-a-subproject)
 
 1. Update versions as necessary in the project's repository, and open a pull request
 2. Do a test build following steps in "Build a package" section below
@@ -130,10 +130,11 @@ Summarizing release manager steps:
 4. Push the release tag for use in building
 5. Merge the project's repository code
 6. Re-run CI in this repository, it will use the latest tag and build logic to test the build
-7. Merge the packaging changes to this repository
-8. Prior to releasing to production, signed source tarballs need to be committed and merged to this repository in the `tarballs/` directory
-9. Tag this repository whenever releasing any packages, to verify integrity prior to building
-8. Observe nightlies the next day to ensure *all* packages are built properly
+7. Build tarballs, and create a detached signature with the release key
+8. Commit these tarballs in the `tarballs/` directory
+9. Perform a final review and merge of the PR to this repository
+10. Tag this repository whenever releasing any packages, to verify integrity prior to building
+11. Observe nightlies the next day to ensure *all* packages are built properly
 
 ## Build a package
 
