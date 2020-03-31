@@ -1,7 +1,17 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv --python /usr/bin/python3 --setuptools --extra-pip-arg "--no-deps" --index-url https://pypi.securedrop.org/simple --requirements build-requirements.txt
+	dh $@ --with python-virtualenv
+
+override_dh_virtualenv:
+	dh_virtualenv \
+		--python /usr/bin/python3 \
+		--setuptools \
+		--index-url https://pypi.securedrop.org/simple \
+		--extra-pip-arg "--ignore-installed" \
+		--extra-pip-arg "--no-deps" \
+		--extra-pip-arg "--no-cache-dir" \
+		--requirements build-requirements.txt
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
