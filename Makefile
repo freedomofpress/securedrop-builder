@@ -1,9 +1,5 @@
 DEFAULT_GOAL: help
 
-.PHONY: wheel-urls
-wheel-urls: ## Creates download URLs for PyPI mirror from sha256sums.txt file
-	./scripts/createdownloadurls.py > wheelsurls.txt
-
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
 	PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
@@ -45,7 +41,6 @@ build-wheels: ## Builds the wheels and adds them to the localwheels directory
 	./scripts/verify-sha256sum-signature
 	./scripts/build-sync-wheels -p ${PKG_DIR}
 	./scripts/sync-sha256sums
-	./scripts/createdownloadurls.py > wheelsurls.txt
 	@printf "Done! Now please follow the instructions in\n"
 	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/"
 	@printf "to push these changes to the FPF PyPI index\n"
