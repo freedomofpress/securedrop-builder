@@ -35,7 +35,7 @@ the requirements files which are used for build of these packages (`build-requir
 using `make requirements` are kept up to date in latest `master` of those repositories.
 
 If new dependencies were added in the `requirements.txt` of that
-repo that are not in the FPF PyPI mirror, then the maintainer needs
+repo that are not in the FPF PyPI mirror (https://pypi.securedrop.org/), then the maintainer needs
 to do the following (we are taking `securedrop-client` project as example):
 
 ### 0. Create updated build-requirements.txt for the project
