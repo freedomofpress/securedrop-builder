@@ -36,6 +36,8 @@ d05bb78652c8771e6aa1aefcd76ade1fef08c563d2641acbc5ac8e1d635e6a53  securedrop_sdk
 b5ddca26ce87d4007db5d64fe77d44b4086a902c3f79e69fb9a81343c81ce278  securedrop-sdk-0.0.12.tar.gz
 c8d98208fb2074336c06be3fef0994a8a57fde7a765cead12bc36e9128d319e2  securedrop_sdk-0.0.13-py3-none-any.whl
 7763bb44755bdfc387ab6c002cbe49eeec2611feb04a8787c3c9f2aa48a1ee5f  securedrop-sdk-0.0.13.tar.gz
+488417f9f08e4c432c81348dfbd5da0e756ded1737ba58b2ffc8f0e703abc1cb  securedrop_sdk-0.1.0-py3-none-any.whl
+970fde25e6238e1808ac120951ee972549f4cd7952966dfe29f731bb308cc0d8  securedrop-sdk-0.1.0.tar.gz
 aa4ad34049ddff178b533062797fd1db9f0038b7c5c2461a7cde2244300b9f3d  six-1.11.0-py2.py3-none-any.whl
 70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9  six-1.11.0.tar.gz
 bfb4cd0df5802a01acd738a080a19e60ff4700e030d497de273807f9a8bd4a0a  SQLAlchemy-1.3.3-cp37-cp37m-linux_x86_64.whl
