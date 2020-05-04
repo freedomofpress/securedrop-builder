@@ -472,9 +472,9 @@ workflows:
       - build-nightly-buster-securedrop-log:
           requires:
             - build-nightly-buster-securedrop-export
-      - build-nightly-dom0-rpm:
-          requires:
-            - build-nightly-buster-securedrop-log
       - build-nightly-buster-securedrop-workstation-svs-disp:
           requires:
-            - build-nightly-dom0-rpm
+            - build-nightly-buster-securedrop-log
+      # There is also a dom0 rpm build `build-nightly-dom0-rpm`
+      # intended for staging environments but it is temporarily
+      # disabled to enable pre-release QA of release candidate RPMs.
