@@ -1,0 +1,5 @@
+securedrop-keyring (0.1.4+buster) unstable; urgency=medium
+
+  * Initial release for securedrop workstation
+
+ -- SecureDrop Team <securedrop@freedom.press>  Fri, 22 May 2020 11:18:05 -0400
