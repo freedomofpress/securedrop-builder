@@ -28,6 +28,10 @@ securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
 securedrop-log: ## Builds Debian package for Qubes Workstation securedrop-log scripts
 	PKG_NAME="securedrop-log" ./scripts/build-debianpackage
 
+.PHONY: securedrop-keyring
+securedrop-keyring: ## Builds Debian package containing the release key
+	PKG_NAME="securedrop-keyring" ./scripts/build-debianpackage
+
 .PHONY: install-deps
 install-deps: ## Install initial Debian packaging dependencies
 	./scripts/install-deps
