@@ -1,3 +1,9 @@
+securedrop-workstation-grsec (4.14.186+buster) unstable; urgency=medium
+
+  * Update kernel version to 4.14.186
+
+ -- SecureDrop Team <securedrop@freedom.press>  Tue, 30 Jun 2020 21:43:22 -0800
+
 securedrop-workstation-grsec (4.14.169+buster) unstable; urgency=medium
 
   * Update kernel version to 4.14.169
