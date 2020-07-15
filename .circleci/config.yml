@@ -546,7 +546,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - build-nightly-buster-securedrop-client
       - build-nightly-buster-securedrop-proxy:
