@@ -246,7 +246,7 @@ common-steps:
         cp ~/debbuild/packaging/*.deb ./workstation/${PLATFORM}/
         git add workstation/${PLATFORM}/*.deb
         git commit -m "Automated SecureDrop workstation build"
-        git push origin master
+        git push origin main
 
   - &sign_rpm
     run:
@@ -269,7 +269,7 @@ common-steps:
         git add workstation/dom0/f25/*.rpm
         git commit -m "Automated SecureDrop workstation build"
 
-        git push origin master
+        git push origin main
 
   - &buildrpm
     run:
