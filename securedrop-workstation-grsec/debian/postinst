@@ -33,15 +33,18 @@ start_paxctld() {
     if [ -f "$paxctld_config" ]; then
         systemctl enable paxctld
         systemctl restart paxctld
+        # Wait just a moment while flag are re-applied
+        sleep 1
     fi
 }
 
 case "$1" in
     configure)
+    # Ensure pax flags are set prior to running dkms & grub
+    start_paxctld
     # DKMS autoinstall the qubes kernel modules
     dkms autoinstall $GRSEC_VERSION
     set_grub_default
-    start_paxctld
     update-grub
     ;;
 
