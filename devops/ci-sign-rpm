@@ -1,7 +1,7 @@
 set -u
 set -e
 
-# Same version as: https://github.com/freedomofpress/securedrop-workstation/blob/master/scripts/build-dom0-rpm#L10
+# Same version as: https://github.com/freedomofpress/securedrop-workstation/blob/main/scripts/build-dom0-rpm#L10
 export FEDORA_PKGR_VER=0.6.0.1-1.fc25
 export USER_RPMDIR="/home/circleci/packaging/securedrop-workstation/rpm-build"
 export CI_DEVOPS_FOLDER="/home/circleci/project/devops"

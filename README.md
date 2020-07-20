@@ -1,6 +1,6 @@
 # SecureDrop Debian Packaging
 
-[![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/master.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/master)
+[![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main)
 
 This repository contains the packaging files and tooling for building Debian packages for projects for the alpha [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Packages are placed on `apt-test-qubes.freedom.press` for installation in Debian-based TemplateVMs. These packages are not yet ready for use in a production environment.
 
@@ -32,7 +32,7 @@ binary wheel files.
 
 Maintainers of `securedrop-client` and `securedrop-proxy` must ensure that
 the requirements files which are used for build of these packages (`build-requirements.txt`)
-using `make requirements` are kept up to date in latest `master` of those repositories.
+using `make requirements` are kept up to date in latest `main` of those repositories.
 
 If new dependencies were added in the `requirements.txt` of that
 repo that are not in the FPF PyPI mirror (https://pypi.securedrop.org/), then the maintainer needs
