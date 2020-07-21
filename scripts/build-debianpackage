@@ -69,7 +69,7 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
     cd "$TOP_BUILDDIR/$PKG_NAME/"
 
     # Verify all the hashes from the verified sha256sums.txt
-    $CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt ./build-requirements.txt
+    $CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt
 
     echo "All hashes verified."
 else

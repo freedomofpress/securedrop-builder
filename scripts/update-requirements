@@ -12,22 +12,23 @@ from pprint import pprint
 
 def main():
     PKG_DIR = os.environ["PKG_DIR"]
+
     if not PKG_DIR:
         print("Set PKG_DIR of the project")
         sys.exit(1)
 
-    input_requirements_path = os.path.join(
-        PKG_DIR, "requirements.txt")
+    requirements_file = os.path.join(PKG_DIR, "requirements.txt")
+    if not os.path.exists(requirements_file):
+        requirements_file = os.path.join(PKG_DIR, "requirements", "requirements.txt")
+        if not os.path.exists(requirements_file):
+            print("Cannot find requirements.txt")
+            sys.exit(1)
 
     output_requirements_path = os.path.join(
         PKG_DIR, "build-requirements.txt")
 
-    if not os.path.exists(input_requirements_path):
-        print("Missing {0}.".format(input_requirements_path))
-        sys.exit(1)
-
     # First remove index line and any PyQt or sip dependency
-    cleaned_lines = cleanup(input_requirements_path)
+    cleaned_lines = cleanup(requirements_file)
 
     verify_sha256sums_file()
 
