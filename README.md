@@ -131,10 +131,17 @@ Summarizing release manager steps, at a high level, for changes into this reposi
 5. Merge the project's repository code
 6. Re-run CI in this repository, it will use the latest tag and build logic to test the build
 7. Build tarballs, and create a detached signature with the release key
-8. Commit these tarballs in the `tarballs/` directory
-9. Perform a final review and merge of the PR to this repository
-10. Tag this repository whenever releasing any packages, to verify integrity prior to building
-11. Observe nightlies the next day to ensure *all* packages are built properly
+8. Copy your build logs into your project's corresponding directory in the `build-logs` repository, and push your changes to the `main` branch, see https://github.com/freedomofpress/build-logs/commit/fc0eb9551678c8f58ea0017f1eb291375ea5bd9e for example.
+9. Commit these tarballs in the `tarballs/` directory
+10. Open a PR to the `securedrop-debian-packaging` repository with a test plan to verify the checksum in the build logs and tarball signature. The reviewer can perform verification by running:
+
+```
+sha256sum <package>.tar.gz
+gpg --verify <package>.tar.gz.asc <package>.tar.gz
+```
+
+11. Once the PR above is merged, create a new tag from the merge commit which will later be used to verify the integrity of the tarballs prior to building the debian packages
+12. Observe nightlies the next day to ensure *all* packages are built properly
 
 ## Build a package
 
@@ -145,13 +152,19 @@ git clone git@github.com:freedomofpress/securedrop-foobar.git
 cd securedrop-foobar
 ```
 
-Checkout the release tag for the project:
+Verify the release tag for the project:
 
 ```
-git checkout 0.x.y
+git tag -v x.y.z
 ```
 
-Generate a tarball to be used in the build process:
+Checkout the release tag:
+
+```
+git checkout x.y.z
+```
+
+If it hasn't been added already, generate a tarball to be used in the build process:
 
 ```
 python3 setup.py sdist
@@ -174,10 +187,25 @@ Run the following script to create a new entry that you will update with the sam
 ./scripts/update-changelog securedrop-foobar
 ```
 
-Finally, build the package by pointing to the tarball and package version:
+First verify the tarball you are about to package into a deb:
 
 ```
-PKG_PATH=/path/to/tarball PKG_VERSION=0.x.y make securedrop-foobar
+gpg --verify <package>.tar.gz.asc <package>.tar.gz
+```
+
+Build the package by pointing to the tarball and package version:
+
+```
+PKG_PATH=/path/to/package.tar.gz PKG_VERSION=x.y.z make securedrop-foobar
+```
+
+Save and publish your build logs to the `build-logs` repository, e.g. https://github.com/freedomofpress/build-logs/commit/786eb46672b07b5c635d87a075770b53a0ce3df9
+
+Open a PR to the `securedrop-debian-packages-lfs` repository with a test plan to verify the checksum in the build logs and (once appended to PR by a signature holder) that the new Release.gpg signature matches new Release file. The reviewer can perform verification by running:
+
+```
+sha256sum /path/to/built/package.deb
+gpg --verify repo/public/dists/xenial/Release.gpg repo/public/dists/xenial/Release
 ```
 
 ## Packaging non-Python based SecureDrop projects
