@@ -58,14 +58,26 @@ fi
 # Copy over the debian directory (including new changelog) from repo
 cp -r "$CUR_DIR/$PKG_NAME/" "$TOP_BUILDDIR/"
 
+function build_source_tarball() {
+    repo_url="https://github.com/freedomofpress/${PKG_NAME}"
+    build_dir="/tmp/${PKG_NAME}"
+    rm -rf "$build_dir"
+    git clone "$repo_url" "$build_dir"
+    git -C "$build_dir" tag --verify "$PKG_VERSION" 1>&2
+    git -C "$build_dir" checkout "$PKG_VERSION" 1>&2
+    (cd "$build_dir" && python setup.py sdist 1>&2)
+    find "${build_dir}/dist/" | grep -P '\.tar.gz$' | head -n1
+}
+
 # If the package is contained in the list, it should be a python package. In
 # that case, we should extract tarball, and validate wheel hashes.
 if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|securedrop-log)$ ]]; then
     echo "${PKG_NAME} is a Python package"
 
     if [[ -z "${PKG_PATH:-}" ]]; then
-        # Try to find tarball in a reasonable location
-        candidate_pkg_path="$(realpath "${CUR_DIR}/../${PKG_NAME}/dist/${PKG_NAME}-${PKG_VERSION}.tar.gz")"
+        # Build from source
+        echo "PKG_PATH not set, building from source (version $PKG_VERSION)..."
+        candidate_pkg_path="$(build_source_tarball)"
         if [[ -f "$candidate_pkg_path" ]]; then
             PKG_PATH="$candidate_pkg_path"
             echo "Found tarball at $PKG_PATH, override with PKG_PATH..."
