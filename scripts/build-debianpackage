@@ -27,6 +27,8 @@ TOP_BUILDDIR="$HOME/debbuild/packaging"
 mkdir -p "$TOP_BUILDDIR"
 rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
 mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
+# Move changelog into place (we have separate changelogs for each platform)
+PLATFORM="$(lsb_release -sc)"
 
 # Validate required args.
 if [[ -z "${PKG_NAME:-}" ]]; then
@@ -34,9 +36,23 @@ if [[ -z "${PKG_NAME:-}" ]]; then
     exit 1
 fi
 
+
+function find_latest_version() {
+    repo_url="https://github.com/freedomofpress/${PKG_NAME}/releases"
+    curl -s "$repo_url" \
+        | perl -nE '$_ =~ m#/releases/tag/(v?[\d\.]+)\"# and say $1' \
+        | head -n 1
+}
+
 if [[ -z "${PKG_VERSION:-}" ]]; then
-    echo "Set PKG_VERSION of the build";
-    exit 1
+    echo "PKG_VERSION not set, inferring from recent releases..."
+    PKG_VERSION="$(find_latest_version)"
+    if [[ -z "$PKG_VERSION" ]]; then
+        echo "Failed to infer version"
+        exit 1
+    else
+        echo "Using PKG_VERSION: $PKG_VERSION"
+    fi
 fi
 
 # Copy over the debian directory (including new changelog) from repo
@@ -80,8 +96,6 @@ fi
 
 printf "Building package '%s' from version '%s'...\\n" "$PKG_NAME" "$PKG_VERSION"
 
-# Move changelog into place (we have separate changelogs for each platform)
-PLATFORM="$(lsb_release -sc)"
 echo "$TOP_BUILDDIR/$PKG_NAME/"
 mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$PLATFORM" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
 
