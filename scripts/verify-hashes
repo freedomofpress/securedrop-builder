@@ -3,9 +3,16 @@
 import os
 import sys
 
-if len(sys.argv) != 3:
-    print("Usage: ./scripts/verify-hashes sha256sums.txt requirements.txt")
+if len(sys.argv) != 2:
+    print("Usage: ./scripts/verify-hashes path/to/sha256sums.txt")
     sys.exit(1)
+
+requirements_file = "requirements.txt"
+if not os.path.exists(requirements_file):
+    requirements_file = "requirements/requirements.txt"
+    if not os.path.exists(requirements_file):
+        print("Cannot find requirements.txt")
+        sys.exit(1)
 
 # This is the already gpg signed and verified data
 sha256sum_data = {}
@@ -24,7 +31,7 @@ for line in data:
 
 # Now read the requirements.txt file
 lines = []
-with open(sys.argv[2]) as fobj:
+with open(requirements_file) as fobj:
     lines = fobj.readlines()
 
 # Now we want to verify that for each dependency in the project
