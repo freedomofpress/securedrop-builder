@@ -37,6 +37,7 @@ if [[ -z "${PKG_NAME:-}" ]]; then
 fi
 
 
+# Look up most recent release from GitHub repo
 function find_latest_version() {
     repo_url="https://github.com/freedomofpress/${PKG_NAME}/releases"
     curl -s "$repo_url" \
@@ -58,15 +59,46 @@ fi
 # Copy over the debian directory (including new changelog) from repo
 cp -r "$CUR_DIR/$PKG_NAME/" "$TOP_BUILDDIR/"
 
+# Ensures that a given git tag is signed with the prod release key
+# If "rc" is in the tag name, this will fail.
+function verify_git_tag() {
+    local d
+    local t
+    d="$1"
+    t="$2"
+    prod_fingerprint="22245C81E3BAEB4138B36061310F561200F4AD77"
+    git -C "$build_dir" tag --verify "$PKG_VERSION" 2>&1 \
+        | grep -q -F "using RSA key $prod_fingerprint"
+}
+
+# Dynamically generate a tarball, from the Python source code,
+# that is byte-for-byte reproducible. Infers timestamp
+# from the changelog, same as for the deb package.
 function build_source_tarball() {
     repo_url="https://github.com/freedomofpress/${PKG_NAME}"
     build_dir="/tmp/${PKG_NAME}"
     rm -rf "$build_dir"
     git clone "$repo_url" "$build_dir"
-    git -C "$build_dir" tag --verify "$PKG_VERSION" 1>&2
-    git -C "$build_dir" checkout "$PKG_VERSION" 1>&2
-    (cd "$build_dir" && python setup.py sdist 1>&2)
-    find "${build_dir}/dist/" | grep -P '\.tar.gz$' | head -n1
+
+    # Verify tag, using only the prod key
+    verify_git_tag "$build_dir" "$PKG_VERSION"
+
+    # Tag is verified, proceed with checkout
+    git -C "$build_dir" checkout "$PKG_VERSION"
+    (cd "$build_dir" && LC_ALL="C.UTF-8" python setup.py sdist)
+
+    # Initial tarball will contain timestamps from NOW, let's repack
+    # with timestamps from the changelog, which is static.
+    raw_tarball="$(find "${build_dir}/dist/" | grep -P '\.tar.gz$' | head -n1)"
+    dch_time="$(date "+%Y-%m-%d %H:%M:%S %z" -d@$(dpkg-parsechangelog --file $PKG_NAME/debian/changelog-$PLATFORM -STimestamp)) "
+    (cd "$build_dir" && tar -xzf "dist/$(basename $raw_tarball)")
+    tarball_basename="$(basename "$raw_tarball")"
+    # Repack with tar only, so env vars are respected
+    (cd "$build_dir" && tar -cf "${tarball_basename%.gz}" --mode=go=rX,u+rw,a-s --mtime="$dch_time" --sort=name --owner=root:0 --group=root:0 "${tarball_basename%.tar.gz}" 1>&2)
+    # Then gzip it separately, so we can pass args
+    (cd "$build_dir" && gzip --no-name "${tarball_basename%.gz}")
+    (cd "$build_dir" && mv "$tarball_basename" dist/)
+    echo "$raw_tarball"
 }
 
 # If the package is contained in the list, it should be a python package. In
@@ -77,7 +109,8 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
     if [[ -z "${PKG_PATH:-}" ]]; then
         # Build from source
         echo "PKG_PATH not set, building from source (version $PKG_VERSION)..."
-        candidate_pkg_path="$(build_source_tarball)"
+        build_source_tarball
+        candidate_pkg_path="$(find /tmp/$PKG_NAME/dist -type f -iname '*.tar.gz')"
         if [[ -f "$candidate_pkg_path" ]]; then
             PKG_PATH="$candidate_pkg_path"
             echo "Found tarball at $PKG_PATH, override with PKG_PATH..."
