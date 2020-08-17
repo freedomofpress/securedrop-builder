@@ -67,8 +67,11 @@ function verify_git_tag() {
     d="$1"
     t="$2"
     prod_fingerprint="22245C81E3BAEB4138B36061310F561200F4AD77"
-    git -C "$build_dir" tag --verify "$PKG_VERSION" 2>&1 \
-        | grep -q -F "using RSA key $prod_fingerprint"
+    if ! git -C "$build_dir" tag --verify "$PKG_VERSION" 2>&1 \
+        | grep -q -F "using RSA key $prod_fingerprint" ; then
+        echo "Failed to verify $PKG_VERSION, not signed with $prod_fingerprint" >&2
+        exit 2
+    fi
 }
 
 # Dynamically generate a tarball, from the Python source code,
