@@ -1,3 +1,9 @@
+securedrop-workstation-config (0.1.4+buster) unstable; urgency=medium
+
+  * Provides mime type files all VMs for template consolidation
+
+ -- SecureDrop Team <securedrop@freedom.press>  Wed, 26 Aug 2020 15:24:29 -0400
+
 securedrop-workstation-config (0.1.3+buster) unstable; urgency=medium
 
   * Adds securedrop-keyring to list of dependencies
