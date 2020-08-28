@@ -26,7 +26,7 @@ case "$1" in
       cp /opt/sdw/paxctld.conf /etc/paxctld.conf
       systemctl restart paxctld
     fi
-
+    cp /opt/sdw/open-in-dvm.desktop /usr/share/applications/
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
