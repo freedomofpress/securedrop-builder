@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main)
 
-This repository contains the packaging files and tooling for building Debian packages for projects for the alpha [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Packages are placed on `apt-test-qubes.freedom.press` for installation in Debian-based TemplateVMs. These packages are not yet ready for use in a production environment.
+This repository contains the packaging files and tooling for building Debian packages for projects for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Development/staging packages are placed on `apt-test.freedom.press` for installation in Debian-based TemplateVMs, and production packages are placed on `apt.freedom.press`. Please note that the SecureDrop Workstation is currently in a limited beta phase and not yet recommended for general use.
 
 ## Packaging a Python-based SecureDrop project
 
@@ -127,7 +127,7 @@ Summarizing release manager steps, at a high level, for changes into this reposi
 1. Update versions as necessary in the project's repository, and open a pull request
 2. Do a test build following steps in "Build a package" section below
 3. Create a PR to this repository with updated build logic (if necessary) and updated debian changelog (using `./scripts/update-changelog`). Note around the time this PR is merged, there should be a corresponding tag in the associated package code's repository. Otherwise, nightly builds will fail
-4. Push the release tag for use in building
+4. Push the release tag for use in building to the project's repository
 5. Merge the project's repository code
 6. Re-run CI in this repository, it will use the latest tag and build logic to test the build
 7. Build tarballs, and create a detached signature with the release key
@@ -215,4 +215,3 @@ TODO
 ## Intro to packaging
 
 For an introduction to packaging Python projects into Debian packages, one can see the [SecureDrop Debian Packaging Guide](https://securedrop-debian-packaging-guide.readthedocs.io/en/latest/). Note that these guidelines on Read the Docs are for educational purposes only. The README you are currently reading is the canonical reference for SecureDrop Workstation packagers.
-
