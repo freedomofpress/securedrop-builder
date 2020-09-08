@@ -26,7 +26,11 @@ def main():
         print("Project directory missing {0}.".format(args.p))
         sys.exit(1)
 
+    # Try requirements.txt in the repo root, otherwise try requirements/requirements.txt
     req_path = os.path.join(args.p, "requirements.txt")
+
+    if not os.path.exists(req_path):
+        req_path = os.path.join(args.p, "requirements/requirements.txt")
 
     if not os.path.exists(req_path):
         print("requirements.txt missing at {0}.".format(req_path))
