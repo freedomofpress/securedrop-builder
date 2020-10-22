@@ -28,6 +28,7 @@ case "$1" in
       systemctl restart paxctld
       cp /opt/sdw/open-in-dvm.desktop /usr/share/applications/
       cp /opt/sdw/mimeapps.list.sd-app /usr/share/applications/mimeapps.list
+      cp /opt/sdw/mimeapps.list.sd-app /opt/sdw/mimeapps.list.default
     fi
     ;;
 
