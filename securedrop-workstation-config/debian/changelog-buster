@@ -1,3 +1,9 @@
+securedrop-workstation-config (0.1.5+buster) unstable; urgency=medium
+
+  * Adds a "default" mimetype handler, for reuse by other VMs
+
+ -- SecureDrop Team <securedrop@freedom.press>  Thu, 01 Oct 2020 17:55:53 -0700
+
 securedrop-workstation-config (0.1.4+buster) unstable; urgency=medium
 
   * Provides mime type files all VMs for template consolidation
