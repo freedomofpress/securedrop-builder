@@ -3,8 +3,6 @@ alembic/env.py usr/share/securedrop-client/alembic/
 alembic/README usr/share/securedrop-client/alembic/
 alembic/script.py.mako usr/share/securedrop-client/alembic/
 alembic/versions/*.py usr/share/securedrop-client/alembic/versions/
-files/mimeapps.list usr/share/applications/
-files/open-in-dvm.desktop usr/share/applications/
 files/sd-app-qubes-gpg-domain.sh etc/profile.d/
 files/securedrop-client usr/bin/
 files/securedrop-client.desktop usr/share/applications/
