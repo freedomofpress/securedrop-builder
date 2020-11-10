@@ -548,7 +548,10 @@ workflows:
               only:
                 - main
     jobs:
-      - build-nightly-buster-securedrop-proxy
+      - build-nightly-buster-securedrop-client
+      - build-nightly-buster-securedrop-proxy:
+          requires:
+            - build-nightly-buster-securedrop-client
       - build-nightly-buster-securedrop-export:
           requires:
             - build-nightly-buster-securedrop-proxy
