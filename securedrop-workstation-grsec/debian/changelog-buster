@@ -1,3 +1,9 @@
+securedrop-workstation-grsec (4.14.186+buster3) unstable; urgency=medium
+
+  * Bumps u2mfn version 4.0.30 -> 4.0.31
+
+ -- SecureDrop Team <securedrop@freedom.press>  Tue, 17 Nov 2020 15:57:41 -0800
+
 securedrop-workstation-grsec (4.14.186+buster2) unstable; urgency=medium
 
   * Ensures u2mfn module is built via dkms, otherwise fails
