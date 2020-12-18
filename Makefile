@@ -61,6 +61,17 @@ test: ## Run test suite
 clean: ## Removes all non-version controlled packaging artifacts
 	rm -rf localwheels/*
 
+.PHONY: reprotest
+reprotest: ## Reproducibility test, currently only for wheels
+# The following config works for wheels:
+#   --variations "+environment, +build_path, +kernel, +aslr, +num_cpus, -time, +user_group, +fileordering, +domain_host, +home, +locales, +exec_path, +timezone, +umask" \
+# which is every reproducibility test *except* time, so we'll use the shorter syntax.
+# Messing with system time breaks most HTTPS GET actions.
+	reprotest -c "./scripts/build-sync-wheels -p $$HOME/securedrop-client --clobber" \
+		--vary "+all, -time, -locales" \
+		. \
+		"localwheels/*.whl"
+
 .PHONY: help
 help: ## Prints this message and exits
 	@printf "Makefile for building SecureDrop Workstation packages\n"

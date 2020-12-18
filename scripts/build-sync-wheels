@@ -2,11 +2,27 @@
 
 import os
 import sys
-import json
 import subprocess
 import tempfile
 import shutil
 import argparse
+
+
+# Set SOURCE_DATE_EPOCH to a predictable value. Using the first
+# commit to the SecureDrop project:
+#
+#   git show -s 62bbe590afd77a6af2dcaed46c93da6e0cf40951 --date=unix
+#
+# which yields 1309379017
+os.environ["SOURCE_DATE_EPOCH"] = "1309379017"
+
+# Force sane umask for reproducibility's sake.
+os.umask(0o022)
+
+# When building wheels, pip defaults to a safe dynamic tmpdir path.
+# Some shared objects include the path from build, so we must make
+# the path predictable across builds.
+WHEEL_BUILD_DIR = "/tmp/pip-wheel-build"
 
 
 def main():
@@ -19,6 +35,10 @@ def main():
     )
     parser.add_argument(
         "--cache", default="./localwheels", help="Final cache dir"
+    )
+    parser.add_argument(
+        "--clobber", action="store_true", default=False,
+        help="Whether to overwrite wheels and source tarballs",
     )
     args = parser.parse_args()
 
@@ -36,6 +56,11 @@ def main():
         print("requirements.txt missing at {0}.".format(req_path))
         sys.exit(3)
 
+    if os.path.exists(WHEEL_BUILD_DIR):
+        shutil.rmtree(WHEEL_BUILD_DIR)
+    else:
+        os.mkdir(WHEEL_BUILD_DIR)
+
     with tempfile.TemporaryDirectory() as tmpdir:
         # The --require-hashes option will be used by default if there are
         # hashes in the requirements.txt file. We specify it anyway to guard
@@ -46,9 +71,9 @@ def main():
             "--no-binary",
             ":all:",
             "--require-hashes",
-            "-d",
+            "--dest",
             tmpdir,
-            "-r",
+            "--requirement",
             req_path,
         ]
         subprocess.check_call(cmd)
@@ -58,11 +83,15 @@ def main():
             "wheel",
             "--no-binary",
             ":all:",
-            "-f",
+            "--find-links",
             tmpdir,
-            "-w",
+            "--progress-bar",
+            "pretty",
+            "--wheel-dir",
             tmpdir,
-            "-r",
+            "--build",
+            WHEEL_BUILD_DIR,
+            "--requirement",
             req_path,
         ]
         subprocess.check_call(cmd)
@@ -76,7 +105,8 @@ def main():
             if name == "requirements.txt":  # We don't need this in cache
                 continue
             if name in cachenames:  # Means all ready in our cache
-                continue
+                if not args.clobber:
+                    continue
 
             # Else copy to cache
             filepath = os.path.join(tmpdir, name)
