@@ -31,7 +31,7 @@ def main():
     )
     parser.add_argument(
         "-p",
-        help="Points to the project dirctory",
+        help="Points to the project directory",
     )
     parser.add_argument(
         "--cache", default="./localwheels", help="Final cache dir"
@@ -42,9 +42,16 @@ def main():
     )
     args = parser.parse_args()
 
-    if not os.path.exists(args.p):
-        print("Project directory missing {0}.".format(args.p))
-        sys.exit(1)
+    if args.p.startswith("https://"):
+        git_clone_directory = tempfile.mkdtemp(prefix=os.path.basename(args.p))
+        cmd = f"git clone {args.p} {git_clone_directory}".split()
+        subprocess.check_call(cmd)
+        args.p = git_clone_directory
+    else:
+        git_clone_directory = ""
+        if not os.path.exists(args.p):
+            print("Project directory missing {0}.".format(args.p))
+            sys.exit(1)
 
     # Try requirements.txt in the repo root, otherwise try requirements/requirements.txt
     req_path = os.path.join(args.p, "requirements.txt")
@@ -112,6 +119,9 @@ def main():
             filepath = os.path.join(tmpdir, name)
             shutil.copy(filepath, args.cache, follow_symlinks=True)
             print("Copying {0} to cache {1}".format(name, args.cache))
+
+    if git_clone_directory:
+        shutil.rmtree(git_clone_directory)
 
 
 if __name__ == "__main__":

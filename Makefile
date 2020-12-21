@@ -63,14 +63,7 @@ clean: ## Removes all non-version controlled packaging artifacts
 
 .PHONY: reprotest
 reprotest: ## Reproducibility test, currently only for wheels
-# The following config works for wheels:
-#   --variations "+environment, +build_path, +kernel, +aslr, +num_cpus, -time, +user_group, +fileordering, +domain_host, +home, +locales, +exec_path, +timezone, +umask" \
-# which is every reproducibility test *except* time, so we'll use the shorter syntax.
-# Messing with system time breaks most HTTPS GET actions.
-	reprotest -c "./scripts/build-sync-wheels -p $$HOME/securedrop-client --clobber" \
-		--vary "+all, -time, -locales, -kernel"\
-		. \
-		"localwheels/*.whl"
+	pytest -vvs tests/test_reproducible_wheels.py
 
 .PHONY: help
 help: ## Prints this message and exits
