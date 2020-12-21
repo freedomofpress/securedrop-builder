@@ -68,7 +68,7 @@ reprotest: ## Reproducibility test, currently only for wheels
 # which is every reproducibility test *except* time, so we'll use the shorter syntax.
 # Messing with system time breaks most HTTPS GET actions.
 	reprotest -c "./scripts/build-sync-wheels -p $$HOME/securedrop-client --clobber" \
-		--vary "+all, -time, -locales" \
+		--vary "+all, -time, -locales, -kernel"\
 		. \
 		"localwheels/*.whl"
 
