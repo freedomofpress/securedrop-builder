@@ -5,8 +5,8 @@ import subprocess
 # These are the SDW repositories that we build wheels for.
 REPOS_WITH_WHEELS = [
     "securedrop-client",
-    # "securedrop-log",
-    # "securedrop-proxy",
+    "securedrop-log",
+    "securedrop-proxy",
 ]
 
 
