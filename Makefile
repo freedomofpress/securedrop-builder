@@ -61,6 +61,10 @@ test: ## Run test suite
 clean: ## Removes all non-version controlled packaging artifacts
 	rm -rf localwheels/*
 
+.PHONY: reprotest
+reprotest: ## Reproducibility test, currently only for wheels
+	pytest -vvs tests/test_reproducible_wheels.py
+
 .PHONY: help
 help: ## Prints this message and exits
 	@printf "Makefile for building SecureDrop Workstation packages\n"

@@ -2,6 +2,11 @@
 # Installs required dependencies for building SecureDrop Worsktation packages.
 # Assumes a Debian 10 machine, ideally a Qubes AppVM.
 
+# If running in CI, we need to add the Ubuntu Bionic repo to download dh-virtualenv
+if [[ -v CIRCLE_BUILD_URL ]]; then
+  echo "deb http://archive.ubuntu.com/ubuntu/ bionic universe" | sudo tee -a /etc/apt/sources.list
+fi
+
 sudo apt-get update
 sudo apt-get install  \
     build-essential \
@@ -15,7 +20,8 @@ sudo apt-get install  \
     libssl-dev \
     python3-all \
     python3-pip \
-    python3-setuptools
+    python3-setuptools \
+    reprotest
 
 
 # Inspect the wheel files present locally. If repo was cloned
