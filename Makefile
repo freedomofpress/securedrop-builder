@@ -2,11 +2,11 @@ DEFAULT_GOAL: help
 
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
-	PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
 
 .PHONY: securedrop-client
 securedrop-client: ## Builds Debian package for securedrop-client code
-	PKG_NAME="securedrop-client" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-client" ./scripts/build-debianpackage
 
 .PHONY: securedrop-workstation-config
 securedrop-workstation-config: ## Builds Debian metapackage for Qubes Workstation base dependencies
@@ -30,7 +30,7 @@ securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
 
 .PHONY: securedrop-log
 securedrop-log: ## Builds Debian package for Qubes Workstation securedrop-log scripts
-	PKG_NAME="securedrop-log" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-log" ./scripts/build-debianpackage
 
 .PHONY: securedrop-keyring
 securedrop-keyring: ## Builds Debian package containing the release key
