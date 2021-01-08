@@ -72,6 +72,7 @@ common-steps:
       command: |
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-client.git
+        git checkout reproducible_wheels_usage
         export PKG_NAME="securedrop-client"
         # Enable access to this env var in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
@@ -83,6 +84,7 @@ common-steps:
       command: |
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-proxy.git
+        git checkout update_localwheels_requirements
         export PKG_NAME="securedrop-proxy"
         # Enable access to this env var in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
@@ -94,6 +96,7 @@ common-steps:
       command: |
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-log.git
+        git checkout reproducible_wheels_usage
         export PKG_NAME="securedrop-log"
         # Enable access to this env car in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
