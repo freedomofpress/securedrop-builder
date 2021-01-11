@@ -72,6 +72,7 @@ common-steps:
       command: |
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-client.git
+        cd securedrop-client
         git checkout reproducible_wheels_usage
         export PKG_NAME="securedrop-client"
         # Enable access to this env var in subsequent run steps
@@ -84,6 +85,7 @@ common-steps:
       command: |
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-proxy.git
+        cd securedrop-proxy
         git checkout update_localwheels_requirements
         export PKG_NAME="securedrop-proxy"
         # Enable access to this env var in subsequent run steps
@@ -96,6 +98,7 @@ common-steps:
       command: |
         mkdir ~/packaging && cd ~/packaging
         git clone https://github.com/freedomofpress/securedrop-log.git
+        cd securedrop-log
         git checkout reproducible_wheels_usage
         export PKG_NAME="securedrop-log"
         # Enable access to this env car in subsequent run steps
@@ -305,7 +308,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredroplog
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
@@ -332,7 +335,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredropclient
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
@@ -359,7 +362,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredropproxy
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
