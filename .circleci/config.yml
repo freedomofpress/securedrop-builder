@@ -138,30 +138,8 @@ common-steps:
         export PKG_PATH=~/packaging/$PKG_NAME/dist/$PKG_NAME-$VERSION_TO_BUILD.tar.gz
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
-        ls ~/debbuild/packaging/*.deb
+        ls ~/project/build/debbuild/packaging/*.deb
 
-  - &builddebianpackagefromexistingtarball
-    run:
-      name: Build debian package from committed tarball
-      command: |
-        export PKG_PATH=~/project/tarballs/$PKG_NAME-$PKG_VERSION.tar.gz
-
-        # Every tarball should be signed
-        gpg --import ~/project/pubkeys/release_key.pub
-        gpg --verify $PKG_PATH.asc
-
-        # Build debian package
-        make $PKG_NAME
-        export PKG_HASH_1=$(shasum -a 256 ~/debbuild/packaging/$PKG_NAME*.deb | awk '{print $1}')
-        echo $PKG_HASH_1
-
-        # Build debian package again
-        make $PKG_NAME
-        export PKG_HASH_2=$(shasum -a 256 ~/debbuild/packaging/$PKG_NAME*.deb | awk '{print $1}')
-        echo $PKG_HASH_2
-
-        # Fail build if hashes aren’t equal
-        python -c "import os, sys; sys.exit(os.environ['PKG_HASH_1'] != os.environ['PKG_HASH_2'])"
 
   - &addsshkeys
     add_ssh_keys:
@@ -294,6 +272,38 @@ jobs:
             pip install -r test-requirements.txt
             make test
 
+  reprotest-wheels:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          name: install test requirements and run tests
+          command: |
+            make install-deps
+            virtualenv -p python3 .venv
+            source .venv/bin/activate
+            pip install -r test-requirements.txt
+            pytest -vvs tests/test_reproducible_wheels.py
+
+  reprotest-debs:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - run:
+          name: install test requirements and run tests
+          command: |
+            make install-deps
+            virtualenv -p python3 .venv
+            source .venv/bin/activate
+            pip install -r test-requirements.txt
+            # Patch reprotest in-place to skip 'setarch' prefix, which fails under containers.
+            # We cannot use Ubuntu 20.04 python3.8 to build Debian 10 python3.7 packages.
+            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
+            pytest -vvs tests/test_reproducible_debian_packages.py
+
+
   build-buster-securedrop-log:
     docker:
       - image: circleci/python:3.7-buster
@@ -302,7 +312,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredroplog
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
@@ -329,7 +339,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredropclient
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
@@ -356,7 +366,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredropproxy
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
@@ -481,51 +491,12 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
-  reproducibility-checks:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - run: git lfs pull
-      - run:
-          name: Test build process reproducibility on latest securedrop-client tarball
-          command: |
-            export TARBALL=$(ls ~/project/tarballs/securedrop-client-*.tar.gz)
-            echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
-            echo 'export PKG_NAME=securedrop-client' >> $BASH_ENV
-            echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-      - run:
-          name: Test build process reproducibility on latest securedrop-proxy tarball
-          command: |
-            export TARBALL=$(ls ~/project/tarballs/securedrop-proxy-*.tar.gz)
-            echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
-            echo 'export PKG_NAME=securedrop-proxy' >> $BASH_ENV
-            echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-      - run:
-          name: Test build process reproducibility on latest securedrop-log tarball
-          command: |
-            export TARBALL=$(ls ~/project/tarballs/securedrop-log-*.tar.gz)
-            echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
-            echo 'export PKG_NAME=securedrop-log' >> $BASH_ENV
-            echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-      - run:
-          name: Test build process reproducibility on latest securedrop-export tarball
-          command: |
-            export TARBALL=$(ls ~/project/tarballs/securedrop-export-*.tar.gz)
-            echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
-            echo 'export PKG_NAME=securedrop-export' >> $BASH_ENV
-            echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-
 workflows:
   build-packages:
     jobs:
       - tests
+      - reprotest-wheels
+      - reprotest-debs
       - build-buster-securedrop-client
       - build-buster-securedrop-proxy
       - build-buster-securedrop-workstation-svs-disp
@@ -535,7 +506,6 @@ workflows:
       - build-buster-securedrop-workstation-config
       - build-buster-securedrop-keyring
       - make-dom0-rpm
-      - reproducibility-checks
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.

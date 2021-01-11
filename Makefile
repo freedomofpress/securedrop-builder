@@ -54,16 +54,16 @@ build-wheels: ## Builds the wheels and adds them to the localwheels directory
 	@printf "to push these changes to the FPF PyPI index\n"
 
 .PHONY: test
-test: ## Run test suite
-	pytest -v tests/
+test: ## Run simple test suite (skips reproducibility checks)
+	pytest -v tests/test_update_requirements.py
 
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
 	rm -rf localwheels/*
 
 .PHONY: reprotest
-reprotest: ## Reproducibility test, currently only for wheels
-	pytest -vvs tests/test_reproducible_wheels.py
+reprotest: ## Runs only reproducibility tests, for .deb and .whl files
+	pytest -vvs tests/test_reproducible_*.py
 
 .PHONY: help
 help: ## Prints this message and exits
