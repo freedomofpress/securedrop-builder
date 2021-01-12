@@ -510,18 +510,22 @@ jobs:
             echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
             echo 'export PKG_NAME=securedrop-proxy' >> $BASH_ENV
             echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
+            git checkout origin/main
       - *builddebianpackagefromexistingtarball
       - run:
           name: Test build process reproducibility on latest securedrop-log tarball
           command: |
+            git checkout -
             export TARBALL=$(ls ~/project/tarballs/securedrop-log-*.tar.gz)
             echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
             echo 'export PKG_NAME=securedrop-log' >> $BASH_ENV
             echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
+            git checkout origin/main
       - *builddebianpackagefromexistingtarball
       - run:
           name: Test build process reproducibility on latest securedrop-export tarball
           command: |
+            git checkout -
             export TARBALL=$(ls ~/project/tarballs/securedrop-export-*.tar.gz)
             echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
             echo 'export PKG_NAME=securedrop-export' >> $BASH_ENV
