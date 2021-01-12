@@ -40,6 +40,10 @@ securedrop-keyring: ## Builds Debian package containing the release key
 install-deps: ## Install initial Debian packaging dependencies
 	./scripts/install-deps
 
+.PHONY: lint-desktop-files
+lint-desktop-files: ## Install initial Debian packaging dependencies
+	./scripts/lint-desktop-files
+
 .PHONY: requirements
 requirements: ## Creates requirements files for the Python projects
 	./scripts/update-requirements
