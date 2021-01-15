@@ -62,8 +62,8 @@ clean: ## Removes all non-version controlled packaging artifacts
 	rm -rf localwheels/*
 
 .PHONY: reprotest
-reprotest: ## Reproducibility test, currently only for wheels
-	pytest -vvs tests/test_reproducible_wheels.py
+reprotest: ## Runs only reproducibility tests, for .deb and .whl files
+	pytest -vvs tests/test_reproducible_*.py
 
 .PHONY: help
 help: ## Prints this message and exits

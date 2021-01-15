@@ -488,69 +488,6 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
-  reproducibility-checks:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - run: git lfs pull
-      - run:
-          name: Test build process reproducibility on latest securedrop-client tarball
-          command: |
-            export TARBALL=$(ls ~/project/tarballs/securedrop-client-*.tar.gz)
-            echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
-            echo 'export PKG_NAME=securedrop-client' >> $BASH_ENV
-            echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
-            echo 'export TARBALLDIR=project/tarballs' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-      - run:
-          name: Test build process reproducibility on latest securedrop-proxy tarball
-          command: |
-            mkdir ~/packaging && cd ~/packaging
-            git clone https://github.com/freedomofpress/securedrop-proxy.git
-            cd securedrop-proxy
-            git checkout update_localwheels_requirements
-            export PKG_NAME="securedrop-proxy"
-            # Enable access to this env var in subsequent run steps
-            echo $PKG_NAME > ~/packaging/sd_package_name
-            echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-            export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))"
-            # Enable access to this env var in subsequent run steps
-            echo $VERSION_TO_BUILD > ~/packaging/sd_version
-            echo 'export PKG_VERSION=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-            python3 setup.py sdist
-            echo 'export TARBALLDIR=packaging/securedrop-proxy/dist' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-      - run:
-          name: Test build process reproducibility on latest securedrop-log tarball
-          command: |
-            cd ~/packaging
-            git clone https://github.com/freedomofpress/securedrop-log.git
-            cd securedrop-log
-            git checkout reproducible_wheels_usage
-            export PKG_NAME="securedrop-log"
-            # Enable access to this env var in subsequent run steps
-            echo $PKG_NAME > ~/packaging/sd_package_name
-            echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-            export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))"
-            # Enable access to this env var in subsequent run steps
-            echo $VERSION_TO_BUILD > ~/packaging/sd_version
-            echo 'export PKG_VERSION=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-            python3 setup.py sdist
-            echo 'export TARBALLDIR=packaging/securedrop-log/dist' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-      - run:
-          name: Test build process reproducibility on latest securedrop-export tarball
-          command: |
-            export TARBALL=$(ls ~/project/tarballs/securedrop-export-*.tar.gz)
-            echo ${TARBALL%.tar.gz} | awk -F "-" '{ print $3 }' > ~/sd_version
-            echo 'export PKG_NAME=securedrop-export' >> $BASH_ENV
-            echo 'export PKG_VERSION=$(cat ~/sd_version)' >> $BASH_ENV
-            echo 'export TARBALLDIR=project/tarballs' >> $BASH_ENV
-      - *builddebianpackagefromexistingtarball
-
 workflows:
   build-packages:
     jobs:
@@ -564,7 +501,6 @@ workflows:
       - build-buster-securedrop-workstation-config
       - build-buster-securedrop-keyring
       - make-dom0-rpm
-      - reproducibility-checks
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.
