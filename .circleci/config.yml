@@ -555,6 +555,15 @@ workflows:
   build-packages:
     jobs:
       - tests
+      - build-buster-securedrop-client
+      - build-buster-securedrop-proxy
+      - build-buster-securedrop-workstation-svs-disp
+      - build-buster-securedrop-export
+      - build-buster-securedrop-log
+      - build-buster-securedrop-workstation-grsec
+      - build-buster-securedrop-workstation-config
+      - build-buster-securedrop-keyring
+      - make-dom0-rpm
       - reproducibility-checks
 
   # Nightly jobs for each package are run in series to ensure there are no
