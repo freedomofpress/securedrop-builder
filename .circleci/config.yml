@@ -144,7 +144,7 @@ common-steps:
         export PKG_PATH=~/packaging/$PKG_NAME/dist/$PKG_NAME-$VERSION_TO_BUILD.tar.gz
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
-        ls ~/debbuild/packaging/*.deb
+        ls ~/project/build/debbuild/packaging/*.deb
 
   - &builddebianpackagefromexistingtarball
     run:
