@@ -28,7 +28,7 @@ mkdir -p "$TOP_BUILDDIR"
 rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
 mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
 # Move changelog into place (we have separate changelogs for each platform)
-PLATFORM="$(lsb_release -sc)"
+PLATFORM="${PKG_PLATFORM:-buster}"
 
 # Validate required args.
 if [[ -z "${PKG_NAME:-}" ]]; then
