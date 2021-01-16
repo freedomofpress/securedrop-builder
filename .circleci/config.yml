@@ -288,8 +288,8 @@ common-steps:
 version: 2.1
 jobs:
   tests:
-    machine:
-      image: ubuntu-2004:202010-01
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - run:
