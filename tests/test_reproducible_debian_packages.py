@@ -10,6 +10,11 @@ PACKAGE_BUILD_TARGETS = {
     "securedrop-export": "main",
 }
 
+# TEMPORARY overrides for CI to pass
+PACKAGE_BUILD_TARGETS["securedrop-client"] = "reproducible_wheels_usage"
+PACKAGE_BUILD_TARGETS["securedrop-proxy"] = "update_localwheels_requirements"
+PACKAGE_BUILD_TARGETS["securedrop-log"] = "reproducible_wheels_usage"
+
 # These are the package names we want to test reproducibility for
 PACKAGE_NAMES = PACKAGE_BUILD_TARGETS.keys()
 
