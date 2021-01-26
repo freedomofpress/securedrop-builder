@@ -8,8 +8,10 @@ override_dh_virtualenv:
 		--python /usr/bin/python3 \
 		--setuptools \
 		--use-system-packages \
-		--index-url https://pypi.securedrop.org/simple \
 		--extra-pip-arg "--ignore-installed" \
+		--extra-pip-arg "--no-index" \
+		--extra-pip-arg "--find-links" \
+		--extra-pip-arg "$(WHEELS_DIR)" \
 		--extra-pip-arg "--no-deps" \
 		--extra-pip-arg "--no-cache-dir" \
 		--extra-pip-arg "--no-use-pep517" \

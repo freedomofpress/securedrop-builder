@@ -2,11 +2,11 @@ DEFAULT_GOAL: help
 
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
-	PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
 
 .PHONY: securedrop-client
 securedrop-client: ## Builds Debian package for securedrop-client code
-	PKG_NAME="securedrop-client" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-client" ./scripts/build-debianpackage
 
 .PHONY: securedrop-workstation-config
 securedrop-workstation-config: ## Builds Debian metapackage for Qubes Workstation base dependencies
@@ -26,11 +26,11 @@ securedrop-workstation-viewer: ## Builds Debian metapackage for Disposable VM de
 
 .PHONY: securedrop-export
 securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
-	PKG_NAME="securedrop-export" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-export" ./scripts/build-debianpackage
 
 .PHONY: securedrop-log
 securedrop-log: ## Builds Debian package for Qubes Workstation securedrop-log scripts
-	PKG_NAME="securedrop-log" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-log" ./scripts/build-debianpackage
 
 .PHONY: securedrop-keyring
 securedrop-keyring: ## Builds Debian package containing the release key
@@ -54,16 +54,16 @@ build-wheels: ## Builds the wheels and adds them to the localwheels directory
 	@printf "to push these changes to the FPF PyPI index\n"
 
 .PHONY: test
-test: ## Run test suite
-	pytest -v tests/
+test: ## Run simple test suite (skips reproducibility checks)
+	pytest -v tests/test_update_requirements.py
 
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
 	rm -rf localwheels/*
 
 .PHONY: reprotest
-reprotest: ## Reproducibility test, currently only for wheels
-	pytest -vvs tests/test_reproducible_wheels.py
+reprotest: ## Runs only reproducibility tests, for .deb and .whl files
+	pytest -vvs tests/test_reproducible_*.py
 
 .PHONY: help
 help: ## Prints this message and exits

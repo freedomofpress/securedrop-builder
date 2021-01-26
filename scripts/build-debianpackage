@@ -23,12 +23,12 @@ export DH_PIP_EXTRA_ARGS="--no-cache-dir --require-hashes"
 
 # Declare general packaging building workspace; subdirs will
 # be created within, to build specific packages.
-TOP_BUILDDIR="$HOME/debbuild/packaging"
+TOP_BUILDDIR="$PWD/build/debbuild/packaging"
 mkdir -p "$TOP_BUILDDIR"
 rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
 mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
 # Move changelog into place (we have separate changelogs for each platform)
-PLATFORM="$(lsb_release -sc)"
+PLATFORM="${PKG_PLATFORM:-buster}"
 
 # Validate required args.
 if [[ -z "${PKG_NAME:-}" ]]; then
@@ -83,11 +83,16 @@ function build_source_tarball() {
     rm -rf "$build_dir"
     git clone "$repo_url" "$build_dir"
 
-    # Verify tag, using only the prod key
-    verify_git_tag "$build_dir" "$PKG_VERSION"
+    if [[ -n "$PKG_GITREF" ]]; then
+        # Can't expect a prod sig on a gitref, likely a feature branch
+        git -C "$build_dir" checkout "$PKG_GITREF"
+    else
+        # Verify tag, using only the prod key
+        verify_git_tag "$build_dir" "$PKG_VERSION"
+        # Tag is verified, proceed with checkout
+        git -C "$build_dir" checkout "$PKG_VERSION"
+    fi
 
-    # Tag is verified, proceed with checkout
-    git -C "$build_dir" checkout "$PKG_VERSION"
     (cd "$build_dir" && LC_ALL="C.UTF-8" python setup.py sdist)
 
     # Initial tarball will contain timestamps from NOW, let's repack

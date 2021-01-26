@@ -1,5 +1,6 @@
 import pytest
 import subprocess
+import os
 
 
 # These are the SDW repositories that we build wheels for.
@@ -30,6 +31,8 @@ def test_wheel_builds_are_reproducible(repo_name):
       * kernel: x86_64 is the supported architecure, we don't ship others
     """
     repo_url = f"https://github.com/freedomofpress/{repo_name}"
+    cmd_env = os.environ.copy()
+    cmd_env["TERM"] = "xterm-256color"
     cmd = [
         "reprotest",
         "-c",
@@ -40,4 +43,4 @@ def test_wheel_builds_are_reproducible(repo_name):
         "localwheels/*.whl",
     ]
     repo_root = get_repo_root()
-    subprocess.check_call(cmd, cwd=repo_root)
+    subprocess.check_call(cmd, env=cmd_env, cwd=repo_root)
