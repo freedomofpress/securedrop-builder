@@ -26,7 +26,7 @@ securedrop-workstation-viewer: ## Builds Debian metapackage for Disposable VM de
 
 .PHONY: securedrop-export
 securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
-	PKG_NAME="securedrop-export" ./scripts/build-debianpackage
+	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-export" ./scripts/build-debianpackage
 
 .PHONY: securedrop-log
 securedrop-log: ## Builds Debian package for Qubes Workstation securedrop-log scripts
