@@ -1,0 +1,9 @@
+build==0.3.0
+
+# For the build dependency of the our packages
+
+# For python-dateutil
+setuptools-scm>=5.0.2
+
+# For chardet
+pytest-runner>=5.3.0
