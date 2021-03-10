@@ -2,7 +2,7 @@ securedrop-workstation-config (0.1.6+buster) unstable; urgency=medium
 
   * Bugfix in .desktop file syntax; improved Fail Closed behavior
 
--- SecureDrop Team <securedrop@freedom.press>  Tue, 02 Mar 2021 15:00:00 -0400
+ -- SecureDrop Team <securedrop@freedom.press>  Tue, 02 Mar 2021 15:00:00 -0400
 
 securedrop-workstation-config (0.1.5+buster) unstable; urgency=medium
 
