@@ -21,7 +21,8 @@ sudo apt-get install  \
     python3-all \
     python3-pip \
     python3-setuptools \
-    reprotest
+    reprotest \
+    desktop-file-utils
 
 
 # Inspect the wheel files present locally. If repo was cloned
