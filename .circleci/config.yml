@@ -258,15 +258,16 @@ common-steps:
 
 version: 2.1
 jobs:
-  tests:
+  lint-and-test:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run:
-          name: install test requirements and run tests
+          name: install test requirements, run linters, and run tests
           command: |
             make install-deps
+            make lint-desktop-files
             virtualenv -p python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
@@ -494,7 +495,7 @@ jobs:
 workflows:
   build-packages:
     jobs:
-      - tests
+      - lint-and-test
       - reprotest-wheels
       - reprotest-debs
       - build-buster-securedrop-client
