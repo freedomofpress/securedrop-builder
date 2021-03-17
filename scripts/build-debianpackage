@@ -83,7 +83,7 @@ function build_source_tarball() {
     rm -rf "$build_dir"
     git clone "$repo_url" "$build_dir"
 
-    if [[ -n "$PKG_GITREF" ]]; then
+    if [[ -n "${PKG_GITREF:-}" ]]; then
         # Can't expect a prod sig on a gitref, likely a feature branch
         git -C "$build_dir" checkout "$PKG_GITREF"
     else
