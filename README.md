@@ -187,26 +187,34 @@ Run the following script to create a new entry that you will update with the sam
 ./scripts/update-changelog securedrop-foobar
 ```
 
-First verify the tarball you are about to package into a deb:
+Build the package:
 
 ```
-gpg --verify <package>.tar.gz.asc <package>.tar.gz
+PKG_VERSION=x.y.z make securedrop-foobar
 ```
 
-Build the package by pointing to the tarball and package version:
+Output package hash so you can copy it into the build logs in the next step:
 
 ```
-PKG_PATH=/path/to/package.tar.gz PKG_VERSION=x.y.z make securedrop-foobar
+sha256sum /path/to/built/package.deb
 ```
 
 Save and publish your build logs to the `build-logs` repository, e.g. https://github.com/freedomofpress/build-logs/commit/786eb46672b07b5c635d87a075770b53a0ce3df9
 
-Open a PR to the `securedrop-debian-packages-lfs` repository with a test plan to verify the checksum in the build logs and (once appended to PR by a signature holder) that the new Release.gpg signature matches new Release file. The reviewer can perform verification by running:
+Commit the deb to a new `securedrop-debian-packages-lfs` branch (this will be added as a `git-lfs` object).
+
+Commit all new and modified `reprepro` files created via the publish script (`sudo apt install reprepro` if not already installed):
+```
+./tools/publish
 
 ```
-sha256sum /path/to/built/package.deb
-gpg --verify repo/public/dists/xenial/Release.gpg repo/public/dists/xenial/Release
+
+Now open a PR and link to the new `build-logs` commit. A release key holder will add a detached signature to the package in your PR. Make sure the detached signature matches new Release file by running:
 ```
+gpg --verify repo/public/dists/buster/Release.gpg repo/public/dists/buster/Release
+```
+
+Once the PR is merged, the new packages will be picked up by a script and deployed to https://apt.freedom.press within 30 minutes.
 
 ## Packaging non-Python based SecureDrop projects
 
