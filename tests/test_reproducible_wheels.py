@@ -38,9 +38,8 @@ def test_wheel_builds_are_reproducible(repo_name):
         "reprotest",
         "-c",
         f"./scripts/build-sync-wheels -p {repo_url} --clobber",
-        "--variations=-user_group",
-        "--vary",
-        "-time, -locales, -kernel,",
+        "--variations",
+        "-user_group, -time, -locales, -kernel",
         ".",
         "localwheels/*.whl",
     ]
