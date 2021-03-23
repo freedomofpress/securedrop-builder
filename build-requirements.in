@@ -1,4 +1,5 @@
 build==0.3.0
+wheel==0.36.2
 
 # For the build dependency of the our packages
 
