@@ -93,7 +93,7 @@ function build_source_tarball() {
         git -C "$build_dir" checkout "$PKG_VERSION"
     fi
 
-    (cd "$build_dir" && LC_ALL="C.UTF-8" python setup.py sdist)
+    (cd "$build_dir" && LC_ALL="C.UTF-8" python3 setup.py sdist)
 
     # Initial tarball will contain timestamps from NOW, let's repack
     # with timestamps from the changelog, which is static.
