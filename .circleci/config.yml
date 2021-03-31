@@ -248,6 +248,7 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
+      - *installgitlfs
       - run:
           name: install test requirements and run tests
           command: |
@@ -255,6 +256,7 @@ jobs:
             virtualenv -p python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
+            pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
             pytest -vvs tests/test_reproducible_wheels.py
 
   reprotest-debs:

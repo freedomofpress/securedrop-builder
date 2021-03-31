@@ -5,9 +5,21 @@
 set -e
 set -u
 set -o pipefail
+set -o nounset
 
-cd ./localwheels/
-sha256sum * > ../sha256sums.txt
 
-echo "Now you must sign the generated sha256sums.txt file:"
-echo "gpg --armor --output ../sha256sums.txt.asc --detach-sig  ../sha256sums.txt"
+bootstrap=${BOOTSTRAP:-}
+
+if [ ! -z "$bootstrap" ]; then
+	cd ./bootstrap/
+	sha256sum * > ../bootstrap-sha256sums.txt
+
+	echo "Now you must sign the generated bootstrap-sha256sums.txt file:"
+	echo "gpg --armor --output bootstrap-sha256sums.txt.asc --detach-sig  bootstrap-sha256sums.txt"
+else
+	cd ./localwheels/
+	sha256sum * > ../sha256sums.txt
+
+	echo "Now you must sign the generated sha256sums.txt file:"
+	echo "gpg --armor --output sha256sums.txt.asc --detach-sig  sha256sums.txt"
+fi

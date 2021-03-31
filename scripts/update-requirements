@@ -12,6 +12,10 @@ from pprint import pprint
 
 def main():
     PKG_DIR = os.environ.get("PKG_DIR", "")
+    if os.environ.get("BOOTSTRAP", ""):
+        BOOTSTRAP = True
+    else:
+        BOOTSTRAP = False
 
     if not PKG_DIR:
         print("Set PKG_DIR of the project")
@@ -30,20 +34,30 @@ def main():
     # First remove index line and any PyQt or sip dependency
     cleaned_lines = cleanup(requirements_file)
 
-    verify_sha256sums_file()
+    verify_sha256sums_file(BOOTSTRAP)
 
+    if BOOTSTRAP:
+        shasums_file = "bootstrap-sha256sums.txt"
+    else:
+        shasums_file = "sha256sums.txt"
     # Now let us update the files along with the sha256sums from localwheels
-    add_sha256sums(output_requirements_path, cleaned_lines)
+    add_sha256sums(output_requirements_path, cleaned_lines, shasums_file)
 
-def verify_sha256sums_file():
+def verify_sha256sums_file(bootstrap=False):
     "Verifies the sha256sums.txt file with gpg signature"
 
-    if not os.path.exists("sha256sums.txt"):
-        print("Missing sha256sums.txt file.")
+    if bootstrap:
+        filename = "bootstrap-sha256sums.txt"
+        signature_filename = "bootstrap-sha256sums.txt.asc"
+    else:
+        filename = "sha256sums.txt"
+        signature_filename = "sha256sums.txt.asc"
+    if not os.path.exists(filename):
+        print(f"Missing {filename} file.")
         sys.exit(1)
 
-    if not os.path.exists("sha256sums.txt.asc"):
-        print("Missing sha256sums.txt.asc file.")
+    if not os.path.exists(signature_filename):
+        print(f"Missing {signature_filename} file.")
         sys.exit(1)
 
     # Both file exists, we can now verify using gpg.
@@ -167,7 +181,10 @@ def cleanup(path: str) -> str:
         elif line.lstrip().startswith("--hash=sha256"):
             continue
         else:
-            finallines.append(line)
+            # To strip any extra new line characters
+            line = line.strip("\ \n")
+            if line:
+                finallines.append(line)
 
     return finallines
 

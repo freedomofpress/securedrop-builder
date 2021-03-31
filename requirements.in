@@ -1,5 +1,6 @@
 build==0.3.0
 wheel==0.36.2
+pip==21.0.1
 
 # For the build dependency of the our packages
 
@@ -11,3 +12,6 @@ pytest-runner>=5.3.0
 
 # For PyYAML
 cython==0.29.22
+
+# For pep517
+flit_core >=2,<3

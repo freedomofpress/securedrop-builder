@@ -28,6 +28,34 @@ sure that you install them into the template for your debian packaging AppVM.
 The install target will configure [git-lfs](https://git-lfs.github.com/), used for storing
 binary wheel files.
 
+## Updating our bootstrapped build tools
+
+We use [build](https://pypa-build.readthedocs.io/en/latest/) toolchain to build our reproducible wheels.
+If we have to update the tool, use the following steps
+
+```
+# First create a new fresh virtualenv
+rm -rf .venv && python3 -m venv .venv
+source .venv/bin/activate
+# Then install pip-tools, from pinned dependencies
+python3 -m pip install -r requirements.txt
+# Then update the requirements.in file as required
+pip-compile --allow-unsafe --generate-hashes --output-file=requirements.txt requirements.in
+# Now we are ready for bootstrapping
+./scripts/build-sync-wheels --cache ./bootstrap -p $PWD
+# Here we have the new wheels ready
+# Now let us recreate our new sha256sums for bootstrapping
+BOOTSTRAP=true ./scripts/sync-sha256sums
+# now let us sign the list of sha256sums
+gpg --armor --output bootstrap-sha256sums.txt.asc --detach-sig  bootstrap-sha256sums.txt
+# We can even verify if we want
+BOOTSTRAP=true ./scripts/verify-sha256sum-signature
+# Update the build-requirements.txt file
+PKG_DIR=$PWD BOOTSTRAP=true ./scripts/update-requirements
+```
+
+Make sure that your GPG public key is stored in `pubkeys/`, so CI can verify the signatures.
+
 ## Updating Python wheels
 
 Maintainers of `securedrop-client` and `securedrop-proxy` must ensure that
@@ -38,7 +66,19 @@ If new dependencies were added in the `build-requirements.txt` of that
 repo that are not in the FPF PyPI mirror (`./localwheels/` in this repository), then the maintainer needs
 to do the following (we are taking `securedrop-client` project as example):
 
-### 0. Create updated build-requirements.txt for the project
+### 0. Enable the virtualenv
+
+You can create a fresh virtualenv and install the build tools from our bootstrapped wheels.
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
+```
+
+Remember that the following steps needs to be done from the same virtual environment.
+
+### 1. Create updated build-requirements.txt for the project
 
 From the `securedrop-debian-packaging` directory,
 
@@ -46,7 +86,7 @@ From the `securedrop-debian-packaging` directory,
 PKG_DIR=/home/user/code/securedrop-client make requirements
 ```
 
-This will create the proper `requirements.txt` file in the project directory along with the binary wheel
+This will create the proper `build-requirements.txt` file in the project directory along with the binary wheel
 hashes from our own Python package index server.
 
 If we are missing any wheels from our cache/build/server, it will let you know with a following message.
@@ -66,7 +106,7 @@ The next step is to build the wheels. To do this step, you will need an owner
 of the SecureDrop release key to build the wheel and sign the updated sha256sums file
 with the release key. If you're not sure who to ask, ping @redshiftzero for a pointer.
 
-### 1. Build wheels
+### 2. Build wheels
 
 This must be done in an environment for building production artifacts:
 
@@ -84,7 +124,7 @@ Then navigate back to the project's code directory and run the following command
 python3 setup.py sdist
 ```
 
-### 2. Commit changes to the localwheels directory (if only any update of wheels)
+### 3. Commit changes to the localwheels directory (if only any update of wheels)
 
 Now add these built artifacts to version control:
 
@@ -93,32 +133,11 @@ git add localwheels/
 git commit
 ```
 
-### 3. Update the index files for the bucket (required for Debian builds)
-
-If there is any completely new Python package (source/wheel), then only we will have to update our index.
-
-```
-./scripts/createdirs.py ~/code/securedrop-client/requirements.txt
-```
-Then update the corresponding packages's `index.html`.
-
-If there is a new package, then update the main index.
-
-```
-./scripts/updateindex.py
-```
-
 Finally, submit a PR containing the new wheels and updated files.
 If you wish to test the new wheels in a local build before submitting a PR,
 or as part of PR review, you can do so by:
 
-```
-python3 -m http.server # serve local wheels via HTTP
-vim $PKG_NAME/debian/rules # edit index URL to http://localhost:8000/simple
-```
-
-Then run e.g. `PKG_VERSION=0.0.11 make securedrop-client`, and you'll see the GET
-requests in the console running the HTTP server.
+Then run e.g. `PKG_VERSION=0.4.1 make securedrop-client` to verify that the new wheels are working.
 
 ## Make a release
 
