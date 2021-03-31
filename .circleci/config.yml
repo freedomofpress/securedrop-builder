@@ -226,36 +226,6 @@ common-steps:
         git commit -m "Automated SecureDrop workstation build"
         git push origin main
 
-  - &sign_rpm
-    run:
-      name: Sign rpms with test GPG key
-      command: |
-        ./devops/ci-sign-rpm
-
-  - &commitworkstationrpms
-    run:
-      name: Commit workstation rpms for deployment to yum-test.securedrop.org
-      command: |
-        git clone --depth=1 git@github.com:freedomofpress/securedrop-workstation-dev-rpm-packages-lfs.git
-        cd securedrop-workstation-dev-rpm-packages-lfs
-
-        git config user.email "securedrop@freedom.press"
-        git config user.name "sdcibot"
-
-        # Copy built RPM packages to the relevant workstation repo and git push.
-        cp ~/packaging/securedrop-workstation/rpm-build/RPMS/noarch/*.rpm ./workstation/dom0/f25/
-        git add workstation/dom0/f25/*.rpm
-        git commit -m "Automated SecureDrop workstation build"
-
-        git push origin main
-
-  - &buildrpm
-    run:
-      name: Build dom0 rpm
-      command: |
-        cd ~/packaging/$PKG_NAME
-        make dom0-rpm
-
 version: 2.1
 jobs:
   lint-and-test:
@@ -448,30 +418,6 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
-  build-nightly-dom0-rpm:
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - *installgitlfs
-      - *clonesecuredropworkstation
-      - *getrpmnightlyversion
-      - *buildrpm
-      - *sign_rpm
-      - *addsshkeys
-      - *commitworkstationrpms
-
-  make-dom0-rpm:
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - *installgitlfs
-      - *clonesecuredropworkstation
-      - *getlatestreleasedversion
-      - *buildrpm
-      - *sign_rpm
-
   build-buster-securedrop-workstation-config:
     docker:
       - image: circleci/python:3.7-buster
@@ -519,7 +465,6 @@ workflows:
       - build-buster-securedrop-workstation-grsec
       - build-buster-securedrop-workstation-config
       - build-buster-securedrop-keyring
-      - make-dom0-rpm
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.
@@ -549,6 +494,3 @@ workflows:
       - build-nightly-buster-securedrop-workstation-config:
           requires:
             - build-nightly-buster-securedrop-workstation-svs-disp
-      # There is also a dom0 rpm build `build-nightly-dom0-rpm`
-      # intended for staging environments but it is temporarily
-      # disabled to enable pre-release QA of release candidate RPMs.
