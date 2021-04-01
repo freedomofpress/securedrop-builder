@@ -35,3 +35,15 @@ if [[ "$wheel_mime_types" != "application/zip" ]]; then
     git checkout bootstrap/ localwheels/
     git lfs fetch
 fi
+
+# Support existing activated virtualenv, e.g. via virtualenvwrapper.
+if [[ -z "$VIRTUAL_ENV" ]]; then
+    echo "Creating local virtualenv..."
+    python3 -m venv .venv
+    . .venv/bin/activate
+else
+    echo "Virtualenv already activated, skipping creation..."
+fi
+
+# Install the 'build' tool from previously prepared localwheels
+pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/

@@ -15,3 +15,6 @@ cython==0.29.22
 
 # For pep517
 flit_core >=2,<3
+
+# For maintaining requirements files
+pip-tools>=6
