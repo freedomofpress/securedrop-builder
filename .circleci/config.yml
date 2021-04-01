@@ -217,8 +217,8 @@ common-steps:
 version: 2.1
 jobs:
   lint-and-test:
-    machine:
-      image: ubuntu-2004:202010-01
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - run:
@@ -229,11 +229,12 @@ jobs:
             virtualenv -p python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
+            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             make test
 
   reprotest-wheels:
-    machine:
-      image: ubuntu-2004:202010-01
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - run:
@@ -244,6 +245,7 @@ jobs:
             source .venv/bin/activate
             pip install -r test-requirements.txt
             pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
+            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             pytest -vvs tests/test_reproducible_wheels.py
 
   reprotest-debs:
