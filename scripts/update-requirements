@@ -28,20 +28,24 @@ def main():
             print("Cannot find requirements.txt")
             sys.exit(1)
 
-    output_requirements_path = os.path.join(
-        PKG_DIR, "build-requirements.txt")
-
     # First remove index line and any PyQt or sip dependency
     cleaned_lines = cleanup(requirements_file)
 
     verify_sha256sums_file(BOOTSTRAP)
+
+    build_requirements_file = os.path.join(PKG_DIR, "build-requirements.txt")
+    if not os.path.exists(build_requirements_file):
+        build_requirements_file = os.path.join(PKG_DIR, "requirements", "build-requirements.txt")
+        if not os.path.exists(build_requirements_file):
+            print("Cannot find build_requirements.txt")
+            sys.exit(1)
 
     if BOOTSTRAP:
         shasums_file = "bootstrap-sha256sums.txt"
     else:
         shasums_file = "sha256sums.txt"
     # Now let us update the files along with the sha256sums from localwheels
-    add_sha256sums(output_requirements_path, cleaned_lines, shasums_file)
+    add_sha256sums(build_requirements_file, cleaned_lines, shasums_file)
 
 def verify_sha256sums_file(bootstrap=False):
     "Verifies the sha256sums.txt file with gpg signature"
