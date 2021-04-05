@@ -2,10 +2,13 @@
 
 import os
 import sys
+import glob
 import subprocess
 import tempfile
+import tarfile
 import shutil
 import argparse
+from pprint import pprint
 
 
 # Set SOURCE_DATE_EPOCH to a predictable value. Using the first
@@ -65,6 +68,7 @@ def main():
 
     if os.path.exists(WHEEL_BUILD_DIR):
         shutil.rmtree(WHEEL_BUILD_DIR)
+        os.mkdir(WHEEL_BUILD_DIR)
     else:
         os.mkdir(WHEEL_BUILD_DIR)
 
@@ -85,23 +89,25 @@ def main():
         ]
         subprocess.check_call(cmd)
 
-        cmd = [
-            "pip3",
-            "wheel",
-            "--no-binary",
-            ":all:",
-            "--find-links",
-            tmpdir,
-            "--progress-bar",
-            "pretty",
-            "--wheel-dir",
-            tmpdir,
-            "--build",
-            WHEEL_BUILD_DIR,
-            "--requirement",
-            req_path,
-        ]
-        subprocess.check_call(cmd)
+        # Now we have all the source tarballs
+        source_tar_balls = glob.glob(f"{tmpdir}/*.tar.gz")
+        for source in source_tar_balls:
+            # I am getting umask issue for the below lines
+            # tar = tarfile.open(source)
+            # tar.extractall(WHEEL_BUILD_DIR)
+            cmd = ["tar", "-xvf", source, "-C", WHEEL_BUILD_DIR]
+            subprocess.check_call(cmd)
+        # Now we have the all source tarballs extracted in WHEEL_BUILD_DIR
+
+        # Next step is to take each one of those and then execute the build command to build a wheel against them
+        project_names = os.listdir(WHEEL_BUILD_DIR)
+        for project in project_names:
+            print(f"Building {project}")
+            source_path = os.path.join(WHEEL_BUILD_DIR, project)
+            cmd = ["python3", "-m", "build", "--wheel", source_path, "--no-isolation", "-o", tmpdir]
+            subprocess.check_call(cmd)
+            print(f"build command used: {' '.join(cmd)}")
+
 
         # Now find the names
         names = os.listdir(tmpdir)

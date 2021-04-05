@@ -26,6 +26,7 @@ def test_wheel_builds_are_reproducible(repo_name):
 
     Explanations of the excluded reproducibility checks:
 
+      * user_group: As tar command will fail for random user/groups
       * time: breaks HTTPS, so pip calls fail
       * locales: some locales fail, would be nice to fix, but low priority
       * kernel: x86_64 is the supported architecure, we don't ship others
@@ -37,8 +38,8 @@ def test_wheel_builds_are_reproducible(repo_name):
         "reprotest",
         "-c",
         f"./scripts/build-sync-wheels -p {repo_url} --clobber",
-        "--vary",
-        "+all, -time, -locales, -kernel",
+        "--variations",
+        "-user_group, -time, -locales, -kernel",
         ".",
         "localwheels/*.whl",
     ]

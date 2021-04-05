@@ -197,18 +197,6 @@ common-steps:
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
-  - &installgitlfs
-    run:
-      name: Install Git LFS.
-      command: |
-        export GIT_LFS_VERSION=2.9.2
-        export GIT_LFS_CHECKSUM=04346234130e518d165bdc7e9964375bbeb3b98efabd042084530cc34288274c
-        wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
-        sha256sum git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz | grep $GIT_LFS_CHECKSUM
-        tar xzf git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz
-        sudo mv git-lfs /usr/local/bin/git-lfs
-        git lfs install
-
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
@@ -229,8 +217,8 @@ common-steps:
 version: 2.1
 jobs:
   lint-and-test:
-    machine:
-      image: ubuntu-2004:202010-01
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - run:
@@ -241,11 +229,12 @@ jobs:
             virtualenv -p python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
+            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             make test
 
   reprotest-wheels:
-    machine:
-      image: ubuntu-2004:202010-01
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
       - run:
@@ -255,6 +244,7 @@ jobs:
             virtualenv -p python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
+            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             pytest -vvs tests/test_reproducible_wheels.py
 
   reprotest-debs:

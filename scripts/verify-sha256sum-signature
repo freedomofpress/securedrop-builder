@@ -8,13 +8,24 @@
 set -e
 set -u
 set -o pipefail
+set -o nounset
+
+
+bootstrap=${BOOTSTRAP:-}
 
 # Canonicalize path, since script may be called from different
 # locations within the repo.
 repo_root="$(git rev-parse --show-toplevel)"
 
-sha256sums_sig="${repo_root}/sha256sums.txt.asc"
-sha256sums_file="${repo_root}/sha256sums.txt"
+if [ ! -z "$bootstrap" ]; then
+	sha256sums_sig="${repo_root}/bootstrap-sha256sums.txt.asc";
+	sha256sums_file="${repo_root}/bootstrap-sha256sums.txt";
+	localwheels="${repo_root}/bootstrap"
+else
+	sha256sums_sig="${repo_root}/sha256sums.txt.asc";
+	sha256sums_file="${repo_root}/sha256sums.txt";
+	localwheels="${repo_root}/localwheels"
+fi
 
 function verify_sha256sum_signature() {
     # Hardcode expected filepaths
@@ -38,12 +49,11 @@ function verify_sha256sum_no_changes() {
     # Create a temporary file to store the checksums as gathered from the mirror.
     # We'll compare this to the signed file for validation.
     temp_sha256sum="$(mktemp)"
-    localwheels="${repo_root}/localwheels"
     if [[ ! -d "$localwheels" ]]; then
-        echo "localwheels/ directory does not exist; run make fetch-wheels"
+        echo "$localwheels directory does not exist; run make fetch-wheels"
         exit 1
     fi
-    cd "${repo_root}/localwheels"
+    cd $localwheels
     sha256sum * > "$temp_sha256sum"
     diff <(sort "$sha256sums_file") <(sort "$temp_sha256sum")
 }
