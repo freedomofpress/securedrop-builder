@@ -45,3 +45,12 @@ def test_wheel_builds_are_reproducible(repo_name):
     ]
     repo_root = get_repo_root()
     subprocess.check_call(cmd, env=cmd_env, cwd=repo_root)
+
+
+@pytest.mark.parametrize("repo_name", REPOS_WITH_WHEELS)
+def test_wheel_builds_match_version_control(repo_name):
+    repo_url = f"https://github.com/freedomofpress/{repo_name}"
+    build_cmd = f"./scripts/build-sync-wheels -p {repo_url} --clobber".split()
+    subprocess.check_call(build_cmd)
+    check_cmd = "git diff --exit-code".split()
+    subprocess.check_call(check_cmd)
