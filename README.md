@@ -1,3 +1,5 @@
+> By contributing to this project, you agree to abide by our [Code of Conduct](https://github.com/freedomofpress/.github/blob/main/CODE_OF_CONDUCT.md).
+
 # SecureDrop Debian Packaging
 
 [![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main)
