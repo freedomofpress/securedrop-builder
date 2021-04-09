@@ -19,5 +19,6 @@ override_dh_virtualenv:
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
 	find ./debian/ -type f -name 'pip-selfcheck.json' -delete
-	find -type f -name RECORD -exec sed -i -e '/.*\.pyc.*/d' {} +
+	find ./debian/ -type f -name 'direct_url.json' -delete
+	find ./debian/ -type f -name 'RECORD' -delete
 	dh_strip_nondeterminism $@
