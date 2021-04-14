@@ -9,7 +9,7 @@ X-Python3-Version: >= 3.5
 
 Package: securedrop-proxy
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}
+Depends: ${python3:Depends}, ${misc:Depends}, libyaml-0-2
 Description: This is securedrop Qubes proxy service
  This package provides the network proxy on Qubes to talk to the SecureDrop server.
 
