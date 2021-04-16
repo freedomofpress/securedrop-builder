@@ -17,6 +17,7 @@ def get_repo_root():
     return top_level
 
 
+@pytest.mark.skip(reason="Comparing to version control is sufficient")
 @pytest.mark.parametrize("repo_name", REPOS_WITH_WHEELS)
 def test_wheel_builds_are_reproducible(repo_name):
     """
@@ -52,5 +53,8 @@ def test_wheel_builds_match_version_control(repo_name):
     repo_url = f"https://github.com/freedomofpress/{repo_name}"
     build_cmd = f"./scripts/build-sync-wheels -p {repo_url} --clobber".split()
     subprocess.check_call(build_cmd)
-    check_cmd = "git diff --exit-code".split()
-    subprocess.check_call(check_cmd)
+    # Check for modified files (won't catch new, untracked files)
+    subprocess.check_call("git diff --exit-code".split())
+    # Check for new, untracked files. Test will fail if working copy is dirty
+    # in any way, so mostly useful in CI.
+    assert subprocess.check_output("git status --porcelain".split()) == b""
