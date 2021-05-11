@@ -38,7 +38,7 @@ with open(requirements_file) as fobj:
 # to be packaged, has a matching source tarball on FPF's PyPI.
 
 # Remove lines with comments.
-uncommented_lines = [line for line in lines if not line.startswith('#')]
+uncommented_lines = [line for line in lines if not line.lstrip().startswith('#')]
 
 # The hashes for a given requirement will be distributed
 # across multiple lines, e.g.
