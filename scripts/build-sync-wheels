@@ -37,6 +37,9 @@ def main():
         help="Points to the project directory",
     )
     parser.add_argument(
+        "--requirements", default="requirements.txt", help="requirements file name"
+    )
+    parser.add_argument(
         "--cache", default="./localwheels", help="Final cache dir"
     )
     parser.add_argument(
@@ -57,7 +60,7 @@ def main():
             sys.exit(1)
 
     # Try requirements.txt in the repo root, otherwise try requirements/requirements.txt
-    req_path = os.path.join(args.p, "requirements.txt")
+    req_path = os.path.join(args.p, args.requirements)
 
     if not os.path.exists(req_path):
         req_path = os.path.join(args.p, "requirements/requirements.txt")

@@ -33,27 +33,28 @@ binary wheel files.
 ## Updating our bootstrapped build tools
 
 We use [build](https://pypa-build.readthedocs.io/en/latest/) toolchain to build our reproducible wheels.
-If we have to update the tool, use the following steps
+If we have to update the tool, use the following steps (replace `buster` with `focal` for packages
+on Focal)
 
 ```
 # First create a new fresh virtualenv
 rm -rf .venv && python3 -m venv .venv
 source .venv/bin/activate
-# Then install pip-tools, from pinned dependencies
-python3 -m pip install -r requirements.txt
+# Then install pip-tools, from pinned dependencies based on OS release
+python3 -m pip install -r requirements-buster.txt
 # Then update the requirements.in file as required
-pip-compile --allow-unsafe --generate-hashes --output-file=requirements.txt requirements.in
+pip-compile --allow-unsafe --generate-hashes --output-file=requirements-buster.txt requirements-buster.in
 # Now we are ready for bootstrapping
-./scripts/build-sync-wheels --cache ./bootstrap -p $PWD
+./scripts/build-sync-wheels --cache ./bootstrap-buster -p $PWD --requirements requirements-buster.txt
 # Here we have the new wheels ready
 # Now let us recreate our new sha256sums for bootstrapping
-BOOTSTRAP=true ./scripts/sync-sha256sums
+BOOTSTRAP=buster ./scripts/sync-sha256sums
 # now let us sign the list of sha256sums
-gpg --armor --output bootstrap-sha256sums.txt.asc --detach-sig  bootstrap-sha256sums.txt
+gpg --armor --output bootstrap-sha256sums-buster.txt.asc --detach-sig  bootstrap-sha256sums-buster.txt
 # We can even verify if we want
-BOOTSTRAP=true ./scripts/verify-sha256sum-signature
+BOOTSTRAP=buster ./scripts/verify-sha256sum-signature
 # Update the build-requirements.txt file
-PKG_DIR=$PWD BOOTSTRAP=true ./scripts/update-requirements
+PKG_DIR=$PWD BOOTSTRAP=buster ./scripts/update-requirements
 ```
 
 Make sure that your GPG public key is stored in `pubkeys/`, so CI can verify the signatures.

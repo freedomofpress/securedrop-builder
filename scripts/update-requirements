@@ -12,20 +12,28 @@ from pprint import pprint
 
 def main():
     PKG_DIR = os.environ.get("PKG_DIR", "")
-    if os.environ.get("BOOTSTRAP", ""):
-        BOOTSTRAP = True
+    BOOTSTRAP_VALUE = os.environ.get("BOOTSTRAP", "")
+    if BOOTSTRAP_VALUE:
+        BOOTSTRAP = BOOTSTRAP_VALUE
     else:
-        BOOTSTRAP = False
+        BOOTSTRAP = ""
+
+    REQUIREMENTS_NAME = os.environ.get("REQUIREMENTS_NAME", "requirements.txt")
+    OUTPUT_REQUIREMENTS_NAME = "build-requirements.txt"
+    if BOOTSTRAP:
+        REQUIREMENTS_NAME = "requirements-{0}.txt".format(BOOTSTRAP)
+        OUTPUT_REQUIREMENTS_NAME = "build-requirements-{0}.txt".format(BOOTSTRAP)
 
     if not PKG_DIR:
         print("Set PKG_DIR of the project")
         sys.exit(1)
 
-    requirements_file = os.path.join(PKG_DIR, "requirements.txt")
+    breakpoint()
+    requirements_file = os.path.join(PKG_DIR, REQUIREMENTS_NAME)
     if not os.path.exists(requirements_file):
-        requirements_file = os.path.join(PKG_DIR, "requirements", "requirements.txt")
+        requirements_file = os.path.join(PKG_DIR, "requirements", REQUIREMENTS_NAME)
         if not os.path.exists(requirements_file):
-            print("Cannot find requirements.txt")
+            print("Cannot find {0}".format(REQUIREMENTS_NAME))
             sys.exit(1)
 
     # First remove index line and any PyQt or sip dependency
@@ -33,26 +41,28 @@ def main():
 
     verify_sha256sums_file(BOOTSTRAP)
 
-    build_requirements_file = os.path.join(PKG_DIR, "build-requirements.txt")
-    if not os.path.exists(build_requirements_file):
-        build_requirements_file = os.path.join(PKG_DIR, "requirements", "build-requirements.txt")
-        if not os.path.exists(build_requirements_file):
-            print("Cannot find build_requirements.txt")
-            sys.exit(1)
+    build_requirements_file = os.path.join(PKG_DIR, OUTPUT_REQUIREMENTS_NAME)
+    #if not os.path.exists(build_requirements_file):
+    #    build_requirements_file = os.path.join(PKG_DIR, "requirements", REQUIREMENTS_NAME)
+    #    if not os.path.exists(build_requirements_file):
+    #        print("Cannot find {0}".format(REQUIREMENTS_NAME))
+    #        sys.exit(1)
 
     if BOOTSTRAP:
-        shasums_file = "bootstrap-sha256sums.txt"
+        shasums_file = "bootstrap-sha256sums-{0}.txt".format(BOOTSTRAP)
+
     else:
         shasums_file = "sha256sums.txt"
     # Now let us update the files along with the sha256sums from localwheels
     add_sha256sums(build_requirements_file, cleaned_lines, shasums_file)
 
-def verify_sha256sums_file(bootstrap=False):
+def verify_sha256sums_file(bootstrap="buster"):
     "Verifies the sha256sums.txt file with gpg signature"
 
     if bootstrap:
-        filename = "bootstrap-sha256sums.txt"
-        signature_filename = "bootstrap-sha256sums.txt.asc"
+        filename = "bootstrap-sha256sums-{0}.txt".format(bootstrap)
+        signature_filename = "bootstrap-sha256sums-{0}.txt.asc".format(bootstrap)
+
     else:
         filename = "sha256sums.txt"
         signature_filename = "sha256sums.txt.asc"

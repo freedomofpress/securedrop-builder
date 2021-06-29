@@ -18,9 +18,9 @@ bootstrap=${BOOTSTRAP:-}
 repo_root="$(git rev-parse --show-toplevel)"
 
 if [ ! -z "$bootstrap" ]; then
-	sha256sums_sig="${repo_root}/bootstrap-sha256sums.txt.asc";
-	sha256sums_file="${repo_root}/bootstrap-sha256sums.txt";
-	localwheels="${repo_root}/bootstrap"
+	sha256sums_sig="${repo_root}/bootstrap-sha256sums-${bootstrap}.txt.asc";
+	sha256sums_file="${repo_root}/bootstrap-sha256sums-${bootstrap}.txt";
+	localwheels="${repo_root}/bootstrap-${bootstrap}"
 else
 	sha256sums_sig="${repo_root}/sha256sums.txt.asc";
 	sha256sums_file="${repo_root}/sha256sums.txt";
