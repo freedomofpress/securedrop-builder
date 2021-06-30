@@ -76,7 +76,7 @@ You can create a fresh virtualenv and install the build tools from our bootstrap
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
+python3 -m pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements-buster.txt --find-links ./bootstrap-buster/
 ```
 
 Remember that the following steps needs to be done from the same virtual environment.
@@ -132,8 +132,14 @@ python3 setup.py sdist
 Now add these built artifacts to version control:
 
 ```
-git add localwheels/
+git add localwheels-buster/
 git commit
+```
+
+### 4. Update the sha256sums file
+
+```
+RELEASE=buster ./scripts/sync-sha256sums
 ```
 
 Finally, submit a PR containing the new wheels and updated files.
@@ -141,6 +147,27 @@ If you wish to test the new wheels in a local build before submitting a PR,
 or as part of PR review, you can do so by:
 
 Then run e.g. `PKG_VERSION=0.4.1 make securedrop-client` to verify that the new wheels are working.
+
+## Building wheels for SecureDrop server
+
+This is special instruction for creating wheels and requirements file for `securedrop-app-code`
+package on Focal.
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements-focal.txt --find-links ./bootstrap-focal/
+./scripts/build-sync-wheels -p ~/securedrop/securedrop/requirements/python3/ --requirements securedrop-app-code-requirements.txt --cache ./localwheels-focal
+# Here we have the new wheels ready
+# Now let us recreate our new sha256sums for securedrop server
+RELEASE=focal ./scripts/sync-sha256sums
+# now let us sign the list of sha256sums
+gpg --armor --output sha256sums-focal.txt.asc --detach-sig  sha256sums-focal.txt
+# We can even verify if we want
+RELEASE=focal ./scripts/verify-sha256sum-signature
+# Update the build-requirements.txt file
+PKG_DIR=~/securedrop/securedrop/requirements/python3/ RELEASE=focal ./scripts/update-requirements
+```
 
 ## Make a release
 

@@ -40,7 +40,7 @@ def main():
         "--requirements", default="requirements.txt", help="requirements file name"
     )
     parser.add_argument(
-        "--cache", default="./localwheels", help="Final cache dir"
+        "--cache", default="./localwheels-buster", help="Final cache dir"
     )
     parser.add_argument(
         "--clobber", action="store_true", default=False,
@@ -101,6 +101,12 @@ def main():
             cmd = ["tar", "-xvf", source, "-C", WHEEL_BUILD_DIR]
             subprocess.check_call(cmd)
         # Now we have the all source tarballs extracted in WHEEL_BUILD_DIR
+
+        source_zip_files = glob.glob(f"{tmpdir}/*.zip")
+        for source in source_zip_files:
+            cmd = ["unzip", source, "-d", WHEEL_BUILD_DIR]
+            subprocess.check_call(cmd)
+        # Now we have the all source zips extracted in WHEEL_BUILD_DIR
 
         # Next step is to take each one of those and then execute the build command to build a wheel against them
         project_names = os.listdir(WHEEL_BUILD_DIR)

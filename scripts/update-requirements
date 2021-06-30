@@ -9,6 +9,12 @@ import hashlib
 import subprocess
 from pprint import pprint
 
+# Right now we have only two different release support
+if sys.version_info.minor == 8:
+    RELEASE = "focal"
+else:
+    RELEASE = "buster"
+
 
 def main():
     PKG_DIR = os.environ.get("PKG_DIR", "")
@@ -28,7 +34,6 @@ def main():
         print("Set PKG_DIR of the project")
         sys.exit(1)
 
-    breakpoint()
     requirements_file = os.path.join(PKG_DIR, REQUIREMENTS_NAME)
     if not os.path.exists(requirements_file):
         requirements_file = os.path.join(PKG_DIR, "requirements", REQUIREMENTS_NAME)
@@ -52,7 +57,7 @@ def main():
         shasums_file = "bootstrap-sha256sums-{0}.txt".format(BOOTSTRAP)
 
     else:
-        shasums_file = "sha256sums.txt"
+        shasums_file = f"sha256sums-{RELEASE}.txt"
     # Now let us update the files along with the sha256sums from localwheels
     add_sha256sums(build_requirements_file, cleaned_lines, shasums_file)
 
@@ -64,8 +69,8 @@ def verify_sha256sums_file(bootstrap="buster"):
         signature_filename = "bootstrap-sha256sums-{0}.txt.asc".format(bootstrap)
 
     else:
-        filename = "sha256sums.txt"
-        signature_filename = "sha256sums.txt.asc"
+        filename = f"sha256sums-{RELEASE}.txt"
+        signature_filename = f"sha256sums-{RELEASE}.txt.asc"
     if not os.path.exists(filename):
         print(f"Missing {filename} file.")
         sys.exit(1)
@@ -146,7 +151,7 @@ def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha2
 
         print("\nPlease build the wheel by using the following command:\n")
         print("\tPKG_DIR={0} make build-wheels\n".format(os.environ["PKG_DIR"]))
-        print("Then add the newly built wheels and sources to ./localwheels/.")
+        print(f"Then add the newly built wheels and sources to ./localwheels-{RELEASE}/.")
         print("Also update the index HTML files accordingly commit your changes.")
         print("After these steps, please rerun the command again.")
 

@@ -12,6 +12,7 @@ set -o nounset
 
 
 bootstrap=${BOOTSTRAP:-}
+release=${RELEASE:-"buster"}
 
 # Canonicalize path, since script may be called from different
 # locations within the repo.
@@ -22,9 +23,9 @@ if [ ! -z "$bootstrap" ]; then
 	sha256sums_file="${repo_root}/bootstrap-sha256sums-${bootstrap}.txt";
 	localwheels="${repo_root}/bootstrap-${bootstrap}"
 else
-	sha256sums_sig="${repo_root}/sha256sums.txt.asc";
-	sha256sums_file="${repo_root}/sha256sums.txt";
-	localwheels="${repo_root}/localwheels"
+	sha256sums_sig="${repo_root}/sha256sums-${release}.txt.asc";
+	sha256sums_file="${repo_root}/sha256sums-${release}.txt";
+	localwheels="${repo_root}/localwheels-${release}"
 fi
 
 function verify_sha256sum_signature() {

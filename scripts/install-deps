@@ -1,11 +1,13 @@
 #!/bin/bash
 # Installs required dependencies for building SecureDrop Worsktation packages.
-# Assumes a Debian 10 machine, ideally a Qubes AppVM.
+# Assumes a Debian 10 or Ubuntu Focal machine, ideally a Qubes AppVM.
 
 # If running in CI, we need to add the Ubuntu Bionic repo to download dh-virtualenv
 if [[ -v CIRCLE_BUILD_URL ]]; then
   echo "deb http://archive.ubuntu.com/ubuntu/ bionic universe" | sudo tee -a /etc/apt/sources.list
 fi
+
+release=${RELEASE:-"buster"}
 
 sudo apt-get update
 sudo apt-get install  \
@@ -27,13 +29,13 @@ sudo apt-get install  \
 
 # Inspect the wheel files present locally. If repo was cloned
 # without git-lfs, they'll be "text/plain", rather than "application/zip".
-wheel_mime_types="$(find localwheels/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
+wheel_mime_types="$(find localwheels-${release}/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
 if [[ "$wheel_mime_types" != "application/zip" ]]; then
     echo "Re-fetching git-lfs assets..."
     git lfs install
     # Re-fetch assets to resolve pointers to actual files
-    rm -r bootstrap/ localwheels/
-    git checkout bootstrap/ localwheels/
+    rm -r bootstrap-${release}/ localwheels-${release}/
+    git checkout bootstrap-${release}/ localwheels-${release}/
     git lfs fetch
 fi
 
@@ -47,4 +49,4 @@ else
 fi
 
 # Install the 'build' tool from previously prepared localwheels
-pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
+pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements-${release}.txt --find-links ./bootstrap-${release}/

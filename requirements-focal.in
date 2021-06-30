@@ -21,3 +21,4 @@ pip-tools>=6
 
 # For cryptography
 setuptools-rust==0.12.1
+cffi>=1.12

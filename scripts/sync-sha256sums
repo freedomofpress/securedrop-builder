@@ -8,7 +8,9 @@ set -o pipefail
 set -o nounset
 
 
-bootstrap=${BOOTSTRAP:-"buster"}
+bootstrap=${BOOTSTRAP:-}
+release=${RELEASE:-"buster"}
+
 
 if [ ! -z "$bootstrap" ]; then
 	cd ./bootstrap-$bootstrap/
@@ -17,9 +19,9 @@ if [ ! -z "$bootstrap" ]; then
 	echo "Now you must sign the generated bootstrap-sha256sums-${bootstrap}.txt file:"
 	echo "gpg --armor --output bootstrap-sha256sums-${bootstrap}.txt.asc --detach-sig  bootstrap-sha256sums-${bootstrap}.txt"
 else
-	cd ./localwheels/
-	sha256sum * > ../sha256sums.txt
+	cd ./localwheels-${release}/
+	sha256sum * > ../sha256sums-${release}.txt
 
 	echo "Now you must sign the generated sha256sums.txt file:"
-	echo "gpg --armor --output sha256sums.txt.asc --detach-sig  sha256sums.txt"
+	echo "gpg --armor --output sha256sums-${release}.txt.asc --detach-sig  sha256sums-${release}.txt"
 fi

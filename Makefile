@@ -37,8 +37,12 @@ securedrop-keyring: ## Builds Debian package containing the release key
 	PKG_NAME="securedrop-keyring" ./scripts/build-debianpackage
 
 .PHONY: install-deps
-install-deps: ## Install initial Debian packaging dependencies
-	./scripts/install-deps
+install-deps: ## Install initial Debian packaging dependencies on Buster
+	RELEASE="buster" ./scripts/install-deps
+
+.PHONY: install-deps-focal
+install-deps-focal: ## Install initial Debian packaging dependencies on Focal
+	RELEASE="focal" ./scripts/install-deps
 
 .PHONY: lint-desktop-files
 lint-desktop-files: ## Install initial Debian packaging dependencies
@@ -49,10 +53,10 @@ requirements: ## Creates requirements files for the Python projects
 	./scripts/update-requirements
 
 .PHONY: build-wheels
-build-wheels: ## Builds the wheels and adds them to the localwheels directory
-	./scripts/verify-sha256sum-signature
-	./scripts/build-sync-wheels -p ${PKG_DIR}
-	./scripts/sync-sha256sums
+build-wheels: ## Builds the wheels and adds them to the localwheels directory for Buster
+	RELEASE=buster ./scripts/verify-sha256sum-signature
+	RELEASE=buster ./scripts/build-sync-wheels -p ${PKG_DIR}
+	RELEASE=buster ./scripts/sync-sha256sums
 	@printf "Done! Now please follow the instructions in\n"
 	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/"
 	@printf "to push these changes to the FPF PyPI index\n"
@@ -63,7 +67,7 @@ test: ## Run simple test suite (skips reproducibility checks)
 
 .PHONY: clean
 clean: ## Removes all non-version controlled packaging artifacts
-	rm -rf localwheels/*
+	rm -rf localwheels-buster/* localwheels-focal/*
 
 .PHONY: reprotest
 reprotest: ## Runs only reproducibility tests, for .deb and .whl files
