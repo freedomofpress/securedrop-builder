@@ -42,7 +42,7 @@ def test_wheel_builds_are_reproducible(repo_name):
         "--variations",
         "-user_group, -time, -locales, -kernel",
         ".",
-        "localwheels/*.whl",
+        "localwheels-buster/*.whl",
     ]
     repo_root = get_repo_root()
     subprocess.check_call(cmd, env=cmd_env, cwd=repo_root)
