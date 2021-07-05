@@ -241,7 +241,6 @@ jobs:
           name: install test requirements and run tests
           command: |
             make install-deps
-            virtualenv -p /usr/bin/python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
             sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
