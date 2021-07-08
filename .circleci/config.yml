@@ -234,7 +234,7 @@ jobs:
 
   reprotest-wheels:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: quay.io/kushaldas/packaging-debian-buster@sha256:bcdd8fd7ffcf89a4e252c33445791f6cd3e07f8216d98cb1c0b84dab44df698e
     steps:
       - checkout
       - run:
@@ -248,14 +248,13 @@ jobs:
 
   reprotest-debs:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: quay.io/kushaldas/packaging-debian-buster@sha256:bcdd8fd7ffcf89a4e252c33445791f6cd3e07f8216d98cb1c0b84dab44df698e
     steps:
       - checkout
       - run:
           name: install test requirements and run tests
           command: |
             make install-deps
-            virtualenv -p /usr/bin/python3 .venv
             source .venv/bin/activate
             pip install -r test-requirements.txt
             # Patch reprotest in-place to skip 'setarch' prefix, which fails under containers.

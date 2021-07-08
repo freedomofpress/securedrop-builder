@@ -3,9 +3,9 @@
 # Assumes a Debian 10 machine, ideally a Qubes AppVM.
 
 # If running in CI, we need to add the Ubuntu Bionic repo to download dh-virtualenv
-if [[ -v CIRCLE_BUILD_URL ]]; then
-  echo "deb http://archive.ubuntu.com/ubuntu/ bionic universe" | sudo tee -a /etc/apt/sources.list
-fi
+#if [[ -v CIRCLE_BUILD_URL ]]; then
+#  echo "deb http://archive.ubuntu.com/ubuntu/ bionic universe" | sudo tee -a /etc/apt/sources.list
+#fi
 
 sudo apt-get update
 sudo apt-get install  \
@@ -21,9 +21,10 @@ sudo apt-get install  \
     libyaml-dev \
     python3-all \
     python3-pip \
+    python3-venv \
     python3-setuptools \
     reprotest \
-    desktop-file-utils
+    desktop-file-utils -y
 
 # Inspect the wheel files present locally. If repo was cloned
 # without git-lfs, they'll be "text/plain", rather than "application/zip".
