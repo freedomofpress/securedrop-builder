@@ -20,7 +20,7 @@ set -e
 
 # When updating the kernel version, also check that the u2mfn version matches:
 # https://github.com/QubesOS/qubes-linux-utils/blob/release4.0/version
-GRSEC_VERSION='4.14.240-grsec-workstation'
+GRSEC_VERSION='4.14.241-grsec-workstation'
 U2MFN_VERSION="4.0.34"
 
 # Sets default grub boot parameter to the kernel version specified

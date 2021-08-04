@@ -1,9 +1,9 @@
-securedrop-workstation-grsec (4.14.240+buster) unstable; urgency=medium
+securedrop-workstation-grsec (4.14.241+buster) unstable; urgency=medium
 
-  * Update kernel version to 4.14.240
+  * Update kernel version to 4.14.241
   * Bumps u2mfn version 4.0.31 -> 4.0.34
 
- -- SecureDrop Team <securedrop@freedom.press>  Tue, 27 Jul 2021 10:28:20 -0400
+ -- SecureDrop Team <securedrop@freedom.press>  Wed, 04 Aug 2021 07:36:23 -0700
 
 securedrop-workstation-grsec (4.14.186+buster3) unstable; urgency=medium
 
