@@ -237,6 +237,50 @@ gpg --verify repo/public/dists/buster/Release.gpg repo/public/dists/buster/Relea
 
 Once the PR is merged, the new packages will be picked up by a script and deployed to https://apt.freedom.press within 30 minutes.
 
+## Build a package for development or test (skip signature verfication)
+
+Checkout the project you intend to package and enter that directory:
+
+```
+git clone git@github.com:freedomofpress/securedrop-foobar.git
+cd securedrop-foobar
+```
+
+If there is a dev or rc tag you are testing, then checkout that tag, e.g.
+
+```
+git checkout x.y.zrc1
+```
+
+Update `setup.py` with the rc or dev version number, e.g. `0.5.0dev1` or `0.5.0rc1`. In order for the debian packaging tool to work, you cannot use a `-` or `.` or `_` between the vesion number and the `dev` or `rc` portion of the string. Now you can generate a tarball to be used in the build process:
+
+```
+python3 setup.py sdist
+```
+
+Clone this repository for access to the packaging tooling.
+
+```
+cd ..
+git clone git@github.com:freedomofpress/securedrop-debian-packaging.git
+cd securedrop-debian-packaging
+```
+
+If you are releasing a new version (rather than rebuilding a package from a previous version),
+you must update the changelog.
+
+Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
+
+```
+./scripts/update-changelog securedrop-foobar
+```
+
+Build the package, e.g. `for x.y.zrc1`:
+
+```
+PKG_VERSION=x.y.zrc1 PKG_PATH=path/to/securedrop-foobar/dist/securedrop-foobar-x.y.z.rc1.tar.gz make securedrop-foobar
+```
+
 ## Packaging non-Python based SecureDrop projects
 
 TODO
