@@ -3,7 +3,10 @@
 %:
 	dh $@ --with python-virtualenv
 
+REQUIREMENTS_FILE=requirements/build-requirements.txt
+
 override_dh_virtualenv:
+	test -e $(REQUIREMENTS_FILE)
 	dh_virtualenv \
 		--python /usr/bin/python3 \
 		--setuptools \
@@ -14,7 +17,7 @@ override_dh_virtualenv:
 		--extra-pip-arg "--no-deps" \
 		--extra-pip-arg "--no-cache-dir" \
 		--extra-pip-arg "--no-use-pep517" \
-		--requirements build-requirements.txt
+		--requirements $(REQUIREMENTS_FILE)
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
