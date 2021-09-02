@@ -352,7 +352,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *clonesecuredropexport
-      - *getlatestreleasedversion
+      - *getnightlyversion
       - *makesourcetarball
       - *builddebianpackage
 
