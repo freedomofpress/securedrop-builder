@@ -39,7 +39,7 @@ fi
 
 # Look up most recent release from GitHub repo
 function find_latest_version() {
-    repo_url="https://github.com/freedomofpress/${PKG_NAME}/releases"
+    repo_url="https://github.com/freedomofpress/${PKG_NAME}/tags"
     curl -s "$repo_url" \
         | perl -nE '$_ =~ m#/releases/tag/(v?[\d\.]+)\"# and say $1' \
         | head -n 1
@@ -67,9 +67,9 @@ function verify_git_tag() {
     d="$1"
     t="$2"
     prod_fingerprint="2359E6538C0613E652955E6C188EDD3B7B22E6A3"
-    if ! git -C "$build_dir" tag --verify "$PKG_VERSION" 2>&1 \
+    if ! git -C "$d" tag --verify "$t" 2>&1 \
         | grep -q -F "using RSA key $prod_fingerprint" ; then
-        echo "Failed to verify $PKG_VERSION, not signed with $prod_fingerprint" >&2
+        echo "Failed to verify $t, not signed with $prod_fingerprint" >&2
         exit 2
     fi
 }
@@ -98,8 +98,8 @@ function build_source_tarball() {
     # Initial tarball will contain timestamps from NOW, let's repack
     # with timestamps from the changelog, which is static.
     raw_tarball="$(find "${build_dir}/dist/" | grep -P '\.tar.gz$' | head -n1)"
-    dch_time="$(date "+%Y-%m-%d %H:%M:%S %z" -d@$(dpkg-parsechangelog --file $PKG_NAME/debian/changelog-$PLATFORM -STimestamp)) "
-    (cd "$build_dir" && tar -xzf "dist/$(basename $raw_tarball)")
+    dch_time="$(date "+%Y-%m-%d %H:%M:%S %z" -d@"$(dpkg-parsechangelog --file "${PKG_NAME}/debian/changelog-${PLATFORM}" -STimestamp)") "
+    (cd "$build_dir" && tar -xzf "dist/$(basename "$raw_tarball")")
     tarball_basename="$(basename "$raw_tarball")"
     # Repack with tar only, so env vars are respected
     (cd "$build_dir" && tar -cf "${tarball_basename%.gz}" --mode=go=rX,u+rw,a-s --mtime="$dch_time" --sort=name --owner=root:0 --group=root:0 "${tarball_basename%.tar.gz}" 1>&2)
@@ -118,7 +118,7 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
         # Build from source
         echo "PKG_PATH not set, building from source (version $PKG_VERSION)..."
         build_source_tarball
-        candidate_pkg_path="$(find /tmp/$PKG_NAME/dist -type f -iname '*.tar.gz')"
+        candidate_pkg_path="$(find "/tmp/${PKG_NAME}/dist" -type f -iname '*.tar.gz')"
         if [[ -f "$candidate_pkg_path" ]]; then
             PKG_PATH="$candidate_pkg_path"
             echo "Found tarball at $PKG_PATH, override with PKG_PATH..."
@@ -138,7 +138,7 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
     cd "$TOP_BUILDDIR/$PKG_NAME/"
 
     # Verify all the hashes from the verified sha256sums.txt
-    $CUR_DIR/scripts/verify-hashes $CUR_DIR/sha256sums.txt
+    "${CUR_DIR}/scripts/verify-hashes" "${CUR_DIR}/sha256sums.txt"
 
     echo "All hashes verified."
 else
@@ -153,7 +153,8 @@ echo "$TOP_BUILDDIR/$PKG_NAME/"
 mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$PLATFORM" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
 
 # Adds reproducibility step
-export SOURCE_DATE_EPOCH=`dpkg-parsechangelog -STimestamp`
+SOURCE_DATE_EPOCH="$(dpkg-parsechangelog -STimestamp)"
+export SOURCE_DATE_EPOCH
 
 # Build the package
 dpkg-buildpackage -us -uc
