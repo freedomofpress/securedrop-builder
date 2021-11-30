@@ -1,6 +1,6 @@
 build==0.3.0
 wheel==0.36.2
-pip==21.0.1
+pip==21.3.1
 
 # For the build dependency of the our packages
 
