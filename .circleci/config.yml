@@ -262,6 +262,36 @@ jobs:
             sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             pytest -vvs tests/test_reproducible_debian_packages.py
 
+  reprepro-update-tor:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - *addsshkeys
+      - run:
+          name: clone and run reprepro update
+          command: |
+            # TODO: Publish image with these packages pre-installed
+            apt-get update
+            apt-get install -y reprepro ca-certificates dctrl-tools git git-lfs openssh-client
+
+            # Clone the dev repo and configure it
+            git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
+            cd securedrop-dev-packages-lfs
+            git lfs install
+            git config user.email "securedrop@freedom.press"
+            git config user.name "sdcibot"
+
+            # Import the Tor repo signing key
+            gpg --import repo/conf/updates-keys/*.gpg
+            # Run reprepro update, skip export since we just want the debs (and we don't have
+            # the repo signing key anyways)
+            REPREPRO_BASE_DIR=repo reprepro --export=never update
+
+            # Move the new packages over, intentionally leaving the old ones around
+            mv repo/pool/main/t/tor/*.deb core/focal/
+            git add core/focal/*.deb
+            # If there are changes, diff-index will fail, so we commit and push
+            git diff-index --quiet HEAD || git commit -m "Automatically updating Tor packages" && git push origin main
 
   build-buster-securedrop-log:
     docker:
@@ -466,7 +496,10 @@ workflows:
               only:
                 - main
     jobs:
-      - build-nightly-buster-securedrop-client
+      - reprepro-update-tor
+      - build-nightly-buster-securedrop-client:
+          requires:
+            - reprepro-update-tor
       - build-nightly-buster-securedrop-proxy:
           requires:
             - build-nightly-buster-securedrop-client
@@ -482,3 +515,4 @@ workflows:
       - build-nightly-buster-securedrop-workstation-config:
           requires:
             - build-nightly-buster-securedrop-workstation-svs-disp
+
