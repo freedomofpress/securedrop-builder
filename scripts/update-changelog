@@ -42,4 +42,4 @@ if [[ ! -f "$changelog" ]]; then
     exit 4
 fi
 
-dch --newversion "${PKG_VERSION}+${PLATFORM}" --distribution unstable -c "$changelog"
+dch -b --newversion "${PKG_VERSION}+${PLATFORM}" --distribution unstable -c "$changelog"
