@@ -275,6 +275,7 @@ jobs:
             apt-get install -y reprepro ca-certificates dctrl-tools git git-lfs openssh-client
 
             # Clone the dev repo and configure it
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
             git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
             cd securedrop-dev-packages-lfs
             git lfs install
