@@ -4,10 +4,6 @@
 #
 #    pip-compile --allow-unsafe --generate-hashes --output-file=requirements.txt requirements.in
 #
-babel==2.9.1 \
-    --hash=sha256:ab49e12b91d937cd11f0b67cb259a57ab4ad2b59ac7a3b41d6c06c0ac5b0def9 \
-    --hash=sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0
-    # via -r requirements.in
 build==0.3.0 \
     --hash=sha256:0eb95b2c8d770d7c4c9b92c68c227c350bbf65f3ec83551ace9097c18cc15fdd \
     --hash=sha256:75bc5676b1a014fb996dc96914428b197d174364392a46778200d5e115ffe76c
@@ -85,10 +81,6 @@ pytoml==0.1.21 \
     --hash=sha256:57a21e6347049f73bfb62011ff34cd72774c031b9828cb628a752225136dfc33 \
     --hash=sha256:8eecf7c8d0adcff3b375b09fe403407aa9b645c499e5ab8cac670ac4a35f61e7
     # via flit-core
-pytz==2021.1 \
-    --hash=sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da \
-    --hash=sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798
-    # via babel
 setuptools-scm==5.0.2 \
     --hash=sha256:83a0cedd3449e3946307811a4c7b9d89c4b5fd464a2fb5eeccd0a5bb158ae5c8 \
     --hash=sha256:bd5c4e37f74c103e117549f89aeb3c244488c4a6422df786d1a7d03257f16b34
