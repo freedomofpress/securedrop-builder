@@ -1,0 +1,7 @@
+securedrop-workstation-grsec (5.15.33+bullseye) unstable; urgency=medium
+
+  * Bump kernel version to 5.15.33
+  * Add support for Debian 11 Bullseye
+  * Removes u2mfn references from postinst
+
+ -- SecureDrop Team <securedrop@freedom.press>  Tue, 05 Apr 2022 13:35:48 -0700

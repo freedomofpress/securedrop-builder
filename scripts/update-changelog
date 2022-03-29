@@ -33,7 +33,8 @@ if [[ -z "${PKG_VERSION:-}" ]]; then
     exit 3
 fi
 
-PLATFORM="$(lsb_release -sc)"
+_PKG_PLATFORM="$(lsb_release -sc)"
+PLATFORM="${PKG_PLATFORM:-$_PKG_PLATFORM}"
 
 # Update the changelog.
 changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-${PLATFORM}"
