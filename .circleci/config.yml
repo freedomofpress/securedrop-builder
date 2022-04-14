@@ -209,8 +209,8 @@ common-steps:
         git config user.name "sdcibot"
 
         # Copy built debian packages to the relevant workstation repo and git push.
-        cp ~/project/build/debbuild/packaging/*.deb ./workstation/${PLATFORM}/
-        git add workstation/${PLATFORM}/*.deb
+        cp ~/project/build/debbuild/packaging/*.deb ./workstation/${PLATFORM}-nightlies/
+        git add workstation/${PLATFORM}-nightlies/*.deb
         git commit -m "Automated SecureDrop workstation build"
         git push origin main
 
