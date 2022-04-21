@@ -58,14 +58,6 @@ common-steps:
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
-  - &makesourcetarball
-    run:
-      name: Create source tarball
-      command: |
-        cd ~/packaging/securedrop-*
-        git checkout $VERSION_TO_BUILD
-        python3 setup.py sdist
-
   - &clonesecuredropclient
     run:
       name: Clone the repository to be packaged
@@ -135,7 +127,7 @@ common-steps:
     run:
       name: Build debian package
       command: |
-        export PKG_PATH=~/packaging/$PKG_NAME/dist/$PKG_NAME-$VERSION_TO_BUILD.tar.gz
+        export PKG_PATH=~/packaging/$PKG_NAME/
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
         ls ~/project/build/debbuild/packaging/*.deb
@@ -333,7 +325,6 @@ jobs:
       - *installdeps
       - *clonesecuredroplog
       - *getnightlyversion
-      - *makesourcetarball
       - *builddebianpackage
 
   build-nightly-buster-securedrop-log:
@@ -345,7 +336,6 @@ jobs:
       - *installdeps
       - *clonesecuredroplog
       - *getnightlyversion
-      - *makesourcetarball
       - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
@@ -360,7 +350,6 @@ jobs:
       - *installdeps
       - *clonesecuredropclient
       - *getnightlyversion
-      - *makesourcetarball
       - *builddebianpackage
 
   build-nightly-buster-securedrop-client:
@@ -372,7 +361,6 @@ jobs:
       - *installdeps
       - *clonesecuredropclient
       - *getnightlyversion
-      - *makesourcetarball
       - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
@@ -387,7 +375,6 @@ jobs:
       - *installdeps
       - *clonesecuredropproxy
       - *getnightlyversion
-      - *makesourcetarball
       - *builddebianpackage
 
   build-nightly-buster-securedrop-proxy:
@@ -399,7 +386,6 @@ jobs:
       - *installdeps
       - *clonesecuredropproxy
       - *getnightlyversion
-      - *makesourcetarball
       - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
@@ -414,7 +400,6 @@ jobs:
       - *installdeps
       - *clonesecuredropexport
       - *getnightlyversion
-      - *makesourcetarball
       - *builddebianpackage
 
   build-nightly-buster-securedrop-export:
@@ -426,7 +411,6 @@ jobs:
       - *installdeps
       - *clonesecuredropexport
       - *getnightlyversion
-      - *makesourcetarball
       - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
