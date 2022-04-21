@@ -42,6 +42,7 @@ def test_deb_builds_are_reproducible(pkg_name):
         f"make {pkg_name}",
         "--variations",
         "-all, -kernel, +exec_path, +build_path",
+        "--no-clean-on-error",
         ".",
         f"build/debbuild/packaging/{pkg_name}*.deb",
     ]
