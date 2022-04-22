@@ -294,6 +294,35 @@ jobs:
             # If there are changes, diff-index will fail, so we commit and push
             git diff-index --quiet HEAD || git commit -m "Automatically updating Tor packages" && git push origin main
 
+  clean-old-nightlies:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - *addsshkeys
+      - run:
+          name: clone and delete old nightlies
+          command: |
+            apt-get update
+            apt-get install -y python3 ca-certificates git git-lfs openssh-client
+
+            # Clone the dev repo and configure it
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
+            cd securedrop-dev-packages-lfs
+            git lfs install
+            git config user.email "securedrop@freedom.press"
+            git config user.name "sdcibot"
+
+            # Run the clean script and `git add` any deletions
+            cd ..
+            ./scripts/clean-old-nightlies.py securedrop-dev-packages-lfs/workstation/buster-nightlies
+            cd securedrop-dev-packages-lfs
+            git add .
+
+            # If there are changes, diff-index will fail, so we commit and push
+            git diff-index --quiet HEAD || git commit -m "Deleting old nightlies" && git push origin main
+
+
   build-buster-securedrop-log:
     docker:
       - image: circleci/python:3.7-buster
@@ -516,4 +545,6 @@ workflows:
       - build-nightly-buster-securedrop-workstation-config:
           requires:
             - build-nightly-buster-securedrop-workstation-svs-disp
-
+      - clean-old-nightlies:
+          requires:
+            - build-nightly-buster-securedrop-workstation-config
