@@ -298,6 +298,7 @@ jobs:
     docker:
       - image: debian:bullseye
     steps:
+      - checkout
       - *addsshkeys
       - run:
           name: clone and delete old nightlies
