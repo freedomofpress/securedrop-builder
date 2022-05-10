@@ -8,12 +8,12 @@ Homepage: https://securedrop.org
 Vcs-Git: https://github.com/freedomofpress/securedrop-workstation.git
 
 Package: securedrop-workstation-grsec
-upstream_version: 5.15.33
+upstream_version: 5.15.38
 debian_revision: 1
 Architecture: amd64
 Provides: securedrop-workstation-grsec-latest
 Pre-Depends: qubes-kernel-vm-support (>=4.0.31)
-Depends: linux-image-5.15.33-grsec-workstation,linux-headers-5.15.33-grsec-workstation,libelf-dev,paxctld
+Depends: linux-image-5.15.38-grsec-workstation,linux-headers-5.15.38-grsec-workstation,libelf-dev,paxctld
 Description: Linux for SecureDrop Workstation template (meta-package)
  Metapackage providing a grsecurity-patched Linux kernel for use in SecureDrop
  Workstation Qubes templates. Depends on the most recently built patched kernel

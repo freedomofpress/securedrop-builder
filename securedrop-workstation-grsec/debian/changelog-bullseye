@@ -1,6 +1,6 @@
-securedrop-workstation-grsec (5.15.33+bullseye) unstable; urgency=medium
+securedrop-workstation-grsec (5.15.38+bullseye) unstable; urgency=medium
 
-  * Bump kernel version to 5.15.33
+  * Bump kernel version to 5.15.38
   * Add support for Debian 11 Bullseye
   * Removes u2mfn references from postinst
 

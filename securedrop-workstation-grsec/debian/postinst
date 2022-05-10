@@ -18,7 +18,7 @@ set -e
 # the debian-policy package
 
 
-GRSEC_VERSION='5.15.33-grsec-workstation'
+GRSEC_VERSION='5.15.38-grsec-workstation'
 
 # Sets default grub boot parameter to the kernel version specified
 # by $GRSEC_VERSION. Given that Debian Bullseye defaults to 5.10,
