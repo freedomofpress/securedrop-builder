@@ -56,9 +56,6 @@ if [[ -z "${PKG_VERSION:-}" ]]; then
     fi
 fi
 
-# Copy over the debian directory (including new changelog) from repo
-cp -r "$CUR_DIR/$PKG_NAME/" "$TOP_BUILDDIR/"
-
 # Ensures that a given git tag is signed with the prod release key
 # If "rc" is in the tag name, this will fail.
 function verify_git_tag() {
@@ -74,10 +71,8 @@ function verify_git_tag() {
     fi
 }
 
-# Dynamically generate a tarball, from the Python source code,
-# that is byte-for-byte reproducible. Infers timestamp
-# from the changelog, same as for the deb package.
-function build_source_tarball() {
+# Clone and checkout the source
+function setup_source_tree() {
     repo_url="https://github.com/freedomofpress/${PKG_NAME}"
     build_dir="/tmp/${PKG_NAME}"
     rm -rf "$build_dir"
@@ -92,21 +87,6 @@ function build_source_tarball() {
         # Tag is verified, proceed with checkout
         git -C "$build_dir" checkout "$PKG_VERSION"
     fi
-
-    (cd "$build_dir" && LC_ALL="C.UTF-8" python3 setup.py sdist)
-
-    # Initial tarball will contain timestamps from NOW, let's repack
-    # with timestamps from the changelog, which is static.
-    raw_tarball="$(find "${build_dir}/dist/" | grep -P '\.tar.gz$' | head -n1)"
-    dch_time="$(date "+%Y-%m-%d %H:%M:%S %z" -d@"$(dpkg-parsechangelog --file "${PKG_NAME}/debian/changelog-${PLATFORM}" -STimestamp)") "
-    (cd "$build_dir" && tar -xzf "dist/$(basename "$raw_tarball")")
-    tarball_basename="$(basename "$raw_tarball")"
-    # Repack with tar only, so env vars are respected
-    (cd "$build_dir" && tar -cf "${tarball_basename%.gz}" --mode=go=rX,u+rw,a-s --mtime="$dch_time" --sort=name --owner=root:0 --group=root:0 "${tarball_basename%.tar.gz}" 1>&2)
-    # Then gzip it separately, so we can pass args
-    (cd "$build_dir" && gzip --no-name "${tarball_basename%.gz}")
-    (cd "$build_dir" && mv "$tarball_basename" dist/)
-    echo "$raw_tarball"
 }
 
 # If the package is contained in the list, it should be a python package. In
@@ -117,40 +97,53 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
     if [[ -z "${PKG_PATH:-}" ]]; then
         # Build from source
         echo "PKG_PATH not set, building from source (version $PKG_VERSION)..."
-        build_source_tarball
-        candidate_pkg_path="$(find "/tmp/${PKG_NAME}/dist" -type f -iname '*.tar.gz')"
-        if [[ -f "$candidate_pkg_path" ]]; then
-            PKG_PATH="$candidate_pkg_path"
-            echo "Found tarball at $PKG_PATH, override with PKG_PATH..."
-        else
-            echo "Set PKG_PATH source tarball";
-            exit 1
+        setup_source_tree
+        PKG_PATH="/tmp/${PKG_NAME}"
+    else
+        if [[ -f "${PKG_PATH}" ]]; then
+            # It's a file and not a directory, must be a legacy tarball
+            echo "Extracting legacy tarball"
+            rm -rf "/tmp/${PKG_NAME}"
+            mkdir -p "/tmp/${PKG_NAME}"
+            tar --strip-components=1 -C "/tmp/$PKG_NAME" -xvf "$PKG_PATH"
+            PKG_PATH="/tmp/${PKG_NAME}"
         fi
     fi
 
-    # Copy the source tarball to the packaging workspace
-    cp "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
 
-    # Extract the source tarball in the packaging workspace
-    tar --strip-components=1 -C "$TOP_BUILDDIR/$PKG_NAME" -xvf "$PKG_PATH"
+    # Copy the source tree to the packaging workspace
+    cp -r "$PKG_PATH" "$TOP_BUILDDIR/"
 
     # Hop into the package build dir, to run dpkg-buildpackage
     cd "$TOP_BUILDDIR/$PKG_NAME/"
-
     # Verify all the hashes from the verified sha256sums.txt
     "${CUR_DIR}/scripts/verify-hashes" "${CUR_DIR}/sha256sums.txt"
 
     echo "All hashes verified."
 else
+    echo "Package is a metapackage"
+    # Copy the source tree to the packaging workspace
+    cp -r "$CUR_DIR/$PKG_NAME" "$TOP_BUILDDIR/"
     # Hop into the package build dir, to run dpkg-buildpackage
     cd "$TOP_BUILDDIR/$PKG_NAME/"
-    echo "Package is a metapackage"
+fi
+
+# Legacy: copy over the debian directory from the packaging repo
+# if one is not already in the tree
+if [[ ! -d "debian/" ]]; then
+    echo "Copying over legacy debian/ directory for $PKG_NAME"
+    cp -r "$CUR_DIR/$PKG_NAME/debian" "debian"
 fi
 
 printf "Building package '%s' from version '%s'...\\n" "$PKG_NAME" "$PKG_VERSION"
 
 echo "$TOP_BUILDDIR/$PKG_NAME/"
-mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$PLATFORM" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
+
+# Legacy: Move platform-specific changelog into place
+if [[ -f "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$PLATFORM" ]]; then
+    echo "Moving legacy $PLATFORM changelog into place"
+    mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$PLATFORM" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
+fi
 
 # Adds reproducibility step
 SOURCE_DATE_EPOCH="$(dpkg-parsechangelog -STimestamp)"
