@@ -217,6 +217,7 @@ jobs:
           name: install test requirements, run linters, and run tests
           command: |
             make install-deps
+            sudo apt-get install reprotest -y
             make lint-desktop-files
             virtualenv -p /usr/bin/python3 .venv
             source .venv/bin/activate
@@ -233,6 +234,7 @@ jobs:
           name: install test requirements and run tests
           command: |
             make install-deps
+            sudo apt-get install reprotest -y
             source .venv/bin/activate
             pip install -r test-requirements.txt
             sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
@@ -247,6 +249,7 @@ jobs:
           name: install test requirements and run tests
           command: |
             make install-deps
+            sudo apt-get install reprotest -y
             source .venv/bin/activate
             pip install -r test-requirements.txt
             # Patch reprotest in-place to skip 'setarch' prefix, which fails under containers.
