@@ -188,7 +188,7 @@ common-steps:
 
   - &commitworkstationdebs
     run:
-      name: Commit workstation debs for deployment to apt-test-qubes.freedom.press
+      name: Commit workstation debs for deployment to apt-test.freedom.press
       command: |
         PLATFORM="$(lsb_release -sc)"
         git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
@@ -198,6 +198,7 @@ common-steps:
         git config user.name "sdcibot"
 
         # Copy built debian packages to the relevant workstation repo and git push.
+        mkdir -p ./workstation/${PLATFORM}-nightlies/
         cp ~/project/build/debbuild/packaging/*.deb ./workstation/${PLATFORM}-nightlies/
         git add workstation/${PLATFORM}-nightlies/*.deb
         git commit -m "Automated SecureDrop workstation build"
@@ -484,6 +485,42 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  build-bullseye-securedrop-keyring:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdkeyringname
+      - *setmetapackageversion
+      - *builddebianpackage
+
+  build-nightly-buster-securedrop-keyring:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdkeyringname
+      - *getnightlymetapackageversion
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-bullseye-securedrop-keyring:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdkeyringname
+      - *getnightlymetapackageversion
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
 workflows:
   build-packages:
     jobs:
@@ -498,6 +535,7 @@ workflows:
       - build-buster-securedrop-workstation-grsec
       - build-buster-securedrop-workstation-config
       - build-buster-securedrop-keyring
+      - build-bullseye-securedrop-keyring
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.
@@ -530,6 +568,13 @@ workflows:
       - build-nightly-buster-securedrop-workstation-config:
           requires:
             - build-nightly-buster-securedrop-workstation-svs-disp
-      - clean-old-nightlies:
+      - build-nightly-buster-securedrop-keyring:
           requires:
             - build-nightly-buster-securedrop-workstation-config
+      - build-nightly-bullseye-securedrop-keyring:
+          requires:
+            - build-nightly-buster-securedrop-keyring
+      # Cleaning old nightlies should always be the last step
+      - clean-old-nightlies:
+          requires:
+            - build-nightly-bullseye-securedrop-keyring
