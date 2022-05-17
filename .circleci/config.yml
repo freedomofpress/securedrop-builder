@@ -50,8 +50,7 @@ common-steps:
     run:
       name: Create nightly version for metapackages
       command: |
-        PLATFORM="$(lsb_release -sc)"
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-${PLATFORM} | head -n1)
+        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-buster | head -n1)
         # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
         export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
         # Enable access to this env var in subsequent run steps
@@ -120,8 +119,7 @@ common-steps:
         cd ~/project/$PKG_NAME/debian
         export DEBFULLNAME='Automated builds'
         export DEBEMAIL=securedrop@freedom.press
-        export PLATFORM="$(lsb_release -sc)"
-        dch --changelog changelog-${PLATFORM} --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+${PLATFORM} "This is an automated build."
+        dch --changelog changelog-buster --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
 
   - &builddebianpackage
     run:
@@ -182,8 +180,7 @@ common-steps:
     run:
       name: Get metapackage version via distribution changelog
       command: |
-        PLATFORM="$(lsb_release -sc)"
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${PLATFORM} | head -n1)
+        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-buster | head -n1)
         export VERSION_TO_BUILD="$CURRENT_VERSION"
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
