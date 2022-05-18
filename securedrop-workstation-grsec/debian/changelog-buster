@@ -1,3 +1,9 @@
+securedrop-workstation-grsec (5.15.38+buster) unstable; urgency=medium
+
+  * Update kernel version to 5.15.38 
+
+ -- SecureDrop Team <securedrop@freedom.press>  Wed, 18 May 2022 10:44:34 -0700
+
 securedrop-workstation-grsec (4.14.241+buster) unstable; urgency=medium
 
   * Update kernel version to 4.14.241
