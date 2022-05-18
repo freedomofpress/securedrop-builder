@@ -477,6 +477,40 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  build-bullseye-securedrop-workstation-grsec:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdgrsecname
+      - *setmetapackageversion
+      - *builddebianpackage
+
+  build-nightly-buster-securedrop-workstation-grsec:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdgrsecname
+      - *setmetapackageversion
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-bullseye-securedrop-workstation-grsec:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdgrsecname
+      - *setmetapackageversion
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
   build-buster-securedrop-workstation-config:
     docker:
       - image: circleci/python:3.7-buster
@@ -562,6 +596,7 @@ workflows:
       - build-buster-securedrop-keyring
       - build-bullseye-securedrop-keyring
       - build-bullseye-securedrop-log
+      - build-bullseye-securedrop-workstation-grsec
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.
@@ -597,12 +632,18 @@ workflows:
       - build-nightly-buster-securedrop-keyring:
           requires:
             - build-nightly-buster-securedrop-workstation-config
+      - build-nightly-buster-securedrop-workstation-grsec:
+          requires:
+            - build-nightly-buster-securedrop-workstation-config
       - build-nightly-bullseye-securedrop-log:
           requires:
             - build-nightly-buster-securedrop-log
       - build-nightly-bullseye-securedrop-keyring:
           requires:
             - build-nightly-buster-securedrop-keyring
+      - build-nightly-bullseye-securedrop-workstation-grsec:
+          requires:
+            - build-nightly-buster-securedrop-workstation-grsec
       # Cleaning old nightlies should always be the last step
       - clean-old-nightlies:
           requires:
