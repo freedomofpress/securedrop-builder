@@ -57,6 +57,19 @@ common-steps:
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
+  # TODO: remove duplication between this and above
+  - &getnightlymetapackageversionplatform
+    run:
+      name: Create nightly version for metapackages based on platform changelog
+      command: |
+        source /etc/os-release
+        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-${VERSION_CODENAME} | head -n1)
+        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
+        export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        # Enable access to this env var in subsequent run steps
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+
   - &clonesecuredropclient
     run:
       name: Clone the repository to be packaged
@@ -185,6 +198,19 @@ common-steps:
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+
+  # TODO: remove duplication between this and above
+  - &setmetapackageversionplatform
+    run:
+      name: Get metapackage version via changelog for the current platform
+      command: |
+        source /etc/os-release
+        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${VERSION_CODENAME} | head -n1)
+        export VERSION_TO_BUILD="$CURRENT_VERSION"
+        # Enable access to this env var in subsequent run steps
+        echo $VERSION_TO_BUILD > ~/packaging/sd_version
+        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+
 
   - &commitworkstationdebs
     run:
@@ -474,7 +500,7 @@ jobs:
       - checkout
       - *installdeps
       - *setsdgrsecname
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-bullseye-securedrop-workstation-grsec:
@@ -484,7 +510,7 @@ jobs:
       - checkout
       - *installdeps
       - *setsdgrsecname
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-nightly-buster-securedrop-workstation-grsec:
@@ -494,7 +520,8 @@ jobs:
       - checkout
       - *installdeps
       - *setsdgrsecname
-      - *setmetapackageversion
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -506,7 +533,8 @@ jobs:
       - checkout
       - *installdeps
       - *setsdgrsecname
-      - *setmetapackageversion
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
