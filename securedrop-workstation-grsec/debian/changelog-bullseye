@@ -1,4 +1,4 @@
-securedrop-workstation-grsec (5.15.41~bullseye) unstable; urgency=medium
+securedrop-workstation-grsec (5.15.41-1~bullseye) unstable; urgency=medium
 
   * Update kernel version to 5.15.41
 
