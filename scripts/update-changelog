@@ -6,6 +6,7 @@ set -e
 set -u
 set -o pipefail
 
+source /etc/os-release
 TOPLEVEL="$(git rev-parse --show-toplevel)"
 
 # These env vars are only required when updating changelogs,
@@ -33,13 +34,20 @@ if [[ -z "${PKG_VERSION:-}" ]]; then
     exit 3
 fi
 
-PLATFORM="$(lsb_release -sc)"
 
-# Update the changelog.
-changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-${PLATFORM}"
-if [[ ! -f "$changelog" ]]; then
-    printf 'Could not find changelog at %s\n' "$changelog"
-    exit 4
+# Look for a changelog as d/changelog-$platform, d/changelog, or d/changelog-buster
+if [[ -f "${TOPLEVEL}/${PKG_NAME}/debian/changelog-${VERSION_CODENAME}" ]]; then
+    changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-${VERSION_CODENAME}"
+else
+    if [[ -f "${TOPLEVEL}/${PKG_NAME}/debian/changelog" ]]; then
+        changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog"
+    else
+        changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-buster"
+    fi
 fi
 
-dch -b --newversion "${PKG_VERSION}+${PLATFORM}" --distribution unstable -c "$changelog"
+if [[ "$PKG_NAME" = "securedrop-workstation-grsec" ]]; then
+    dch -b --newversion "${PKG_VERSION}-1~${VERSION_CODENAME}" --distribution unstable -c "$changelog"
+else
+    dch -b --newversion "${PKG_VERSION}+${VERSION_CODENAME}" --distribution unstable -c "$changelog"
+fi
