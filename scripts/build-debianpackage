@@ -140,7 +140,11 @@ printf "Building package '%s' from version '%s'...\\n" "$PKG_NAME" "$PKG_VERSION
 echo "$TOP_BUILDDIR/$PKG_NAME/"
 
 # Legacy: Move platform-specific changelog into place
-if [[ -f "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-buster" ]]; then
+if [[ -f "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$VERSION_CODENAME" ]]; then
+    echo "Moving legacy $VERSION_CODENAME changelog into place"
+    mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$VERSION_CODENAME" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
+fi
+if [[ ! -f "$TOP_BUILDDIR/$PKG_NAME/debian/changelog" ]]; then
     echo "Moving legacy buster changelog into place"
     mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-buster" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
 fi

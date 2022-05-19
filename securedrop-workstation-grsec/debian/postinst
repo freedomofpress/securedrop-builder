@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # postinst script for securedrop-workstation-grsec
 #
 # see: dh_installdeb(1)
@@ -18,14 +18,19 @@ set -e
 # the debian-policy package
 
 
+# The token is replaced in debian/rules during dh_installdeb
+GRSEC_VERSION='#DEB_VERSION_UPSTREAM#-grsec-workstation'
 # When updating the kernel version, also check that the u2mfn version matches:
 # https://github.com/QubesOS/qubes-linux-utils/blob/release4.0/version
-GRSEC_VERSION='4.14.241-grsec-workstation'
+# Note that u2mfn is only used on buster/Qubes 4.0
 U2MFN_VERSION="4.0.34"
 
+# Get the current Debian codename so we can vary based on version
+eval "export $(cat /etc/os-release | grep CODENAME)"
+
 # Sets default grub boot parameter to the kernel version specified
-# by $GRSEC_VERSION. The debian buster default kernel is 4.19, thus
-# supersedes this 4.14.x series grsecurity kernel at boot-time
+# by $GRSEC_VERSION because the default buster/bullseye kernels have
+# higher versions and would supersede our grsecurity kernels.
 set_grub_default() {
     GRUB_OPT="'Advanced options for Debian GNU/Linux>Debian GNU/Linux, with Linux $GRSEC_VERSION'"
     perl -pi -e "s|^GRUB_DEFAULT=.*|GRUB_DEFAULT=$GRUB_OPT|" /etc/default/grub
@@ -67,8 +72,10 @@ case "$1" in
     configure)
     # Ensure pax flags are set prior to running grub
     start_paxctld
-    # Rebuild u2mfn kernel module if missing
-    ensure_u2mfn_exists
+    if [[ "$VERSION_CODENAME" = "buster" ]]; then
+        # Rebuild u2mfn kernel module if missing
+        ensure_u2mfn_exists
+    fi
     # Force latest hardened kernel for next boot
     set_grub_default
     update-grub
