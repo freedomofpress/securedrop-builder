@@ -9,7 +9,6 @@ override_dh_virtualenv:
 	test -e $(REQUIREMENTS_FILE)
 	dh_virtualenv \
 		--python /usr/bin/python3 \
-		--setuptools \
 		--use-system-packages \
 		--extra-pip-arg "--ignore-installed" \
 		--extra-pip-arg "--no-index" \
