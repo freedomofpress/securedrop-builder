@@ -493,6 +493,31 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
+  build-bullseye-securedrop-export:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *removevirtualenv
+      - *installdeps
+      - *clonesecuredropexport
+      - *getnightlyversion
+      - *builddebianpackage
+
+  build-nightly-bullseye-securedrop-export:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *removevirtualenv
+      - *installdeps
+      - *clonesecuredropexport
+      - *getnightlyversion
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
   build-buster-securedrop-workstation-svs-disp:
     docker:
       - image: circleci/python:3.7-buster
@@ -648,6 +673,7 @@ workflows:
       - build-buster-securedrop-workstation-config
       - build-buster-securedrop-keyring
       - build-bullseye-securedrop-client
+      - build-bullseye-securedrop-export
       - build-bullseye-securedrop-keyring
       - build-bullseye-securedrop-log
       - build-bullseye-securedrop-workstation-grsec
@@ -695,9 +721,12 @@ workflows:
       - build-nightly-bullseye-securedrop-client:
           requires:
             - build-nightly-bullseye-securedrop-log
-      - build-nightly-bullseye-securedrop-keyring:
+      - build-nightly-bullseye-securedrop-export:
           requires:
             - build-nightly-bullseye-securedrop-client
+      - build-nightly-bullseye-securedrop-keyring:
+          requires:
+            - build-nightly-bullseye-securedrop-export
       - build-nightly-bullseye-securedrop-workstation-grsec:
           requires:
             - build-nightly-bullseye-securedrop-keyring
