@@ -98,7 +98,7 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
         # Build from source
         echo "PKG_PATH not set, building from source (version $PKG_VERSION)..."
         setup_source_tree
-        PKG_PATH="/tmp/${PKG_NAME}"
+        PKG_PATH="/tmp/${PKG_NAME}/"
     else
         if [[ -f "${PKG_PATH}" ]]; then
             # It's a file and not a directory, must be a legacy tarball
@@ -106,13 +106,13 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
             rm -rf "/tmp/${PKG_NAME}"
             mkdir -p "/tmp/${PKG_NAME}"
             tar --strip-components=1 -C "/tmp/$PKG_NAME" -xvf "$PKG_PATH"
-            PKG_PATH="/tmp/${PKG_NAME}"
+            PKG_PATH="/tmp/${PKG_NAME}/"
         fi
     fi
 
 
     # Copy the source tree to the packaging workspace
-    cp -r "$PKG_PATH" "$TOP_BUILDDIR/"
+    cp -rT "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
 
     # Hop into the package build dir, to run dpkg-buildpackage
     cd "$TOP_BUILDDIR/$PKG_NAME/"
