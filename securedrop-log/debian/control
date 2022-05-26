@@ -3,10 +3,9 @@ Section: utils
 Priority: optional
 Maintainer: SecureDrop Team <securedrop@freedom.press>
 Build-Depends:
- debhelper-compat (= 12),
+ debhelper-compat (= 11),
  dh-python,
  python3-all,
- python3-setuptools,
  dh-virtualenv,
  python3-distutils
 Standards-Version: 3.9.8
