@@ -2,7 +2,7 @@ Source: securedrop-client
 Section: unknown
 Priority: optional
 Maintainer: SecureDrop Team <securedrop@freedom.press>
-Build-Depends: debhelper-compat (= 12), dh-python, python3-all, python3-setuptools, dh-virtualenv
+Build-Depends: debhelper-compat (= 11), dh-python, python3-all, python3-setuptools, dh-virtualenv
 Standards-Version: 3.9.8
 Homepage: https://github.com/freedomofpress/securedrop-client
 X-Python3-Version: >= 3.5
