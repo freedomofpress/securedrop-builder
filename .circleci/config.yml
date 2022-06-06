@@ -554,9 +554,34 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  build-bullseye-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *removevirtualenv
+      - *installdeps
+      - *setsvsdispname
+      - *setmetapackageversion
+      - *builddebianpackage
+
   build-nightly-buster-securedrop-workstation-svs-disp:
     docker:
       - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *removevirtualenv
+      - *installdeps
+      - *setsvsdispname
+      - *getnightlymetapackageversion
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-bullseye-securedrop-workstation-svs-disp:
+    docker:
+      - image: circleci/python:3.9-bullseye
     steps:
       - checkout
       - *removevirtualenv
@@ -624,9 +649,32 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
+  build-bullseye-securedrop-workstation-config:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdconfigname
+      - *setmetapackageversion
+      - *builddebianpackage
+
   build-nightly-buster-securedrop-workstation-config:
     docker:
       - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - *installdeps
+      - *setsdconfigname
+      - *getnightlymetapackageversion
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
+  build-nightly-bullseye-securedrop-workstation-config:
+    docker:
+      - image: circleci/python:3.9-bullseye
     steps:
       - checkout
       - *installdeps
@@ -702,7 +750,9 @@ workflows:
       - build-bullseye-securedrop-keyring
       - build-bullseye-securedrop-log
       - build-bullseye-securedrop-proxy
+      - build-bullseye-securedrop-workstation-config
       - build-bullseye-securedrop-workstation-grsec
+      - build-bullseye-securedrop-workstation-svs-disp
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.
@@ -756,10 +806,16 @@ workflows:
       - build-nightly-bullseye-securedrop-proxy:
           requires:
             - build-nightly-bullseye-securedrop-keyring
-      - build-nightly-bullseye-securedrop-workstation-grsec:
+      - build-nightly-bullseye-securedrop-workstation-config:
           requires:
             - build-nightly-bullseye-securedrop-proxy
+      - build-nightly-bullseye-securedrop-workstation-grsec:
+          requires:
+            - build-nightly-bullseye-securedrop-workstation-config
+      - build-nightly-bullseye-securedrop-workstation-svs-disp:
+          requires:
+            - build-nightly-bullseye-securedrop-workstation-grsec
       # Cleaning old nightlies should always be the last step
       - clean-old-nightlies:
           requires:
-            - build-nightly-bullseye-securedrop-workstation-grsec
+            - build-nightly-bullseye-securedrop-workstation-svs-disp
