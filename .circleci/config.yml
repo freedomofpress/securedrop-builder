@@ -134,6 +134,18 @@ common-steps:
         export DEBEMAIL=securedrop@freedom.press
         dch --changelog changelog-buster --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
 
+  # TODO: Remove duplication with above
+  - &updatedebianchangelogplatform
+    run:
+      name: Update debian changelog based on platform changelog
+      command: |
+        source /etc/os-release
+        cd ~/project/$PKG_NAME/debian
+        export DEBFULLNAME='Automated builds'
+        export DEBEMAIL=securedrop@freedom.press
+        dch --changelog changelog-${VERSION_CODENAME} --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
+
+
   - &builddebianpackage
     run:
       name: Build debian package
@@ -596,7 +608,7 @@ jobs:
       - *installdeps
       - *setsdgrsecname
       - *getnightlymetapackageversionplatform
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -609,7 +621,7 @@ jobs:
       - *installdeps
       - *setsdgrsecname
       - *getnightlymetapackageversionplatform
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
