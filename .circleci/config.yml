@@ -468,6 +468,31 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
+  build-bullseye-securedrop-proxy:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *removevirtualenv
+      - *installdeps
+      - *clonesecuredropproxy
+      - *getnightlyversion
+      - *builddebianpackage
+
+  build-nightly-bullseye-securedrop-proxy:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    steps:
+      - checkout
+      - *removevirtualenv
+      - *installdeps
+      - *clonesecuredropproxy
+      - *getnightlyversion
+      - *updatedebianchangelog
+      - *builddebianpackage
+      - *addsshkeys
+      - *commitworkstationdebs
+
   build-buster-securedrop-export:
     docker:
       - image: circleci/python:3.7-buster
@@ -676,6 +701,7 @@ workflows:
       - build-bullseye-securedrop-export
       - build-bullseye-securedrop-keyring
       - build-bullseye-securedrop-log
+      - build-bullseye-securedrop-proxy
       - build-bullseye-securedrop-workstation-grsec
 
   # Nightly jobs for each package are run in series to ensure there are no
@@ -727,9 +753,12 @@ workflows:
       - build-nightly-bullseye-securedrop-keyring:
           requires:
             - build-nightly-bullseye-securedrop-export
-      - build-nightly-bullseye-securedrop-workstation-grsec:
+      - build-nightly-bullseye-securedrop-proxy:
           requires:
             - build-nightly-bullseye-securedrop-keyring
+      - build-nightly-bullseye-securedrop-workstation-grsec:
+          requires:
+            - build-nightly-bullseye-securedrop-proxy
       # Cleaning old nightlies should always be the last step
       - clean-old-nightlies:
           requires:
