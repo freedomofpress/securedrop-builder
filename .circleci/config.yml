@@ -348,6 +348,7 @@ jobs:
             # Run the clean script and `git add` any deletions
             cd ..
             ./scripts/clean-old-nightlies.py securedrop-dev-packages-lfs/workstation/buster-nightlies
+            ./scripts/clean-old-nightlies.py securedrop-dev-packages-lfs/workstation/bullseye-nightlies
             cd securedrop-dev-packages-lfs
             git add .
 
