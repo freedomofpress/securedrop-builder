@@ -161,13 +161,13 @@ common-steps:
       fingerprints:
         - "e5:b5:6e:d0:4e:ce:52:40:33:30:5e:6f:c5:73:38:20"
 
-  - &setsvsdispname
+  - &setsdviewername
     run:
-      name: Set package name to securedrop-workstation-svs-disp
+      name: Set package name to securedrop-workstation-viewer
       command: |
         mkdir ~/packaging
-        export PKG_NAME="securedrop-workstation-svs-disp"
-        # Enable access to this env car in subsequent run steps
+        export PKG_NAME="securedrop-workstation-viewer"
+        # Enable access to this env var in subsequent run steps
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
@@ -555,50 +555,50 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-buster-securedrop-workstation-svs-disp:
+  build-buster-securedrop-workstation-viewer:
     docker:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *removevirtualenv
       - *installdeps
-      - *setsvsdispname
+      - *setsdviewername
       - *setmetapackageversion
       - *builddebianpackage
 
-  build-bullseye-securedrop-workstation-svs-disp:
+  build-bullseye-securedrop-workstation-viewer:
     docker:
       - image: circleci/python:3.9-bullseye
     steps:
       - checkout
       - *removevirtualenv
       - *installdeps
-      - *setsvsdispname
+      - *setsdviewername
       - *setmetapackageversion
       - *builddebianpackage
 
-  build-nightly-buster-securedrop-workstation-svs-disp:
+  build-nightly-buster-securedrop-workstation-viewer:
     docker:
       - image: circleci/python:3.7-buster
     steps:
       - checkout
       - *removevirtualenv
       - *installdeps
-      - *setsvsdispname
+      - *setsdviewername
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
 
-  build-nightly-bullseye-securedrop-workstation-svs-disp:
+  build-nightly-bullseye-securedrop-workstation-viewer:
     docker:
       - image: circleci/python:3.9-bullseye
     steps:
       - checkout
       - *removevirtualenv
       - *installdeps
-      - *setsvsdispname
+      - *setsdviewername
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
@@ -751,7 +751,7 @@ workflows:
       - reprotest-debs
       - build-buster-securedrop-client
       - build-buster-securedrop-proxy
-      - build-buster-securedrop-workstation-svs-disp
+      - build-buster-securedrop-workstation-viewer
       - build-buster-securedrop-export
       - build-buster-securedrop-log
       - build-buster-securedrop-workstation-grsec
@@ -764,7 +764,7 @@ workflows:
       - build-bullseye-securedrop-proxy
       - build-bullseye-securedrop-workstation-config
       - build-bullseye-securedrop-workstation-grsec
-      - build-bullseye-securedrop-workstation-svs-disp
+      - build-bullseye-securedrop-workstation-viewer
 
   # Nightly jobs for each package are run in series to ensure there are no
   # conflicts or race conditions when committing deb packages to git-lfs.
@@ -791,12 +791,12 @@ workflows:
       - build-nightly-buster-securedrop-log:
           requires:
             - build-nightly-buster-securedrop-export
-      - build-nightly-buster-securedrop-workstation-svs-disp:
+      - build-nightly-buster-securedrop-workstation-viewer:
           requires:
             - build-nightly-buster-securedrop-log
       - build-nightly-buster-securedrop-workstation-config:
           requires:
-            - build-nightly-buster-securedrop-workstation-svs-disp
+            - build-nightly-buster-securedrop-workstation-viewer
       - build-nightly-buster-securedrop-keyring:
           requires:
             - build-nightly-buster-securedrop-workstation-config
@@ -824,10 +824,10 @@ workflows:
       - build-nightly-bullseye-securedrop-workstation-grsec:
           requires:
             - build-nightly-bullseye-securedrop-workstation-config
-      - build-nightly-bullseye-securedrop-workstation-svs-disp:
+      - build-nightly-bullseye-securedrop-workstation-viewer:
           requires:
             - build-nightly-bullseye-securedrop-workstation-grsec
       # Cleaning old nightlies should always be the last step
       - clean-old-nightlies:
           requires:
-            - build-nightly-bullseye-securedrop-workstation-svs-disp
+            - build-nightly-bullseye-securedrop-workstation-viewer
