@@ -1,0 +1,5 @@
+securedrop-workstation-config (0.1.7+buster) unstable; urgency=medium
+
+  * Add securedrop-workstation-config 0.1.7 for bullseye
+
+ -- SecureDrop Team <securedrop@freedom.press>  Mon, 23 May 2022 21:06:58 -0700
