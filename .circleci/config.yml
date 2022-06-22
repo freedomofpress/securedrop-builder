@@ -672,19 +672,6 @@ jobs:
       - *setmetapackageversion
       - *builddebianpackage
 
-  build-nightly-buster-securedrop-workstation-config:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdconfigname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
-
   build-nightly-bullseye-securedrop-workstation-config:
     docker:
       - image: circleci/python:3.9-bullseye
@@ -795,12 +782,9 @@ workflows:
       - build-nightly-buster-securedrop-workstation-viewer:
           requires:
             - build-nightly-buster-securedrop-log
-      - build-nightly-buster-securedrop-workstation-config:
-          requires:
-            - build-nightly-buster-securedrop-workstation-viewer
       - build-nightly-buster-securedrop-keyring:
           requires:
-            - build-nightly-buster-securedrop-workstation-config
+            - build-nightly-buster-securedrop-workstation-viewer
       - build-nightly-buster-securedrop-workstation-grsec:
           requires:
             - build-nightly-buster-securedrop-keyring
