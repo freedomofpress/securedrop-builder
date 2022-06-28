@@ -517,20 +517,6 @@ jobs:
       - *getnightlyversion
       - *builddebianpackage
 
-  build-nightly-buster-securedrop-export:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropexport
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
-
   build-bullseye-securedrop-export:
     docker:
       - image: circleci/python:3.9-bullseye
@@ -773,12 +759,9 @@ workflows:
       - build-nightly-buster-securedrop-proxy:
           requires:
             - build-nightly-buster-securedrop-client
-      - build-nightly-buster-securedrop-export:
-          requires:
-            - build-nightly-buster-securedrop-proxy
       - build-nightly-buster-securedrop-log:
           requires:
-            - build-nightly-buster-securedrop-export
+            - build-nightly-buster-securedrop-proxy
       - build-nightly-buster-securedrop-workstation-viewer:
           requires:
             - build-nightly-buster-securedrop-log
