@@ -626,32 +626,6 @@ jobs:
       - *setmetapackageversionplatform
       - *builddebianpackage
 
-  build-nightly-buster-securedrop-workstation-grsec:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdgrsecname
-      - *getnightlymetapackageversionplatform
-      - *updatedebianchangelogplatform
-      - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
-
-  build-nightly-bullseye-securedrop-workstation-grsec:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdgrsecname
-      - *getnightlymetapackageversionplatform
-      - *updatedebianchangelogplatform
-      - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
-
   build-buster-securedrop-workstation-config:
     docker:
       - image: circleci/python:3.7-buster
@@ -785,12 +759,9 @@ workflows:
       - build-nightly-buster-securedrop-keyring:
           requires:
             - build-nightly-buster-securedrop-workstation-viewer
-      - build-nightly-buster-securedrop-workstation-grsec:
-          requires:
-            - build-nightly-buster-securedrop-keyring
       - build-nightly-bullseye-securedrop-log:
           requires:
-            - build-nightly-buster-securedrop-workstation-grsec
+            - build-nightly-buster-securedrop-keyring
       - build-nightly-bullseye-securedrop-client:
           requires:
             - build-nightly-bullseye-securedrop-log
@@ -806,12 +777,10 @@ workflows:
       - build-nightly-bullseye-securedrop-workstation-config:
           requires:
             - build-nightly-bullseye-securedrop-proxy
-      - build-nightly-bullseye-securedrop-workstation-grsec:
-          requires:
-            - build-nightly-bullseye-securedrop-workstation-config
+
       - build-nightly-bullseye-securedrop-workstation-viewer:
           requires:
-            - build-nightly-bullseye-securedrop-workstation-grsec
+            - build-nightly-bullseye-securedrop-workstation-config
       # Cleaning old nightlies should always be the last step
       - clean-old-nightlies:
           requires:
