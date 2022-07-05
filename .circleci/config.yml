@@ -263,7 +263,7 @@ jobs:
 
   reprotest-wheels:
     docker:
-      - image: quay.io/freedomofpress/packaging-debian-buster@sha256:16d2df1935807c6a751d0536e3cb36970c4c22d7324915d25ee84c90b032c307
+      - image: quay.io/freedomofpress/packaging-debian-bullseye@sha256:b23206cff095aa5f0764d03c18ff1212a386386b9026441cc36ea836b19b0919
     steps:
       - checkout
       - run:
