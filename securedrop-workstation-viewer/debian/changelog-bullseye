@@ -1,0 +1,5 @@
+securedrop-workstation-viewer (0.2.0+bullseye) unstable; urgency=medium
+
+  * Move packages to debhelper-compat 11
+
+ -- SecureDrop Team <securedrop@freedom.press>  Mon, 04 Jul 2022 22:03:18 -0400
