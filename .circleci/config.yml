@@ -143,7 +143,7 @@ common-steps:
         cd ~/project/$PKG_NAME/debian
         export DEBFULLNAME='Automated builds'
         export DEBEMAIL=securedrop@freedom.press
-        dch --changelog changelog-${VERSION_CODENAME} --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
+        dch --changelog changelog-${VERSION_CODENAME} --distribution unstable --package "$PKG_NAME" --newversion ${VERSION_TO_BUILD}+${VERSION_CODENAME} "This is an automated build."
 
 
   - &builddebianpackage
