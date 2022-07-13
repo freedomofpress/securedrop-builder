@@ -564,7 +564,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *setsdviewername
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-bullseye-securedrop-workstation-viewer:
@@ -575,7 +575,7 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *setsdviewername
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-nightly-buster-securedrop-workstation-viewer:
@@ -586,8 +586,8 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *setsdviewername
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -600,8 +600,8 @@ jobs:
       - *removevirtualenv
       - *installdeps
       - *setsdviewername
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
