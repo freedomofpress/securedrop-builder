@@ -205,7 +205,7 @@ you must update the changelog.
 Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
 
 ```
-./scripts/update-changelog securedrop-foobar
+PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-foobar
 ```
 
 Build the package:
