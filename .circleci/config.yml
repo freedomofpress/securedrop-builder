@@ -46,18 +46,6 @@ common-steps:
         ./update_version.sh $VERSION_TO_BUILD
         git tag $VERSION_TO_BUILD
 
-  - &getnightlymetapackageversion
-    run:
-      name: Create nightly version for metapackages
-      command: |
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-buster | head -n1)
-        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
-        export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
-  # TODO: remove duplication between this and above
   - &getnightlymetapackageversionplatform
     run:
       name: Create nightly version for metapackages based on platform changelog
@@ -125,16 +113,6 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
-  - &updatedebianchangelog
-    run:
-      name: Update debian changelog
-      command: |
-        cd ~/project/$PKG_NAME/debian
-        export DEBFULLNAME='Automated builds'
-        export DEBEMAIL=securedrop@freedom.press
-        dch --changelog changelog-buster --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
-
-  # TODO: Remove duplication with above
   - &updatedebianchangelogplatform
     run:
       name: Update debian changelog based on platform changelog
@@ -201,17 +179,6 @@ common-steps:
         echo $PKG_NAME > ~/packaging/sd_package_name
         echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
 
-  - &setmetapackageversion
-    run:
-      name: Get metapackage version via distribution changelog
-      command: |
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-buster | head -n1)
-        export VERSION_TO_BUILD="$CURRENT_VERSION"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
-  # TODO: remove duplication between this and above
   - &setmetapackageversionplatform
     run:
       name: Get metapackage version via changelog for the current platform
@@ -376,7 +343,7 @@ jobs:
       - *installdeps
       - *clonesecuredroplog
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -401,7 +368,7 @@ jobs:
       - *installdeps
       - *clonesecuredroplog
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -426,7 +393,7 @@ jobs:
       - *installdeps
       - *clonesecuredropclient
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -451,7 +418,7 @@ jobs:
       - *installdeps
       - *clonesecuredropclient
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -476,7 +443,7 @@ jobs:
       - *installdeps
       - *clonesecuredropproxy
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -501,7 +468,7 @@ jobs:
       - *installdeps
       - *clonesecuredropproxy
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -526,7 +493,7 @@ jobs:
       - *installdeps
       - *clonesecuredropexport
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -551,7 +518,7 @@ jobs:
       - *installdeps
       - *clonesecuredropexport
       - *getnightlyversion
-      - *updatedebianchangelog
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -633,7 +600,7 @@ jobs:
       - checkout
       - *installdeps
       - *setsdconfigname
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-bullseye-securedrop-workstation-config:
@@ -643,7 +610,7 @@ jobs:
       - checkout
       - *installdeps
       - *setsdconfigname
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-nightly-bullseye-securedrop-workstation-config:
@@ -653,8 +620,8 @@ jobs:
       - checkout
       - *installdeps
       - *setsdconfigname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -666,7 +633,7 @@ jobs:
       - checkout
       - *installdeps
       - *setsdkeyringname
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-bullseye-securedrop-keyring:
@@ -676,7 +643,7 @@ jobs:
       - checkout
       - *installdeps
       - *setsdkeyringname
-      - *setmetapackageversion
+      - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-nightly-buster-securedrop-keyring:
@@ -686,8 +653,8 @@ jobs:
       - checkout
       - *installdeps
       - *setsdkeyringname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
@@ -699,8 +666,8 @@ jobs:
       - checkout
       - *installdeps
       - *setsdkeyringname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
+      - *getnightlymetapackageversionplatform
+      - *updatedebianchangelogplatform
       - *builddebianpackage
       - *addsshkeys
       - *commitworkstationdebs
