@@ -1,3 +1,9 @@
+securedrop-workstation-viewer (0.2.0+buster) unstable; urgency=medium
+
+  * Move packages to debhelper-compat 11
+
+ -- SecureDrop Team <securedrop@freedom.press>  Mon, 04 Jul 2022 22:03:18 -0400
+
 securedrop-workstation-viewer (0.1.1+buster) unstable; urgency=medium
 
   * Fixes typo in control fields, replaces package
