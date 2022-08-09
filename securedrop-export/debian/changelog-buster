@@ -1,4 +1,4 @@
-securedrop-export (0.3.0+bullseye) unstable; urgency=medium
+securedrop-export (0.3.0+buster) unstable; urgency=medium
 
   * See changelog.md
 

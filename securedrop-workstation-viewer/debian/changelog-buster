@@ -1,4 +1,4 @@
-securedrop-workstation-viewer (0.2.0+bullseye) unstable; urgency=medium
+securedrop-workstation-viewer (0.2.0+buster) unstable; urgency=medium
 
   * Move packages to debhelper-compat 11
 

@@ -1,4 +1,4 @@
-securedrop-proxy (0.4.0+bullseye) unstable; urgency=medium
+securedrop-proxy (0.4.0+buster) unstable; urgency=medium
 
   * See changelog.md
 
