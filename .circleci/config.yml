@@ -1,5 +1,11 @@
 ---
 common-steps:
+  - &persist
+    persist_to_workspace:
+      root: /tmp/workspace
+      paths:
+        - "*"
+
   - &removevirtualenv
     run:
       name: Removes the upstream virtualenv from the original container image
@@ -150,10 +156,13 @@ common-steps:
     run:
       name: Build debian package
       command: |
+        source /etc/os-release
         export PKG_PATH=~/packaging/$PKG_NAME/
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
         ls ~/project/build/debbuild/packaging/*.deb
+        mkdir -p /tmp/workspace/${VERSION_CODENAME}
+        mv ~/project/build/debbuild/packaging/*.deb /tmp/workspace/${VERSION_CODENAME}
 
 
   - &addsshkeys
@@ -228,21 +237,27 @@ common-steps:
     run:
       name: Commit workstation debs for deployment to apt-test.freedom.press
       command: |
-        PLATFORM="$(lsb_release -sc)"
+        apt-get update
+        apt-get install -y ca-certificates git git-lfs openssh-client
+
         git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
         cd securedrop-dev-packages-lfs
 
         git config user.email "securedrop@freedom.press"
         git config user.name "sdcibot"
 
-        # Copy built debian packages to the relevant workstation repo and git push.
-        mkdir -p ./workstation/${PLATFORM}-nightlies/
-        cp ~/project/build/debbuild/packaging/*.deb ./workstation/${PLATFORM}-nightlies/
-        git add workstation/${PLATFORM}-nightlies/*.deb
-        git commit -m "Automated SecureDrop workstation build"
+        for codename in buster bullseye
+        do
+            # Copy built debian packages to the relevant workstation repo and git push.
+            mkdir -p ./workstation/${codename}-nightlies/
+            cp /tmp/workspace/${codename}/*.deb ./workstation/${codename}-nightlies/
+            git add workstation/${codename}-nightlies/*.deb
+            git commit -m "Automated SecureDrop workstation build (${codename})"
+        done
         git push origin main
 
 version: 2.1
+
 jobs:
   lint-and-test:
     docker:
@@ -297,16 +312,15 @@ jobs:
     docker:
       - image: debian:bullseye
     steps:
+      - checkout
       - *addsshkeys
       - run:
           name: clone and run reprepro update
           command: |
-            # TODO: Publish image with these packages pre-installed
             apt-get update
             apt-get install -y reprepro ca-certificates dctrl-tools git git-lfs openssh-client
 
             # Clone the dev repo and configure it
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
             git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
             cd securedrop-dev-packages-lfs
             git lfs install
@@ -378,8 +392,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-bullseye-securedrop-log:
     docker:
@@ -403,8 +416,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-buster-securedrop-client:
     docker:
@@ -428,8 +440,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-bullseye-securedrop-client:
     docker:
@@ -453,8 +464,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-buster-securedrop-proxy:
     docker:
@@ -478,8 +488,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-bullseye-securedrop-proxy:
     docker:
@@ -503,8 +512,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-buster-securedrop-export:
     docker:
@@ -528,8 +536,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-bullseye-securedrop-export:
     docker:
@@ -553,8 +560,7 @@ jobs:
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-buster-securedrop-workstation-viewer:
     docker:
@@ -589,8 +595,7 @@ jobs:
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-nightly-bullseye-securedrop-workstation-viewer:
     docker:
@@ -603,8 +608,7 @@ jobs:
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-buster-securedrop-workstation-grsec:
     docker:
@@ -656,8 +660,7 @@ jobs:
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-buster-securedrop-keyring:
     docker:
@@ -689,8 +692,7 @@ jobs:
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
-      - *addsshkeys
-      - *commitworkstationdebs
+      - *persist
 
   build-nightly-bullseye-securedrop-keyring:
     docker:
@@ -702,8 +704,18 @@ jobs:
       - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
+      - *persist
+
+  push-packages:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - *addsshkeys
       - *commitworkstationdebs
+
 
 workflows:
   build-packages:
@@ -728,9 +740,6 @@ workflows:
       - build-bullseye-securedrop-workstation-grsec
       - build-bullseye-securedrop-workstation-viewer
 
-  # Nightly jobs for each package are run in series to ensure there are no
-  # conflicts or race conditions when committing deb packages to git-lfs.
-  # Each nightly job requires the completion of the previous task in the sequence.
   nightly:
     triggers:
       - schedule:
@@ -740,48 +749,39 @@ workflows:
               only:
                 - main
     jobs:
-      - reprepro-update-tor
-      - build-nightly-buster-securedrop-client:
-          requires:
-            - reprepro-update-tor
-      - build-nightly-buster-securedrop-proxy:
+      - build-nightly-buster-securedrop-client
+      - build-nightly-buster-securedrop-proxy
+      - build-nightly-buster-securedrop-export
+      - build-nightly-buster-securedrop-log
+      - build-nightly-buster-securedrop-workstation-viewer
+      - build-nightly-buster-securedrop-keyring
+      - build-nightly-bullseye-securedrop-log
+      - build-nightly-bullseye-securedrop-client
+      - build-nightly-bullseye-securedrop-export
+      - build-nightly-bullseye-securedrop-keyring
+      - build-nightly-bullseye-securedrop-proxy
+      - build-nightly-bullseye-securedrop-workstation-config
+      - build-nightly-bullseye-securedrop-workstation-viewer
+      - push-packages:
           requires:
             - build-nightly-buster-securedrop-client
-      - build-nightly-buster-securedrop-export:
-          requires:
             - build-nightly-buster-securedrop-proxy
-      - build-nightly-buster-securedrop-log:
-          requires:
             - build-nightly-buster-securedrop-export
-      - build-nightly-buster-securedrop-workstation-viewer:
-          requires:
             - build-nightly-buster-securedrop-log
-      - build-nightly-buster-securedrop-keyring:
-          requires:
             - build-nightly-buster-securedrop-workstation-viewer
-      - build-nightly-bullseye-securedrop-log:
-          requires:
             - build-nightly-buster-securedrop-keyring
-      - build-nightly-bullseye-securedrop-client:
-          requires:
             - build-nightly-bullseye-securedrop-log
-      - build-nightly-bullseye-securedrop-export:
-          requires:
             - build-nightly-bullseye-securedrop-client
-      - build-nightly-bullseye-securedrop-keyring:
-          requires:
             - build-nightly-bullseye-securedrop-export
-      - build-nightly-bullseye-securedrop-proxy:
-          requires:
             - build-nightly-bullseye-securedrop-keyring
-      - build-nightly-bullseye-securedrop-workstation-config:
-          requires:
             - build-nightly-bullseye-securedrop-proxy
-
-      - build-nightly-bullseye-securedrop-workstation-viewer:
-          requires:
             - build-nightly-bullseye-securedrop-workstation-config
-      # Cleaning old nightlies should always be the last step
+            - build-nightly-bullseye-securedrop-workstation-viewer
+      - reprepro-update-tor:
+          requires:
+            # Wait for push to finish
+            - push-packages
       - clean-old-nightlies:
           requires:
-            - build-nightly-bullseye-securedrop-workstation-viewer
+            # Wait for tor update to finish
+            - reprepro-update-tor
