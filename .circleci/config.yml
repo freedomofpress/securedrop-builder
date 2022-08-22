@@ -16,16 +16,6 @@ common-steps:
       name: Install Debian packaging dependencies
       command: make install-deps
 
-  - &getlatestreleasedversion
-    run:
-      name: Get latest released version of the project
-      command: |
-        cd ~/packaging/securedrop-*
-        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
   - &getnightlyversion
     run:
       name: Create nightly version for python packages
@@ -39,118 +29,24 @@ common-steps:
         ./update_version.sh $VERSION_TO_BUILD
         git tag $VERSION_TO_BUILD
 
-  - &getrpmnightlyversion
-    run:
-      name: Create nightly version for rpm packages
-      command: |
-        cd ~/packaging/securedrop-*
-        # Nightly versioning format for RPMs is since rpm does not like '-' in versions: LATEST_TAG.dev.YYMMDD.HHMMSS
-        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).dev.$(date +%Y%m%d).$(date +%H%M%S)"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-        ./update_version.sh $VERSION_TO_BUILD
-        git tag $VERSION_TO_BUILD
-
-  - &getnightlymetapackageversion
-    run:
-      name: Create nightly version for metapackages
-      command: |
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-buster | head -n1)
-        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
-        export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
-  # TODO: remove duplication between this and above
-  - &getnightlymetapackageversionplatform
-    run:
-      name: Create nightly version for metapackages based on platform changelog
-      command: |
-        source /etc/os-release
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ~/project/${PKG_NAME}/debian/changelog-${VERSION_CODENAME} | head -n1)
-        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
-        export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
-  - &clonesecuredropclient
+  - &clonefromenv
     run:
       name: Clone the repository to be packaged
       command: |
         mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-client.git
-        export PKG_NAME="securedrop-client"
-        # Enable access to this env var in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &clonesecuredropproxy
-    run:
-      name: Clone the repository to be packaged
-      command: |
-        mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-proxy.git
-        export PKG_NAME="securedrop-proxy"
-        # Enable access to this env var in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &clonesecuredroplog
-    run:
-      name: Clone the repository to be packaged
-      command: |
-        mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-log.git
-        export PKG_NAME="securedrop-log"
-        # Enable access to this env car in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &clonesecuredropexport
-    run:
-      name: Clone the repository to be packaged
-      command: |
-        mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-export.git
-        export PKG_NAME="securedrop-export"
-        # Enable access to this env car in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &clonesecuredropworkstation
-    run:
-      name: Clone the repository to be packaged
-      command: |
-        mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-workstation.git
-        export PKG_NAME="securedrop-workstation"
-        # Enable access to this env car in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
+        git clone https://github.com/freedomofpress/${PKG_NAME}.git
 
   - &updatedebianchangelog
     run:
-      name: Update debian changelog
+      name: Update debian changelog if nightly
       command: |
         cd ~/project/$PKG_NAME/debian
         export DEBFULLNAME='Automated builds'
         export DEBEMAIL=securedrop@freedom.press
-        dch --changelog changelog-buster --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
-
-  # TODO: Remove duplication with above
-  - &updatedebianchangelogplatform
-    run:
-      name: Update debian changelog based on platform changelog
-      command: |
-        source /etc/os-release
-        cd ~/project/$PKG_NAME/debian
-        export DEBFULLNAME='Automated builds'
-        export DEBEMAIL=securedrop@freedom.press
-        dch --changelog changelog-${VERSION_CODENAME} --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
-
+        if [[ "$IS_NIGHTLY" == "nightly" ]]; then
+            dch --changelog changelog-buster --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
+            echo "Bumped debian/changelog"
+        fi
 
   - &builddebianpackage
     run:
@@ -164,59 +60,25 @@ common-steps:
         mkdir -p /tmp/workspace/${VERSION_CODENAME}
         mv ~/project/build/debbuild/packaging/*.deb /tmp/workspace/${VERSION_CODENAME}
 
-
   - &addsshkeys
     add_ssh_keys:
       fingerprints:
         - "e5:b5:6e:d0:4e:ce:52:40:33:30:5e:6f:c5:73:38:20"
 
-  - &setsdviewername
-    run:
-      name: Set package name to securedrop-workstation-viewer
-      command: |
-        mkdir ~/packaging
-        export PKG_NAME="securedrop-workstation-viewer"
-        # Enable access to this env var in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &setsdgrsecname
-    run:
-      name: Set package name to securedrop-workstation-grsec
-      command: |
-        mkdir ~/packaging
-        export PKG_NAME="securedrop-workstation-grsec"
-        # Enable access to this env car in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &setsdconfigname
-    run:
-      name: Set package name to securedrop-workstation-config
-      command: |
-        mkdir ~/packaging
-        export PKG_NAME="securedrop-workstation-config"
-        # Enable access to this env car in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
-  - &setsdkeyringname
-    run:
-      name: Set package name to securedrop-keyring
-      command: |
-        mkdir ~/packaging
-        export PKG_NAME="securedrop-keyring"
-        # Enable access to this env car in subsequent run steps
-        echo $PKG_NAME > ~/packaging/sd_package_name
-        echo 'export PKG_NAME=$(cat ~/packaging/sd_package_name)' >> $BASH_ENV
-
   - &setmetapackageversion
     run:
-      name: Get metapackage version via distribution changelog
+      name: Get and set metapackage version via distribution changelog
       command: |
         CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-buster | head -n1)
-        export VERSION_TO_BUILD="$CURRENT_VERSION"
+        if [[ "$IS_NIGHTLY" == "nightly" ]]; then
+            # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
+            export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        else
+            export VERSION_TO_BUILD="$CURRENT_VERSION"
+        fi
+        echo "Will build: $VERSION_TO_BUILD"
         # Enable access to this env var in subsequent run steps
+        mkdir -p ~/packaging
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
@@ -229,9 +91,9 @@ common-steps:
         CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${VERSION_CODENAME} | head -n1)
         export VERSION_TO_BUILD="$CURRENT_VERSION"
         # Enable access to this env var in subsequent run steps
+        mkdir -p ~/packaging
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
 
   - &commitworkstationdebs
     run:
@@ -370,242 +232,50 @@ jobs:
             git diff-index --quiet HEAD || git commit -m "Deleting old nightlies" && git push origin main
 
 
-  build-buster-securedrop-log:
+  build:
+    parameters:
+      package:
+        type: string
+      image:
+        type: string
+      nightly:
+        type: string
+        default: ""
     docker:
-      - image: circleci/python:3.7-buster
+      - image: circleci/python:<< parameters.image >>
+    environment:
+      PKG_NAME: << parameters.package >>
+      SCHEDULE_NAME: << pipeline.schedule.name >>
+      IS_NIGHTLY: << parameters.nightly >>
     steps:
       - checkout
       - *removevirtualenv
       - *installdeps
-      - *clonesecuredroplog
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-buster-securedrop-log:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredroplog
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-bullseye-securedrop-log:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredroplog
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-bullseye-securedrop-log:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredroplog
+      - *clonefromenv
       - *getnightlyversion
       - *updatedebianchangelog
       - *builddebianpackage
       - *persist
 
-  build-buster-securedrop-client:
+  build-metapackage:
+    parameters:
+      package:
+        type: string
+      image:
+        type: string
+      nightly:
+        type: string
+        default: ""
+    environment:
+      PKG_NAME: << parameters.package >>
+      IS_NIGHTLY: << parameters.nightly >>
     docker:
-      - image: circleci/python:3.7-buster
+      - image: circleci/python:<< parameters.image >>
     steps:
       - checkout
       - *removevirtualenv
       - *installdeps
-      - *clonesecuredropclient
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-buster-securedrop-client:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropclient
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-bullseye-securedrop-client:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropclient
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-bullseye-securedrop-client:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropclient
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-buster-securedrop-proxy:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropproxy
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-buster-securedrop-proxy:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropproxy
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-bullseye-securedrop-proxy:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropproxy
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-bullseye-securedrop-proxy:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropproxy
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-buster-securedrop-export:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropexport
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-buster-securedrop-export:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropexport
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-bullseye-securedrop-export:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropexport
-      - *getnightlyversion
-      - *builddebianpackage
-
-  build-nightly-bullseye-securedrop-export:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *clonesecuredropexport
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-buster-securedrop-workstation-viewer:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *setsdviewername
       - *setmetapackageversion
-      - *builddebianpackage
-
-  build-bullseye-securedrop-workstation-viewer:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *setsdviewername
-      - *setmetapackageversion
-      - *builddebianpackage
-
-  build-nightly-buster-securedrop-workstation-viewer:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *setsdviewername
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-nightly-bullseye-securedrop-workstation-viewer:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *removevirtualenv
-      - *installdeps
-      - *setsdviewername
-      - *getnightlymetapackageversion
       - *updatedebianchangelog
       - *builddebianpackage
       - *persist
@@ -613,98 +283,24 @@ jobs:
   build-buster-securedrop-workstation-grsec:
     docker:
       - image: circleci/python:3.7-buster
+    environment:
+      PKG_NAME: securedrop-workstation-grsec
     steps:
       - checkout
       - *installdeps
-      - *setsdgrsecname
       - *setmetapackageversionplatform
       - *builddebianpackage
 
   build-bullseye-securedrop-workstation-grsec:
     docker:
       - image: circleci/python:3.9-bullseye
+    environment:
+      PKG_NAME: securedrop-workstation-grsec
     steps:
       - checkout
       - *installdeps
-      - *setsdgrsecname
       - *setmetapackageversionplatform
       - *builddebianpackage
-
-  build-buster-securedrop-workstation-config:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdconfigname
-      - *setmetapackageversion
-      - *builddebianpackage
-
-  build-bullseye-securedrop-workstation-config:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdconfigname
-      - *setmetapackageversion
-      - *builddebianpackage
-
-  build-nightly-bullseye-securedrop-workstation-config:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdconfigname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-buster-securedrop-keyring:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdkeyringname
-      - *setmetapackageversion
-      - *builddebianpackage
-
-  build-bullseye-securedrop-keyring:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdkeyringname
-      - *setmetapackageversion
-      - *builddebianpackage
-
-  build-nightly-buster-securedrop-keyring:
-    docker:
-      - image: circleci/python:3.7-buster
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdkeyringname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build-nightly-bullseye-securedrop-keyring:
-    docker:
-      - image: circleci/python:3.9-bullseye
-    steps:
-      - checkout
-      - *installdeps
-      - *setsdkeyringname
-      - *getnightlymetapackageversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
 
   push-packages:
     docker:
@@ -723,22 +319,29 @@ workflows:
       - lint-and-test
       - reprotest-wheels
       - reprotest-debs
-      - build-buster-securedrop-client
-      - build-buster-securedrop-proxy
-      - build-buster-securedrop-workstation-viewer
-      - build-buster-securedrop-export
-      - build-buster-securedrop-log
+      - build:
+          matrix:
+            parameters:
+              package:
+                - securedrop-client
+                - securedrop-export
+                - securedrop-log
+                - securedrop-proxy
+              image:
+                - "3.7-buster"
+                - "3.9-bullseye"
+      - build-metapackage:
+          matrix:
+            parameters:
+              package:
+                - securedrop-keyring
+                - securedrop-workstation-config
+                - securedrop-workstation-viewer
+              image:
+                - "3.7-buster"
+                - "3.9-bullseye"
       - build-buster-securedrop-workstation-grsec
-      - build-buster-securedrop-workstation-config
-      - build-buster-securedrop-keyring
-      - build-bullseye-securedrop-client
-      - build-bullseye-securedrop-export
-      - build-bullseye-securedrop-keyring
-      - build-bullseye-securedrop-log
-      - build-bullseye-securedrop-proxy
-      - build-bullseye-securedrop-workstation-config
       - build-bullseye-securedrop-workstation-grsec
-      - build-bullseye-securedrop-workstation-viewer
 
   nightly:
     triggers:
@@ -749,34 +352,33 @@ workflows:
               only:
                 - main
     jobs:
-      - build-nightly-buster-securedrop-client
-      - build-nightly-buster-securedrop-proxy
-      - build-nightly-buster-securedrop-export
-      - build-nightly-buster-securedrop-log
-      - build-nightly-buster-securedrop-workstation-viewer
-      - build-nightly-buster-securedrop-keyring
-      - build-nightly-bullseye-securedrop-log
-      - build-nightly-bullseye-securedrop-client
-      - build-nightly-bullseye-securedrop-export
-      - build-nightly-bullseye-securedrop-keyring
-      - build-nightly-bullseye-securedrop-proxy
-      - build-nightly-bullseye-securedrop-workstation-config
-      - build-nightly-bullseye-securedrop-workstation-viewer
+      - build:
+          matrix:
+            parameters:
+              package:
+                - securedrop-client
+                - securedrop-export
+                - securedrop-log
+                - securedrop-proxy
+              image:
+                - "3.7-buster"
+                - "3.9-bullseye"
+              nightly: ["nightly"]
+      - build-metapackage:
+          matrix:
+            parameters:
+              package:
+                - securedrop-keyring
+                - securedrop-workstation-config
+                - securedrop-workstation-viewer
+              image:
+                - "3.7-buster"
+                - "3.9-bullseye"
+              nightly: ["nightly"]
       - push-packages:
           requires:
-            - build-nightly-buster-securedrop-client
-            - build-nightly-buster-securedrop-proxy
-            - build-nightly-buster-securedrop-export
-            - build-nightly-buster-securedrop-log
-            - build-nightly-buster-securedrop-workstation-viewer
-            - build-nightly-buster-securedrop-keyring
-            - build-nightly-bullseye-securedrop-log
-            - build-nightly-bullseye-securedrop-client
-            - build-nightly-bullseye-securedrop-export
-            - build-nightly-bullseye-securedrop-keyring
-            - build-nightly-bullseye-securedrop-proxy
-            - build-nightly-bullseye-securedrop-workstation-config
-            - build-nightly-bullseye-securedrop-workstation-viewer
+            - build
+            - build-metapackage
       - reprepro-update-tor:
           requires:
             # Wait for push to finish
