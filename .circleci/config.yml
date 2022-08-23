@@ -344,13 +344,6 @@ workflows:
       - build-bullseye-securedrop-workstation-grsec
 
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 6 * * *"
-          filters:
-            branches:
-              only:
-                - main
     jobs:
       - build:
           matrix:
