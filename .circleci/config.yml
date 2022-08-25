@@ -104,7 +104,7 @@ common-steps:
       name: Commit workstation debs for deployment to apt-test.freedom.press
       command: |
         apt-get update
-        apt-get install -y ca-certificates git git-lfs openssh-client
+        apt-get install -y ca-certificates git git-lfs openssh-client python3
 
         git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
         cd securedrop-dev-packages-lfs
@@ -112,14 +112,17 @@ common-steps:
         git config user.email "securedrop@freedom.press"
         git config user.name "sdcibot"
 
-        for codename in buster bullseye
-        do
-            # Copy built debian packages to the relevant workstation repo and git push.
-            mkdir -p ./workstation/${codename}-nightlies/
-            cp /tmp/workspace/${codename}/*.deb ./workstation/${codename}-nightlies/
-            git add workstation/${codename}-nightlies/*.deb
-            git commit -m "Automated SecureDrop workstation build (${codename})"
-        done
+        # Copy built debian packages to the relevant workstation repo and git push.
+        mkdir -p ./workstation/${CODENAME}-nightlies/
+        cp /tmp/workspace/${CODENAME}/*.deb ./workstation/${CODENAME}-nightlies/ ||:
+        git add workstation/${CODENAME}-nightlies/*.deb ||:
+
+        # Clean up old nightlies too
+        ~/project/scripts/clean-old-nightlies.py workstation/${CODENAME}-nightlies
+
+        # If there are changes, diff-index will fail, so we commit and push
+        git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build (${CODENAME})"
+
         git push origin main
 
 version: 2.1
@@ -205,38 +208,8 @@ jobs:
             # If there are changes, diff-index will fail, so we commit and push
             git diff-index --quiet HEAD || git commit -m "Automatically updating Tor packages" && git push origin main
 
-  clean-old-nightlies:
-    docker:
-      - image: debian:bullseye
-    steps:
-      - checkout
-      - *addsshkeys
-      - run:
-          name: clone and delete old nightlies
-          command: |
-            apt-get update
-            apt-get install -y python3 ca-certificates git git-lfs openssh-client
 
-            # Clone the dev repo and configure it
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
-            git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
-            cd securedrop-dev-packages-lfs
-            git lfs install
-            git config user.email "securedrop@freedom.press"
-            git config user.name "sdcibot"
-
-            # Run the clean script and `git add` any deletions
-            cd ..
-            ./scripts/clean-old-nightlies.py securedrop-dev-packages-lfs/workstation/buster-nightlies
-            ./scripts/clean-old-nightlies.py securedrop-dev-packages-lfs/workstation/bullseye-nightlies
-            cd securedrop-dev-packages-lfs
-            git add .
-
-            # If there are changes, diff-index will fail, so we commit and push
-            git diff-index --quiet HEAD || git commit -m "Deleting old nightlies" && git push origin main
-
-
-  build:
+  build: &build
     parameters:
       package:
         type: string
@@ -260,7 +233,9 @@ jobs:
       - *builddebianpackage
       - *persist
 
-  build-metapackage:
+  build2: *build
+
+  build-metapackage: &build-metapackage
     parameters:
       package:
         type: string
@@ -282,9 +257,11 @@ jobs:
       - *builddebianpackage
       - *persist
 
-  build-buster-securedrop-workstation-grsec:
+  build2-metapackage: *build-metapackage
+
+  build-bookworm-securedrop-workstation-grsec:
     docker:
-      - image: debian:buster
+      - image: debian:bookworm
     environment:
       PKG_NAME: securedrop-workstation-grsec
     steps:
@@ -304,9 +281,11 @@ jobs:
       - *setmetapackageversionplatform
       - *builddebianpackage
 
-  push-packages:
+  push-bullseye: &push
     docker:
       - image: debian:bullseye
+    environment:
+      CODENAME: bullseye
     steps:
       - checkout
       - attach_workspace:
@@ -314,6 +293,10 @@ jobs:
       - *addsshkeys
       - *commitworkstationdebs
 
+  push-bookworm:
+    <<: *push
+    environment:
+      CODENAME: bookworm
 
 workflows:
   build-packages:
@@ -324,26 +307,26 @@ workflows:
       - build:
           matrix:
             parameters:
-              package:
+              package: &packages
                 - securedrop-client
                 - securedrop-export
                 - securedrop-log
                 - securedrop-proxy
               image:
-                - "buster"
-                - "bullseye"
+                - bullseye
+                - bookworm
       - build-metapackage:
           matrix:
             parameters:
-              package:
+              package: &metapackages
                 - securedrop-keyring
                 - securedrop-workstation-config
                 - securedrop-workstation-viewer
               image:
-                - "buster"
-                - "bullseye"
-      - build-buster-securedrop-workstation-grsec
+                - bullseye
+                - bookworm
       - build-bullseye-securedrop-workstation-grsec
+      - build-bookworm-securedrop-workstation-grsec
 
   nightly:
     triggers:
@@ -354,38 +337,47 @@ workflows:
               only:
                 - main
     jobs:
+      # We need bullseye packages to be pushed if bookworm jobs fail.
+      # So bookworm jobs run in a separate track ("build2") that is identical,
+      # except the push-bullseye job only depends on the bullseye jobs and the
+      # final step is push-bookworm, which might fail.
+      - reprepro-update-tor
       - build:
           matrix:
             parameters:
-              package:
-                - securedrop-client
-                - securedrop-export
-                - securedrop-log
-                - securedrop-proxy
+              package: *packages
               image:
-                - "buster"
-                - "bullseye"
+                - bullseye
+              nightly: ["nightly"]
+      - build2:
+          matrix:
+            parameters:
+              package: *packages
+              image:
+                - bookworm
               nightly: ["nightly"]
       - build-metapackage:
           matrix:
             parameters:
-              package:
-                - securedrop-keyring
-                - securedrop-workstation-config
-                - securedrop-workstation-viewer
+              package: *metapackages
               image:
-                - "buster"
-                - "bullseye"
+                - bullseye
               nightly: ["nightly"]
-      - push-packages:
+      - build2-metapackage:
+          matrix:
+            parameters:
+              package: *metapackages
+              image:
+                - bookworm
+              nightly: ["nightly"]
+      - push-bullseye:
           requires:
+            - reprepro-update-tor
             - build
             - build-metapackage
-      - reprepro-update-tor:
+      # This should be last as we do expect it to fail occasionally.
+      - push-bookworm:
           requires:
-            # Wait for push to finish
-            - push-packages
-      - clean-old-nightlies:
-          requires:
-            # Wait for tor update to finish
-            - reprepro-update-tor
+            - push-bullseye
+            - build2
+            - build2-metapackage
