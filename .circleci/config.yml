@@ -127,7 +127,7 @@ version: 2.1
 jobs:
   lint-and-test:
     docker:
-      - image: debian:buster
+      - image: debian:bullseye
     steps:
       - checkout
       - *installdeps
@@ -160,7 +160,7 @@ jobs:
 
   reprotest-debs:
     docker:
-      - image: debian:buster
+      - image: debian:bullseye
     steps:
       - checkout
       - *installdeps
