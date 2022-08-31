@@ -56,7 +56,7 @@ common-steps:
     run:
       name: Build debian package
       command: |
-        source /etc/os-release
+        export VERSION_CODENAME=$(~/project/scripts/codename)
         export PKG_PATH=~/packaging/$PKG_NAME/
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
@@ -91,7 +91,7 @@ common-steps:
     run:
       name: Get metapackage version via changelog for the current platform
       command: |
-        source /etc/os-release
+        export VERSION_CODENAME=$(~/project/scripts/codename)
         CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${VERSION_CODENAME} | head -n1)
         export VERSION_TO_BUILD="$CURRENT_VERSION"
         # Enable access to this env var in subsequent run steps

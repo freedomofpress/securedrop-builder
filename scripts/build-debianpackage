@@ -14,6 +14,7 @@ set -o pipefail
 
 # Store root of repo, since we'll change dirs several times.
 CUR_DIR="$(git rev-parse --show-toplevel)"
+VERSION_CODENAME=$("${CUR_DIR}/scripts/codename")
 
 # Verify sha256sums.txt in the git repo
 "${CUR_DIR}/scripts/verify-sha256sum-signature"
@@ -27,8 +28,6 @@ TOP_BUILDDIR="$PWD/build/debbuild/packaging"
 mkdir -p "$TOP_BUILDDIR"
 rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
 mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
-# Platform metadata
-source /etc/os-release
 
 # Validate required args.
 if [[ -z "${PKG_NAME:-}" ]]; then
