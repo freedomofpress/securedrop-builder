@@ -11,6 +11,12 @@ import argparse
 from pprint import pprint
 
 
+if os.geteuid() == 0:
+    # tar has issues when resetting permissions and ends up
+    # causing very subtle reproducibility issues.
+    print("This script cannot be run as root.", file=sys.stderr)
+    sys.exit(1)
+
 # Set SOURCE_DATE_EPOCH to a predictable value. Using the first
 # commit to the SecureDrop project:
 #

@@ -1,6 +1,9 @@
 #!/bin/bash
+set -euxo pipefail
 # Installs required dependencies for building SecureDrop Worsktation packages.
 # Assumes a Debian 10 machine, ideally a Qubes AppVM.
+
+VIRTUAL_ENV="${VIRTUAL_ENV:-}"
 
 sudo apt-get update
 sudo apt-get install  \
