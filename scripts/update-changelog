@@ -6,8 +6,8 @@ set -e
 set -u
 set -o pipefail
 
-source /etc/os-release
 TOPLEVEL="$(git rev-parse --show-toplevel)"
+VERSION_CODENAME=$("${TOPLEVEL}/scripts/codename")
 
 # These env vars are only required when updating changelogs,
 # otherwise the developer must edit the fields by hand, lest
