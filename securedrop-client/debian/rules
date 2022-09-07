@@ -1,23 +1,16 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv
+	dh $@ --buildsystem=none
 
-REQUIREMENTS_FILE=requirements/build-requirements.txt
+PIP_ARGS=--ignore-installed --no-index --find-links $(WHEELS_DIR) --no-deps --no-cache-dir --no-use-pep517
 
-override_dh_virtualenv:
-	test -e $(REQUIREMENTS_FILE)
-	dh_virtualenv \
-		--python /usr/bin/python3 \
-		--use-system-packages \
-		--extra-pip-arg "--ignore-installed" \
-		--extra-pip-arg "--no-index" \
-		--extra-pip-arg "--find-links" \
-		--extra-pip-arg "$(WHEELS_DIR)" \
-		--extra-pip-arg "--no-deps" \
-		--extra-pip-arg "--no-cache-dir" \
-		--extra-pip-arg "--no-use-pep517" \
-		--requirements $(REQUIREMENTS_FILE)
+override_dh_auto_install:
+	virtualenv --system-site-packages debian/$(PKG_NAME)/opt/venvs/$(PKG_NAME)
+	./debian/$(PKG_NAME)/opt/venvs/$(PKG_NAME)/bin/pip install $(PIP_ARGS) -r requirements/build-requirements.txt
+	./debian/$(PKG_NAME)/opt/venvs/$(PKG_NAME)/bin/pip install $(PIP_ARGS) .
+	find ./debian/$(PKG_NAME)/ -type f -exec sed -i "s#$(shell pwd)/debian/$(PKG_NAME)##" {} \;
+	dh_auto_install $@
 
 override_dh_strip_nondeterminism:
 	find ./debian/ -type f -name '*.pyc' -delete
