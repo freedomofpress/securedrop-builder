@@ -46,8 +46,4 @@ else
     fi
 fi
 
-if [[ "$PKG_NAME" = "securedrop-workstation-grsec" ]]; then
-    dch -b --newversion "${PKG_VERSION}-1~${VERSION_CODENAME}" --distribution unstable -c "$changelog"
-else
-    dch -b --newversion "${PKG_VERSION}+${VERSION_CODENAME}" --distribution unstable -c "$changelog"
-fi
+dch -b --newversion "${PKG_VERSION}+${VERSION_CODENAME}" --distribution unstable -c "$changelog"

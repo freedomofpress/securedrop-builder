@@ -86,19 +86,6 @@ common-steps:
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
 
-  # TODO: remove duplication between this and above
-  - &setmetapackageversionplatform
-    run:
-      name: Get metapackage version via changelog for the current platform
-      command: |
-        export VERSION_CODENAME=$(~/project/scripts/codename)
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-${VERSION_CODENAME} | head -n1)
-        export VERSION_TO_BUILD="$CURRENT_VERSION"
-        # Enable access to this env var in subsequent run steps
-        mkdir -p ~/packaging
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
   - &commitworkstationdebs
     run:
       name: Commit workstation debs for deployment to apt-test.freedom.press
@@ -259,28 +246,6 @@ jobs:
 
   build2-metapackage: *build-metapackage
 
-  build-bookworm-securedrop-workstation-grsec:
-    docker:
-      - image: debian:bookworm
-    environment:
-      PKG_NAME: securedrop-workstation-grsec
-    steps:
-      - checkout
-      - *installdeps
-      - *setmetapackageversionplatform
-      - *builddebianpackage
-
-  build-bullseye-securedrop-workstation-grsec:
-    docker:
-      - image: debian:bullseye
-    environment:
-      PKG_NAME: securedrop-workstation-grsec
-    steps:
-      - checkout
-      - *installdeps
-      - *setmetapackageversionplatform
-      - *builddebianpackage
-
   push-bullseye: &push
     docker:
       - image: debian:bullseye
@@ -325,8 +290,6 @@ workflows:
               image:
                 - bullseye
                 - bookworm
-      - build-bullseye-securedrop-workstation-grsec
-      - build-bookworm-securedrop-workstation-grsec
 
   nightly:
     triggers:

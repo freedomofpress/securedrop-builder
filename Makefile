@@ -12,10 +12,6 @@ securedrop-client: ## Builds Debian package for securedrop-client code
 securedrop-workstation-config: ## Builds Debian metapackage for Qubes Workstation base dependencies
 	PKG_NAME="securedrop-workstation-config" ./scripts/build-debianpackage
 
-.PHONY: securedrop-workstation-grsec
-securedrop-workstation-grsec: ## Builds Debian metapackage for Qubes Workstation hardened kernel
-	PKG_NAME="securedrop-workstation-grsec" ./scripts/build-debianpackage
-
 .PHONY: securedrop-workstation-svs-disp
 securedrop-workstation-svs-disp: ## Builds Debian metapackage for Disposable VM dependencies and tooling (DEPRECATED)
 	PKG_NAME="securedrop-workstation-svs-disp" ./scripts/build-debianpackage
