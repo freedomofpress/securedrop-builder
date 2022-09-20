@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for securedrop-workstation-grsec
+# postinst script for securedrop-keyring
 #
 # see: dh_installdeb(1)
 
