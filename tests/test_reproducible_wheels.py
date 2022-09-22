@@ -6,6 +6,7 @@ import os
 # These are the SDW repositories that we build wheels for.
 REPOS_WITH_WHEELS = [
     "securedrop-client",
+    "securedrop-export",
     "securedrop-log",
     "securedrop-proxy",
 ]
@@ -30,7 +31,7 @@ def test_wheel_builds_are_reproducible(repo_name):
       * user_group: As tar command will fail for random user/groups
       * time: breaks HTTPS, so pip calls fail
       * locales: some locales fail, would be nice to fix, but low priority
-      * kernel: x86_64 is the supported architecure, we don't ship others
+      * kernel: x86_64 is the supported architecture, we don't ship others
     """
     repo_url = f"https://github.com/freedomofpress/{repo_name}"
     cmd_env = os.environ.copy()
