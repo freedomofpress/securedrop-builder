@@ -30,10 +30,7 @@ wheel_mime_types="$(find localwheels/ -type f -iname '*.whl' -exec file --mime-t
 if [[ "$wheel_mime_types" != "application/zip" ]]; then
     echo "Re-fetching git-lfs assets..."
     git lfs install
-    # Re-fetch assets to resolve pointers to actual files
-    rm -r bootstrap/ localwheels/
-    git checkout bootstrap/ localwheels/
-    git lfs fetch
+    git lfs pull
 fi
 
 # Support existing activated virtualenv, e.g. via virtualenvwrapper.
