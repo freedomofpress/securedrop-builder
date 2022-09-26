@@ -2,87 +2,70 @@
 
 # To update the requirements files with sha256sums from our local PyPI.
 
+import argparse
 import os
 import sys
-import glob
-import hashlib
 import subprocess
-from pprint import pprint
+from pathlib import Path
+from typing import List
+
+
+def parse_args():
+    # For backwards-compat
+    if "PKG_DIR" in os.environ and \
+            not any(arg.startswith("--pkg-dir") for arg in sys.argv):
+        sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
+        sys.argv.extend(["--project", os.path.basename(os.environ["PKG_DIR"])])
+    parser = argparse.ArgumentParser(description="Update requirements files with sha256sums from our wheels")
+    parser.add_argument("--pkg-dir", help="Package directory", required=True)
+    parser.add_argument("--project", help="Project to update", required=True)
+    parser.add_argument("--requirements", help="Directory that contains requirements.txt inside the package directory",
+                        default="requirements")
+    return parser.parse_args()
 
 
 def main():
-    PKG_DIR = os.environ.get("PKG_DIR", "")
-    if os.environ.get("BOOTSTRAP", ""):
-        BOOTSTRAP = True
-    else:
-        BOOTSTRAP = False
-
-    if not PKG_DIR:
-        print("Set PKG_DIR of the project")
-        sys.exit(1)
-
-    requirements_file = os.path.join(PKG_DIR, "requirements.txt")
-    if not os.path.exists(requirements_file):
-        requirements_file = os.path.join(PKG_DIR, "requirements", "requirements.txt")
-        if not os.path.exists(requirements_file):
-            print("Cannot find requirements.txt")
-            sys.exit(1)
+    args = parse_args()
+    pkg_dir = Path(args.pkg_dir)
+    requirements_file = pkg_dir / args.requirements / "requirements.txt"
+    project = Path(__file__).parent.parent / args.project
 
     # First remove index line and any PyQt or sip dependency
     cleaned_lines = cleanup(requirements_file)
 
-    verify_sha256sums_file(BOOTSTRAP)
+    verify_sha256sums_file(project)
 
-    build_requirements_file = os.path.join(PKG_DIR, "build-requirements.txt")
-    if not os.path.exists(build_requirements_file):
-        build_requirements_file = os.path.join(PKG_DIR, "requirements", "build-requirements.txt")
-        if not os.path.exists(build_requirements_file):
-            print("Cannot find build_requirements.txt")
-            sys.exit(1)
+    build_requirements_file = pkg_dir / args.requirements / "build-requirements.txt"
 
-    if BOOTSTRAP:
-        shasums_file = "bootstrap-sha256sums.txt"
-    else:
-        shasums_file = "sha256sums.txt"
+    shasums_file = project / "sha256sums.txt"
     # Now let us update the files along with the sha256sums from localwheels
-    add_sha256sums(build_requirements_file, cleaned_lines, shasums_file)
+    add_sha256sums(build_requirements_file, cleaned_lines, shasums_file, pkg_dir)
 
-def verify_sha256sums_file(bootstrap=False):
-    "Verifies the sha256sums.txt file with gpg signature"
 
-    if bootstrap:
-        filename = "bootstrap-sha256sums.txt"
-        signature_filename = "bootstrap-sha256sums.txt.asc"
-    else:
-        filename = "sha256sums.txt"
-        signature_filename = "sha256sums.txt.asc"
-    if not os.path.exists(filename):
+def verify_sha256sums_file(project: Path):
+    """Verifies the sha256sums.txt file with gpg signature"""
+
+    filename = project / "sha256sums.txt"
+    signature_filename = project / "sha256sums.txt.asc"
+    if not filename.exists():
         print(f"Missing {filename} file.")
         sys.exit(1)
 
-    if not os.path.exists(signature_filename):
+    if not signature_filename.exists():
         print(f"Missing {signature_filename} file.")
         sys.exit(1)
 
     # Both file exists, we can now verify using gpg.
     # Using a wrapper script to ensure proper keyring.
-    cmd = ["./scripts/verify-sha256sum-signature"]
-    subprocess.check_call(cmd)
+    subprocess.check_call(["./scripts/verify-sha256sum-signature", project.name])
 
-def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha256sums.txt") -> None:
-    """Adds all the required sha256sums to the wheels
 
-    :param path: path to the requirements file.
-    :type path: str
-    :param requirements_lines: cleaned lines from the requirements file.
-    :type requirements_lines: list
-    :return: None
-    :rtype: None
-    """
+def add_sha256sums(path: Path, requirements_lines: List[str],
+                   shasums_file: Path, pkg_dir: Path) -> None:
+    """Adds all the required sha256sums to the wheels"""
     files = []
 
-    with open(shasums_file) as fobj:
-        lines = fobj.readlines()
+    lines = shasums_file.read_text().splitlines()
 
     for line in lines:
         line = line.strip()
@@ -93,9 +76,6 @@ def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha2
 
     newlines = []
     missing_wheels = []
-
-    if not isinstance(requirements_lines, list):
-        raise ValueError("requirements_lines must be a list")
 
     # For each dependency in the requirements file
     for mainline in requirements_lines:
@@ -135,7 +115,7 @@ def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha2
             print("{}".format(missing_dep))
 
         print("\nPlease build the wheel by using the following command:\n")
-        print("\tPKG_DIR={0} make build-wheels\n".format(os.environ["PKG_DIR"]))
+        print(f"\tPKG_DIR={pkg_dir} make build-wheels\n")
         print("Then add the newly built wheels and sources to ./localwheels/.")
         print("Also update the index HTML files accordingly commit your changes.")
         print("After these steps, please rerun the command again.")
@@ -143,12 +123,11 @@ def add_sha256sums(path: str, requirements_lines: list, shasums_file: str ="sha2
         sys.exit(1)
 
     # Now update the file
-    with open(path, "w") as fobj:
-        for line in newlines:
-            fobj.write(line)
+    path.write_text("".join(newlines))
+    print(f"Updated {path}")
 
 
-def cleanup(path: str) -> str:
+def cleanup(path: Path) -> List[str]:
     """Cleans up requirement files
 
     :param path: The file to cleanup
@@ -157,8 +136,7 @@ def cleanup(path: str) -> str:
     :rtype: None
     """
 
-    with open(path) as fobj:
-        lines = fobj.readlines()
+    lines = path.read_text().splitlines()
 
     finallines = []
 

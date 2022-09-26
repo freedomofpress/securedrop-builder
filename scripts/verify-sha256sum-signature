@@ -5,27 +5,17 @@
 # We expect a valid signature to correspond to a SecureDrop Maintainer,
 # so we create a temporary keyring in order to force gpg to use *only*
 # authorized keys during the verification check.
-set -e
-set -u
-set -o pipefail
-set -o nounset
+set -euo pipefail
 
-
-bootstrap=${BOOTSTRAP:-}
+directory=${1?"Usage: $0 [directory]"}
 
 # Canonicalize path, since script may be called from different
 # locations within the repo.
 repo_root="$(git rev-parse --show-toplevel)"
 
-if [ ! -z "$bootstrap" ]; then
-	sha256sums_sig="${repo_root}/bootstrap-sha256sums.txt.asc";
-	sha256sums_file="${repo_root}/bootstrap-sha256sums.txt";
-	localwheels="${repo_root}/bootstrap"
-else
-	sha256sums_sig="${repo_root}/sha256sums.txt.asc";
-	sha256sums_file="${repo_root}/sha256sums.txt";
-	localwheels="${repo_root}/localwheels"
-fi
+sha256sums_sig="${repo_root}/${directory}/sha256sums.txt.asc";
+sha256sums_file="${repo_root}/${directory}/sha256sums.txt";
+localwheels="${repo_root}/${directory}/wheels"
 
 function verify_sha256sum_signature() {
     # Hardcode expected filepaths
@@ -36,7 +26,7 @@ function verify_sha256sum_signature() {
     # Ensure temporary keyring is cleaned up afterward.
     trap 'rm -f "${temp_keyring}"' EXIT
 
-    # Import SecureDrop release key for verification.
+    # Import public keys for verification.
     gpg --batch --no-default-keyring --keyring "${temp_keyring}" \
         --import "${repo_root}/pubkeys/"*.pub
 
@@ -50,7 +40,7 @@ function verify_sha256sum_no_changes() {
     # We'll compare this to the signed file for validation.
     temp_sha256sum="$(mktemp)"
     if [[ ! -d "$localwheels" ]]; then
-        echo "$localwheels directory does not exist; run make fetch-wheels"
+        echo "$localwheels directory does not exist"
         exit 1
     fi
     cd $localwheels

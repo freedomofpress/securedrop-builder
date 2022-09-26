@@ -5,10 +5,8 @@ import sys
 import glob
 import subprocess
 import tempfile
-import tarfile
 import shutil
 import argparse
-from pprint import pprint
 
 
 if os.geteuid() == 0:
@@ -35,38 +33,40 @@ WHEEL_BUILD_DIR = "/tmp/pip-wheel-build"
 
 
 def main():
+    if "PKG_DIR" in os.environ and \
+            not any(arg.startswith("--pkg-dir") for arg in sys.argv):
+        sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
+        sys.argv.extend(["--project", os.path.basename(os.environ["PKG_DIR"])])
+
     parser = argparse.ArgumentParser(
-        description="Builds and caches sources and wheels"
+        description="Builds and stores sources and wheels"
     )
-    parser.add_argument(
-        "-p",
-        help="Points to the project directory",
-    )
-    parser.add_argument(
-        "--cache", default="./localwheels", help="Final cache dir"
-    )
+    parser.add_argument("--pkg-dir", help="Package directory", required=True)
+    parser.add_argument("--project", help="Project name to update", required=True)
     parser.add_argument(
         "--clobber", action="store_true", default=False,
         help="Whether to overwrite wheels and source tarballs",
     )
+    parser.add_argument(
+        "--requirements",
+        default="requirements",
+        help="Directory that contains requirements.txt inside the package directory",
+    )
     args = parser.parse_args()
 
-    if args.p.startswith("https://"):
-        git_clone_directory = tempfile.mkdtemp(prefix=os.path.basename(args.p))
-        cmd = f"git clone {args.p} {git_clone_directory}".split()
+    if args.pkg_dir.startswith("https://"):
+        git_clone_directory = tempfile.mkdtemp(prefix=os.path.basename(args.pkg_dir))
+        cmd = f"git clone {args.pkg_dir} {git_clone_directory}".split()
         subprocess.check_call(cmd)
-        args.p = git_clone_directory
+        args.pkg_dir = git_clone_directory
     else:
         git_clone_directory = ""
-        if not os.path.exists(args.p):
-            print("Project directory missing {0}.".format(args.p))
+        if not os.path.exists(args.pkg_dir):
+            print(f"Project directory missing {args.pkg_dir}.")
             sys.exit(1)
 
-    # Try requirements.txt in the repo root, otherwise try requirements/requirements.txt
-    req_path = os.path.join(args.p, "requirements.txt")
-
-    if not os.path.exists(req_path):
-        req_path = os.path.join(args.p, "requirements/requirements.txt")
+    req_path = os.path.join(args.pkg_dir, args.requirements, "requirements.txt")
+    local_wheels = os.path.join(args.project, "wheels")
 
     if not os.path.exists(req_path):
         print("requirements.txt missing at {0}.".format(req_path))
@@ -98,9 +98,6 @@ def main():
         # Now we have all the source tarballs
         source_tar_balls = glob.glob(f"{tmpdir}/*.tar.gz")
         for source in source_tar_balls:
-            # I am getting umask issue for the below lines
-            # tar = tarfile.open(source)
-            # tar.extractall(WHEEL_BUILD_DIR)
             cmd = ["tar", "-xvf", source, "-C", WHEEL_BUILD_DIR]
             subprocess.check_call(cmd)
         # Now we have the all source tarballs extracted in WHEEL_BUILD_DIR
@@ -114,23 +111,26 @@ def main():
             subprocess.check_call(cmd)
             print(f"build command used: {' '.join(cmd)}")
 
-
         # Now find the names
         names = os.listdir(tmpdir)
 
-        cachenames = os.listdir(args.cache)
+        if os.path.exists(local_wheels):
+            local_names = os.listdir(local_wheels)
+        else:
+            os.mkdir(local_wheels)
+            local_names = []
 
         for name in names:
-            if name == "requirements.txt":  # We don't need this in cache
+            if name == "requirements.txt":  # We don't need this
                 continue
-            if name in cachenames:  # Means all ready in our cache
+            if name in local_names:  # Means already there
                 if not args.clobber:
                     continue
 
-            # Else copy to cache
+            # Else copy to local wheels
             filepath = os.path.join(tmpdir, name)
-            shutil.copy(filepath, args.cache, follow_symlinks=True)
-            print("Copying {0} to cache {1}".format(name, args.cache))
+            shutil.copy(filepath, local_wheels, follow_symlinks=True)
+            print(f"Copied {name} to {local_wheels}")
 
     if git_clone_directory:
         shutil.rmtree(git_clone_directory)

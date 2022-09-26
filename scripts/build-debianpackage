@@ -12,15 +12,26 @@ set -e
 set -u
 set -o pipefail
 
+
+# Validate required args.
+if [[ -z "${PKG_NAME:-}" ]]; then
+    echo "Set PKG_NAME of the build";
+    exit 1
+fi
+
 # Store root of repo, since we'll change dirs several times.
 CUR_DIR="$(git rev-parse --show-toplevel)"
 VERSION_CODENAME=$("${CUR_DIR}/scripts/codename")
 
-# Verify sha256sums.txt in the git repo
-"${CUR_DIR}/scripts/verify-sha256sum-signature"
-
 # Disable use of pip cache during debhelper build actions.
 export DH_PIP_EXTRA_ARGS="--no-cache-dir --require-hashes"
+# Point dh-virtualenv/pip to our prebuilt wheels
+export WHEELS_DIR="${CUR_DIR}/${PKG_NAME}/wheels"
+
+if [[ -d "${WHEELS_DIR}" ]]; then
+    # Verify sha256sums.txt in the git repo if we have dependencies
+    "${CUR_DIR}/scripts/verify-sha256sum-signature" "${PKG_NAME}"
+fi
 
 # Declare general packaging building workspace; subdirs will
 # be created within, to build specific packages.
@@ -28,12 +39,6 @@ TOP_BUILDDIR="$PWD/build/debbuild/packaging"
 mkdir -p "$TOP_BUILDDIR"
 rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
 mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
-
-# Validate required args.
-if [[ -z "${PKG_NAME:-}" ]]; then
-    echo "Set PKG_NAME of the build";
-    exit 1
-fi
 
 
 # Look up most recent release from GitHub repo
@@ -115,8 +120,10 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
 
     # Hop into the package build dir, to run dpkg-buildpackage
     cd "$TOP_BUILDDIR/$PKG_NAME/"
-    # Verify all the hashes from the verified sha256sums.txt
-    "${CUR_DIR}/scripts/verify-hashes" "${CUR_DIR}/sha256sums.txt"
+    if [[ -d "${WHEELS_DIR}" ]]; then
+        # Verify all the hashes from the verified sha256sums.txt if we have dependencies
+        "${CUR_DIR}/scripts/verify-hashes" "${CUR_DIR}/${PKG_NAME}/sha256sums.txt"
+    fi
 
     echo "All hashes verified."
 else
@@ -158,7 +165,7 @@ export SOURCE_DATE_EPOCH
 # Build the package
 dpkg-buildpackage -us -uc
 
-# Tell the user the path of the files buillt
+# Tell the user the path of the files built
 pkg_path="$(find "$TOP_BUILDDIR" -type f -iname "${PKG_NAME}_${PKG_VERSION}*.deb" | head -n1)"
 if [[ -f "$pkg_path" ]]; then
     echo "Package location: $pkg_path"
