@@ -37,6 +37,10 @@ securedrop-keyring: ## Builds Debian package containing the release key
 install-deps: ## Install initial Debian packaging dependencies
 	./scripts/install-deps
 
+.PHONY: install-server-deps
+install-server-deps: ## Install dependencies for building server wheels
+	./scripts/install-server-deps
+
 .PHONY: lint-desktop-files
 lint-desktop-files: ## Install initial Debian packaging dependencies
 	./scripts/lint-desktop-files

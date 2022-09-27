@@ -13,6 +13,13 @@ common-steps:
         apt-get update && apt-get install -y make sudo
         make install-deps
 
+  - &installserverdeps
+    run:
+      name: Install Debian packaging dependencies
+      command: |
+        apt-get update && apt-get install -y make sudo
+        make install-server-deps
+
   - &installtestdeps
     run:
       name: Install test dependencies
@@ -130,7 +137,7 @@ jobs:
             sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             make test
 
-  reprotest-wheels:
+  reprotest-wheels-debian:
     docker:
       - image: debian:bullseye
     # Our "ci" user will have problems if the repository is in /root
@@ -139,7 +146,7 @@ jobs:
       - checkout
       - *installdeps
       - *installtestdeps
-      - run:
+      - run: &reprotest_wheels_run
           name: install test requirements and run tests
           command: |
             adduser --system ci --ingroup root
@@ -147,6 +154,17 @@ jobs:
             # Have our "ci" user take over the git repo
             chown ci:root -R .
             sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py"
+
+  reprotest-wheels-ubuntu:
+    docker:
+      - image: ubuntu:focal
+    # Our "ci" user will have problems if the repository is in /root
+    working_directory: "/srv"
+    steps:
+      - checkout
+      - *installserverdeps
+      - *installtestdeps
+      - run: *reprotest_wheels_run
 
   reprotest-debs:
     docker:
@@ -267,7 +285,8 @@ workflows:
   build-packages:
     jobs:
       - lint-and-test
-      - reprotest-wheels
+      - reprotest-wheels-debian
+      - reprotest-wheels-ubuntu
       - reprotest-debs
       - build:
           matrix:

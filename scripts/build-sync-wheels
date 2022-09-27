@@ -68,7 +68,9 @@ def main():
             print(f"Project directory missing {args.pkg_dir}.")
             sys.exit(1)
 
-    req_path = os.path.join(args.pkg_dir, args.requirements, "requirements.txt")
+    # Hack hack hack, let's just rename this in the securedrop repo
+    name = "securedrop-app-code-requirements.txt" if args.requirements.endswith("python3") else "requirements.txt"
+    req_path = os.path.join(args.pkg_dir, args.requirements, name)
     if args.project is not None:
         project_name = args.project
     else:
@@ -111,7 +113,7 @@ def main():
 
         # Next step is to take each one of those and then execute the build command to build a wheel against them
         project_names = os.listdir(WHEEL_BUILD_DIR)
-        for project in project_names:
+        for project in sorted(project_names):
             print(f"Building {project}")
             source_path = os.path.join(WHEEL_BUILD_DIR, project)
             cmd = ["python3", "-m", "build", "--wheel", source_path, "--no-isolation", "-o", tmpdir]

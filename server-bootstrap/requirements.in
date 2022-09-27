@@ -1,0 +1,23 @@
+build==0.3.0
+wheel==0.36.2
+pip==21.3.1
+setuptools==56.0.0
+
+# Build dependencies of boostrap
+# For pep517
+flit_core >=2,<3
+
+# Build dependencies of server packages
+
+# For python-dateutil
+setuptools-scm>=5.0.2
+
+# For cryptography
+cffi>=1.12
+setuptools-rust>=0.11.4,<0.12
+
+# For wtforms
+Babel>=2.6.0
+
+# For maintaining requirements files
+pip-tools>=6

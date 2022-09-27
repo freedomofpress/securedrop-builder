@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euxo pipefail
+# Installs required dependencies for building SecureDrop Server wheels.
+# Assumes a Ubuntu Focal machine/container.
+
+VIRTUAL_ENV="${VIRTUAL_ENV:-}"
+export DEBIAN_FRONTEND=noninteractive
+export TZ=Etc/UTC
+
+sudo apt-get update
+sudo -E apt-get install  \
+    build-essential \
+    curl \
+    git-lfs \
+    apache2-dev \
+    cargo \
+    libffi-dev \
+    libssl-dev \
+    python3-all \
+    python3-pip \
+    python3-virtualenv \
+    python3-venv \
+    python3-setuptools -y
+
+# Inspect the wheel files present locally. If repo was cloned
+# without git-lfs, they'll be "text/plain", rather than "application/zip".
+wheel_mime_types="$(find workstation-bootstrap/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
+if [[ "$wheel_mime_types" != "application/zip" ]]; then
+    echo "Re-fetching git-lfs assets..."
+    git lfs install
+    git lfs pull
+fi
+
+# Support existing activated virtualenv, e.g. via virtualenvwrapper.
+if [[ -z "$VIRTUAL_ENV" ]]; then
+    echo "Creating local virtualenv..."
+    python3 -m venv .venv
+    . .venv/bin/activate
+else
+    echo "Virtualenv already activated, skipping creation..."
+fi
+
+# Install the 'build' tool from previously prepared bootstrap
+pip install --require-hashes --no-index --no-deps --no-cache-dir \
+    -r ./server-bootstrap/build-requirements.txt \
+    --find-links ./server-bootstrap/wheels/
