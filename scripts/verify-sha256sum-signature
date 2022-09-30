@@ -48,6 +48,7 @@ function verify_sha256sum_no_changes() {
     diff <(sort "$sha256sums_file") <(sort "$temp_sha256sum")
 }
 
+echo "Checking that SHA256SUMs signed by a key in pubkeys/..."
 verify_sha256sum_signature
 printf 'Checking that SHA256SUMs from mirror match signed file... '
 verify_sha256sum_no_changes
