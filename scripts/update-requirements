@@ -9,16 +9,17 @@ import subprocess
 from pathlib import Path
 from typing import List
 
+import utils
+
 
 def parse_args():
     # For backwards-compat
     if "PKG_DIR" in os.environ and \
             not any(arg.startswith("--pkg-dir") for arg in sys.argv):
         sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
-        sys.argv.extend(["--project", os.path.basename(os.environ["PKG_DIR"])])
     parser = argparse.ArgumentParser(description="Update requirements files with sha256sums from our wheels")
     parser.add_argument("--pkg-dir", help="Package directory", required=True)
-    parser.add_argument("--project", help="Project to update", required=True)
+    parser.add_argument("--project", help="Project to update")
     parser.add_argument("--requirements", help="Directory that contains requirements.txt inside the package directory",
                         default="requirements")
     return parser.parse_args()
@@ -26,9 +27,13 @@ def parse_args():
 
 def main():
     args = parse_args()
-    pkg_dir = Path(args.pkg_dir)
+    pkg_dir = Path(args.pkg_dir).expanduser()
+    if args.project is not None:
+        project_name = args.project
+    else:
+        project_name = utils.project_name(pkg_dir)
     requirements_file = pkg_dir / args.requirements / "requirements.txt"
-    project = Path(__file__).parent.parent / args.project
+    project = Path(__file__).parent.parent / project_name
 
     # First remove index line and any PyQt or sip dependency
     cleaned_lines = cleanup(requirements_file)

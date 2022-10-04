@@ -1,3 +1,4 @@
+scripts/__pycache__/
 tests/__pycache__/
 debhelper-build-stamp
 *.debhelper.log
