@@ -2,24 +2,12 @@
 
 # A script to update the sha256sums from localwheels directory
 
-set -e
-set -u
-set -o pipefail
-set -o nounset
+set -euxo pipefail
 
+directory=${1?"Usage: $0 [directory]"}
 
-bootstrap=${BOOTSTRAP:-}
+cd ./${directory}/wheels/
+sha256sum * > ../sha256sums.txt
 
-if [ ! -z "$bootstrap" ]; then
-	cd ./bootstrap/
-	sha256sum * > ../bootstrap-sha256sums.txt
-
-	echo "Now you must sign the generated bootstrap-sha256sums.txt file:"
-	echo "gpg --armor --output bootstrap-sha256sums.txt.asc --detach-sig  bootstrap-sha256sums.txt"
-else
-	cd ./localwheels/
-	sha256sum * > ../sha256sums.txt
-
-	echo "Now you must sign the generated sha256sums.txt file:"
-	echo "gpg --armor --output sha256sums.txt.asc --detach-sig  sha256sums.txt"
-fi
+echo "Now you must sign the generated sha256sums.txt file:"
+echo "gpg --armor --output ${directory}/sha256sums.txt.asc --detach-sig  ${directory}/sha256sums.txt"

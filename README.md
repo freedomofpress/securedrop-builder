@@ -40,20 +40,21 @@ If we have to update the tool, use the following steps
 rm -rf .venv && python3 -m venv .venv
 source .venv/bin/activate
 # Then install pip-tools, from pinned dependencies
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r workstation-bootstrap/requirements.txt
 # Then update the requirements.in file as required
-pip-compile --allow-unsafe --generate-hashes --output-file=requirements.txt requirements.in
+pip-compile --allow-unsafe --generate-hashes \
+    --output-file=workstation-bootstrap/requirements.txt workstation-bootstrap/requirements.in
 # Now we are ready for bootstrapping
-./scripts/build-sync-wheels --cache ./bootstrap -p $PWD
+./scripts/build-sync-wheels --project workstation-bootstrap --pkg-dir ./workstation-bootstrap --requirements .
 # Here we have the new wheels ready
 # Now let us recreate our new sha256sums for bootstrapping
-BOOTSTRAP=true ./scripts/sync-sha256sums
+./scripts/sync-sha256sums ./workstation-bootstrap
 # now let us sign the list of sha256sums
-gpg --armor --output bootstrap-sha256sums.txt.asc --detach-sig  bootstrap-sha256sums.txt
+gpg --armor --output workstation-bootstrap/sha256sums.txt.asc --detach-sig  workstation-bootstrap/sha256sums.txt
 # We can even verify if we want
-BOOTSTRAP=true ./scripts/verify-sha256sum-signature
+./scripts/verify-sha256sum-signature ./workstation-bootstrap/
 # Update the build-requirements.txt file
-PKG_DIR=$PWD BOOTSTRAP=true ./scripts/update-requirements
+./scripts/update-requirements --pkg-dir ./workstation-bootstrap/ --project workstation-bootstrap --requirements .
 ```
 
 Make sure that your GPG public key is stored in `pubkeys/`, so CI can verify the signatures.
@@ -73,9 +74,8 @@ to do the following (we are taking `securedrop-client` project as example):
 You can create a fresh virtualenv and install the build tools from our bootstrapped wheels.
 
 ```
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
+rm -rf .venv
+make install-deps
 ```
 
 Remember that the following steps needs to be done from the same virtual environment.
@@ -104,9 +104,8 @@ Also update the index HTML files accordingly commit your changes.
 After these steps, please rerun the command again.
 ```
 
-The next step is to build the wheels. To do this step, you will need an owner
-of the SecureDrop release key to build the wheel and sign the updated sha256sums file
-with the release key. If you're not sure who to ask, ping @redshiftzero for a pointer.
+The next step is to build the wheels. To do this step, you will need a maintainer
+to build the wheels and sign the updated sha256sums file with your individual key.
 
 ### 2. Build wheels
 
@@ -119,12 +118,6 @@ PKG_DIR=/home/user/code/securedrop-client make build-wheels
 This above command will let you know about any new wheels + sources. It will
 build/download sources from PyPI (by verifying it against the sha256sums from
 the `requirements.txt` of the project).
-
-Then navigate back to the project's code directory and run the following command.
-
-```bash
-python3 setup.py sdist
-```
 
 ### 3. Commit changes to the localwheels directory (if only any update of wheels)
 

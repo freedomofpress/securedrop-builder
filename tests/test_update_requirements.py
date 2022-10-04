@@ -1,6 +1,7 @@
 import imp
 import os
 import pytest
+from pathlib import Path
 
 
 # This below stanza is necessary because the scripts are not
@@ -20,7 +21,7 @@ def test_build_fails_if_sha256_sums_absent(tmpdir, mocker):
     mocker.patch('os.path.exists', return_value=False)
 
     with pytest.raises(SystemExit) as exc_info:
-        update_requirements.verify_sha256sums_file()
+        update_requirements.verify_sha256sums_file(Path("foo"))
 
     exit_code = exc_info.value.args[0]
     assert exit_code == 1
@@ -30,7 +31,7 @@ def test_build_fails_if_sha256_signature_absent(tmpdir, mocker):
     mocker.patch('os.path.exists', side_effect=[True, False])
 
     with pytest.raises(SystemExit) as exc_info:
-        update_requirements.verify_sha256sums_file()
+        update_requirements.verify_sha256sums_file(Path("foo"))
 
     exit_code = exc_info.value.args[0]
     assert exit_code == 1
@@ -46,7 +47,7 @@ def test_shasums_skips_sources(tmpdir):
     requirements_lines = ["{}=={}".format(requirement_name, requirement_version)]
     path_result = os.path.join(tmpdir, "test-req.txt")
 
-    update_requirements.add_sha256sums(path_result, requirements_lines, path_test_shasums)
+    update_requirements.add_sha256sums(Path(path_result), requirements_lines, Path(path_test_shasums), Path("foo"))
 
     with open(path_result, 'r') as f:
         result = f.read()
@@ -56,7 +57,6 @@ def test_shasums_skips_sources(tmpdir):
 
 
 def test_build_fails_if_missing_wheels(tmpdir):
-    os.environ["PKG_DIR"] = 'foo'
     path_test_shasums = os.path.join(tmpdir, 'test-shasums.txt')
     with open(path_test_shasums, 'w') as f:
         f.writelines([])
@@ -67,7 +67,7 @@ def test_build_fails_if_missing_wheels(tmpdir):
     path_result = os.path.join(tmpdir, "test-req.txt")
 
     with pytest.raises(SystemExit) as exc_info:
-        update_requirements.add_sha256sums(path_result, requirements_lines, path_test_shasums)
+        update_requirements.add_sha256sums(Path(path_result), requirements_lines, Path(path_test_shasums), Path("foo"))
 
     exit_code = exc_info.value.args[0]
     assert exit_code == 1

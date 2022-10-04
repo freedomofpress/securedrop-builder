@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
-# Installs required dependencies for building SecureDrop Worsktation packages.
-# Assumes a Debian 10 machine, ideally a Qubes AppVM.
+# Installs required dependencies for building SecureDrop Workstation packages.
+# Assumes a Debian 11 machine, ideally a Qubes AppVM.
 
 VIRTUAL_ENV="${VIRTUAL_ENV:-}"
 
@@ -26,14 +26,11 @@ sudo apt-get install  \
 
 # Inspect the wheel files present locally. If repo was cloned
 # without git-lfs, they'll be "text/plain", rather than "application/zip".
-wheel_mime_types="$(find localwheels/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
+wheel_mime_types="$(find workstation-bootstrap/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
 if [[ "$wheel_mime_types" != "application/zip" ]]; then
     echo "Re-fetching git-lfs assets..."
     git lfs install
-    # Re-fetch assets to resolve pointers to actual files
-    rm -r bootstrap/ localwheels/
-    git checkout bootstrap/ localwheels/
-    git lfs fetch
+    git lfs pull
 fi
 
 # Support existing activated virtualenv, e.g. via virtualenvwrapper.
@@ -45,5 +42,7 @@ else
     echo "Virtualenv already activated, skipping creation..."
 fi
 
-# Install the 'build' tool from previously prepared localwheels
-pip install --require-hashes --no-index --no-deps --no-cache-dir -r build-requirements.txt --find-links ./bootstrap/
+# Install the 'build' tool from previously prepared bootstrap
+pip install --require-hashes --no-index --no-deps --no-cache-dir \
+    -r ./workstation-bootstrap/build-requirements.txt \
+    --find-links ./workstation-bootstrap/wheels/

@@ -1,12 +1,13 @@
 DEFAULT_GOAL: help
+SHELL := /bin/bash
 
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
-	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
+	PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage
 
 .PHONY: securedrop-client
 securedrop-client: ## Builds Debian package for securedrop-client code
-	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-client" ./scripts/build-debianpackage
+	PKG_NAME="securedrop-client" ./scripts/build-debianpackage
 
 .PHONY: securedrop-workstation-config
 securedrop-workstation-config: ## Builds Debian metapackage for Qubes Workstation base dependencies
@@ -22,11 +23,11 @@ securedrop-workstation-viewer: ## Builds Debian metapackage for Disposable VM de
 
 .PHONY: securedrop-export
 securedrop-export: ## Builds Debian package for Qubes Workstation export scripts
-	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-export" ./scripts/build-debianpackage
+	PKG_NAME="securedrop-export" ./scripts/build-debianpackage
 
 .PHONY: securedrop-log
 securedrop-log: ## Builds Debian package for Qubes Workstation securedrop-log scripts
-	WHEELS_DIR="$(PWD)/localwheels/" PKG_NAME="securedrop-log" ./scripts/build-debianpackage
+	PKG_NAME="securedrop-log" ./scripts/build-debianpackage
 
 .PHONY: securedrop-keyring
 securedrop-keyring: ## Builds Debian package containing the release key
@@ -46,9 +47,9 @@ requirements: ## Creates requirements files for the Python projects
 
 .PHONY: build-wheels
 build-wheels: ## Builds the wheels and adds them to the localwheels directory
-	./scripts/verify-sha256sum-signature
-	./scripts/build-sync-wheels -p ${PKG_DIR}
-	./scripts/sync-sha256sums
+	./scripts/verify-sha256sum-signature $$(basename ${PKG_DIR})
+	./scripts/build-sync-wheels
+	./scripts/sync-sha256sums $$(basename ${PKG_DIR})
 	@printf "Done! Now please follow the instructions in\n"
 	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/"
 	@printf "to push these changes to the FPF PyPI index\n"
@@ -56,10 +57,6 @@ build-wheels: ## Builds the wheels and adds them to the localwheels directory
 .PHONY: test
 test: ## Run simple test suite (skips reproducibility checks)
 	pytest -v tests/test_update_requirements.py
-
-.PHONY: clean
-clean: ## Removes all non-version controlled packaging artifacts
-	rm -rf localwheels/*
 
 .PHONY: reprotest
 reprotest: ## Runs only reproducibility tests, for .deb and .whl files
