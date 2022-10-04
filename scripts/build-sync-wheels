@@ -7,6 +7,9 @@ import subprocess
 import tempfile
 import shutil
 import argparse
+from pathlib import Path
+
+import utils
 
 
 if os.geteuid() == 0:
@@ -36,13 +39,12 @@ def main():
     if "PKG_DIR" in os.environ and \
             not any(arg.startswith("--pkg-dir") for arg in sys.argv):
         sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
-        sys.argv.extend(["--project", os.path.basename(os.environ["PKG_DIR"])])
 
     parser = argparse.ArgumentParser(
         description="Builds and stores sources and wheels"
     )
     parser.add_argument("--pkg-dir", help="Package directory", required=True)
-    parser.add_argument("--project", help="Project name to update", required=True)
+    parser.add_argument("--project", help="Project name to update")
     parser.add_argument(
         "--clobber", action="store_true", default=False,
         help="Whether to overwrite wheels and source tarballs",
@@ -60,13 +62,18 @@ def main():
         subprocess.check_call(cmd)
         args.pkg_dir = git_clone_directory
     else:
+        args.pkg_dir = os.path.expanduser(args.pkg_dir)
         git_clone_directory = ""
         if not os.path.exists(args.pkg_dir):
             print(f"Project directory missing {args.pkg_dir}.")
             sys.exit(1)
 
     req_path = os.path.join(args.pkg_dir, args.requirements, "requirements.txt")
-    local_wheels = os.path.join(args.project, "wheels")
+    if args.project is not None:
+        project_name = args.project
+    else:
+        project_name = utils.project_name(Path(args.pkg_dir))
+    local_wheels = os.path.join(project_name, "wheels")
 
     if not os.path.exists(req_path):
         print("requirements.txt missing at {0}.".format(req_path))
