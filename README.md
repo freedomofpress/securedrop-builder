@@ -20,7 +20,7 @@ The following diagram shows the makefile targets/scripts in this repository, the
 
 In a Debian AppVM in Qubes:
 
-```
+```shell
 make install-deps
 ```
 
@@ -35,7 +35,7 @@ binary wheel files.
 We use [build](https://pypa-build.readthedocs.io/en/latest/) toolchain to build our reproducible wheels.
 If we have to update the tool, use the following steps
 
-```
+```shell
 # First create a new fresh virtualenv
 rm -rf .venv && python3 -m venv .venv
 source .venv/bin/activate
@@ -73,7 +73,7 @@ to do the following (we are taking `securedrop-client` project as example):
 
 You can create a fresh virtualenv and install the build tools from our bootstrapped wheels.
 
-```
+```shell
 rm -rf .venv
 make install-deps
 ```
@@ -84,7 +84,7 @@ Remember that the following steps needs to be done from the same virtual environ
 
 From the `securedrop-debian-packaging` directory,
 
-```
+```shell
 PKG_DIR=/home/user/code/securedrop-client make requirements
 ```
 
@@ -93,7 +93,7 @@ hashes from our own Python package index server.
 
 If we are missing any wheels from our cache/build/server, it will let you know with a following message.
 
-```
+```shell
 The following dependent wheel(s) are missing:
 pytest==3.10.1
 
@@ -123,7 +123,7 @@ the `requirements.txt` of the project).
 
 Now add these built artifacts to version control:
 
-```
+```shell
 git add localwheels/
 git commit
 ```
@@ -149,7 +149,7 @@ Summarizing release manager steps, at a high level, for changes into this reposi
 9. Commit these tarballs in the `tarballs/` directory
 10. Open a PR to the `securedrop-debian-packaging` repository with a test plan to verify the checksum in the build logs and tarball signature. The reviewer can perform verification by running:
 
-```
+```shell
 sha256sum <package>.tar.gz
 gpg --verify <package>.tar.gz.asc <package>.tar.gz
 ```
@@ -161,32 +161,32 @@ gpg --verify <package>.tar.gz.asc <package>.tar.gz
 
 Next, checkout the project you intend to package and enter that directory:
 
-```
+```shell
 git clone git@github.com:freedomofpress/securedrop-foobar.git
 cd securedrop-foobar
 ```
 
 Verify the release tag for the project:
 
-```
+```shell
 git tag -v x.y.z
 ```
 
 Checkout the release tag:
 
-```
+```shell
 git checkout x.y.z
 ```
 
 If it hasn't been added already, generate a tarball to be used in the build process:
 
-```
+```shell
 python3 setup.py sdist
 ```
 
 Clone this repository for access to the packaging tooling.
 
-```
+```shell
 cd ..
 git clone git@github.com:freedomofpress/securedrop-debian-packaging.git
 cd securedrop-debian-packaging
@@ -197,19 +197,19 @@ you must update the changelog.
 
 Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
 
-```
+```shell
 PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-foobar
 ```
 
 Build the package:
 
-```
+```shell
 PKG_VERSION=x.y.z make securedrop-foobar
 ```
 
 Output package hash so you can copy it into the build logs in the next step:
 
-```
+```shell
 sha256sum /path/to/built/package.deb
 ```
 
@@ -218,13 +218,13 @@ Save and publish your build logs to the `build-logs` repository, e.g. https://gi
 Commit the deb to a new `securedrop-debian-packages-lfs` branch (this will be added as a `git-lfs` object).
 
 Commit all new and modified `reprepro` files created via the publish script (`sudo apt install reprepro` if not already installed):
-```
+```shell
 ./tools/publish
 
 ```
 
 Now open a PR and link to the new `build-logs` commit. A release key holder will add a detached signature to the package in your PR. Make sure the detached signature matches new Release file by running:
-```
+```shell
 gpg --verify repo/public/dists/buster/Release.gpg repo/public/dists/buster/Release
 ```
 
@@ -234,26 +234,26 @@ Once the PR is merged, the new packages will be picked up by a script and deploy
 
 Checkout the project you intend to package and enter that directory:
 
-```
+```shell
 git clone git@github.com:freedomofpress/securedrop-foobar.git
 cd securedrop-foobar
 ```
 
 If there is a dev or rc tag you are testing, then checkout that tag, e.g.
 
-```
+```shell
 git checkout x.y.zrc1
 ```
 
 Update `setup.py` with the rc or dev version number, e.g. `0.5.0dev1` or `0.5.0rc1`. In order for the debian packaging tool to work, you cannot use a `-` or `.` or `_` between the vesion number and the `dev` or `rc` portion of the string. Now you can generate a tarball to be used in the build process:
 
-```
+```shell
 python3 setup.py sdist
 ```
 
 Clone this repository for access to the packaging tooling.
 
-```
+```shell
 cd ..
 git clone git@github.com:freedomofpress/securedrop-debian-packaging.git
 cd securedrop-debian-packaging
@@ -264,13 +264,13 @@ you must update the changelog.
 
 Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
 
-```
+```shell
 ./scripts/update-changelog securedrop-foobar
 ```
 
 Build the package, e.g. `for x.y.zrc1`:
 
-```
+```shell
 PKG_VERSION=x.y.zrc1 PKG_PATH=path/to/securedrop-foobar/dist/securedrop-foobar-x.y.z.rc1.tar.gz make securedrop-foobar
 ```
 
