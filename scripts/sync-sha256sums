@@ -1,13 +1,25 @@
-#!/bin/bash
-
+#!/usr/bin/env python3
 # A script to update the sha256sums from localwheels directory
 
-set -euxo pipefail
+import os
+import subprocess
+import sys
 
-directory=${1?"Usage: $0 [directory]"}
 
-cd ./${directory}/wheels/
-sha256sum * > ../sha256sums.txt
+try:
+    directory = sys.argv[1]
+except IndexError:
+    print(f"Usage: ./scripts/sync-sha256sums [directory]", file=sys.stderr)
+    sys.exit(1)
 
-echo "Now you must sign the generated sha256sums.txt file:"
-echo "gpg --armor --output ${directory}/sha256sums.txt.asc --detach-sig  ${directory}/sha256sums.txt"
+os.chdir(f"{directory}/wheels/")
+output = subprocess.check_output("sha256sum *", shell=True).decode()
+lines = output.splitlines()
+# Apply a consistent sort by package filename
+lines.sort(key=lambda l: l.split("  ", 1)[1])
+
+with open("../sha256sums.txt", "w") as f:
+    f.write("\n".join(lines) + "\n")
+
+print("Now you must sign the generated sha256sums.txt file:")
+print(f"gpg --armor --output {directory}/sha256sums.txt.asc --detach-sig  {directory}/sha256sums.txt")
