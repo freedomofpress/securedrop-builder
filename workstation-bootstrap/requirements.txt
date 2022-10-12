@@ -8,10 +8,12 @@ build==0.3.0 \
     --hash=sha256:0eb95b2c8d770d7c4c9b92c68c227c350bbf65f3ec83551ace9097c18cc15fdd \
     --hash=sha256:75bc5676b1a014fb996dc96914428b197d174364392a46778200d5e115ffe76c
     # via -r workstation-bootstrap/requirements.in
-click==7.1.2 \
-    --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a \
-    --hash=sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc
-    # via pip-tools
+click==8.0.3 \
+    --hash=sha256:353f466495adaeb40b6b5f592f9f91cb22372351c84caeb068132442a4518ef3 \
+    --hash=sha256:410e932b050f5eed773c4cda94de75971c89cdb3155a72a0831139a79e5ecb5b
+    # via
+    #   -r workstation-bootstrap/requirements.in
+    #   pip-tools
 cython==0.29.22 \
     --hash=sha256:105d813eedf276588a02a240ece2f7bca8235aee9bb48e25293410c3c1ac7230 \
     --hash=sha256:15b2ba47858d7949a036d4ba6e838120bf3c06983769e99d12867a2c8cd0cd91 \
