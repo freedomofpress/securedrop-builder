@@ -16,6 +16,13 @@ if os.geteuid() == 0:
     # tar has issues when resetting permissions and ends up
     # causing very subtle reproducibility issues.
     print("This script cannot be run as root.", file=sys.stderr)
+    # sys.exit(1)
+if "VIRTUAL_ENV" not in os.environ:
+    print(
+        "This script should be run in a virtualenv: "
+        "`source .venv/bin/activate`",
+        file=sys.stderr
+    )
     sys.exit(1)
 
 # Set SOURCE_DATE_EPOCH to a predictable value. Using the first
