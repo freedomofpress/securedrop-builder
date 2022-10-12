@@ -18,4 +18,3 @@ flit_core >=2,<3
 
 # For maintaining requirements files
 pip-tools>=6
-click==8.0.3
