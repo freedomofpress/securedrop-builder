@@ -74,6 +74,8 @@ def add_sha256sums(path: Path, requirements_lines: List[str],
 
     for line in lines:
         line = line.strip()
+        if line.startswith("#"):
+            continue
         # Skip any sources
         if line.find(".whl") == -1:
             continue
