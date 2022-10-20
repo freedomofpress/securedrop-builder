@@ -44,7 +44,11 @@ function verify_sha256sum_no_changes() {
         exit 1
     fi
     cd $localwheels
-    sha256sum * > "$temp_sha256sum"
+    if ls *.whl 2>/dev/null; then
+        sha256sum * > "$temp_sha256sum"
+    else
+        echo "# No files" > "$temp_sha256sum"
+    fi
     diff <(sort "$sha256sums_file") <(sort "$temp_sha256sum")
 }
 

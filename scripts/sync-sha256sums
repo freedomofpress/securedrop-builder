@@ -12,11 +12,16 @@ except IndexError:
     print(f"Usage: ./scripts/sync-sha256sums [directory]", file=sys.stderr)
     sys.exit(1)
 
+lines = []
 os.chdir(f"{directory}/wheels/")
-output = subprocess.check_output("sha256sum *", shell=True).decode()
-lines = output.splitlines()
-# Apply a consistent sort by package filename
-lines.sort(key=lambda l: l.split("  ", 1)[1])
+if any(f.endswith(".whl") for f in os.listdir(os.getcwd())):
+    output = subprocess.check_output("sha256sum *", shell=True).decode()
+    lines = output.splitlines()
+    # Apply a consistent sort by package filename
+    lines.sort(key=lambda l: l.split("  ", 1)[1])
+
+if not lines:
+    lines.append("# No files")
 
 with open("../sha256sums.txt", "w") as f:
     f.write("\n".join(lines) + "\n")

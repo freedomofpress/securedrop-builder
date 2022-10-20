@@ -21,6 +21,8 @@ with open(sys.argv[1]) as fobj:
 
 for line in data:
     line = line.strip()
+    if line.startswith('#'):
+        continue
     words = line.split()
     # just check that the sums are of correct length
     if len(words[0]) != 64:
