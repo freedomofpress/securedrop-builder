@@ -1,0 +1,12 @@
+[Unit]
+Description=SecureDrop: Disable remote logging for sd-log and sd-gpg
+Before=rsyslog.service
+ConditionHost=|sd-log
+ConditionHost=|sd-gpg
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rm /etc/rsyslog.d/sdlog.conf
+
+[Install]
+WantedBy=multi-user.target

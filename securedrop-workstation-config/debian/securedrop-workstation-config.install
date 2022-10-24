@@ -4,3 +4,4 @@ mimeapps.list.sd-app opt/sdw/
 mimeapps.list.sd-devices-dvm opt/sdw/
 open-in-dvm.desktop opt/sdw/
 paxctld.conf opt/sdw/
+securedrop-disable-remote-logging.service etc/systemd/system
