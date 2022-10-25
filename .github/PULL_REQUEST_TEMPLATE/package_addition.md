@@ -18,5 +18,5 @@ _Which packages are you adding, and why?_
 - Security:
   - [ ] A [diff review][review-docs] was performed for all build dependencies
 
-  [ci]: https://app.circleci.com/pipelines/github/freedomofpress/securedrop-debian-packaging
+  [ci]: https://app.circleci.com/pipelines/github/freedomofpress/securedrop-builder
   [review-docs]: https://github.com/freedomofpress/securedrop/wiki/Dependency-specification-and-update-policies

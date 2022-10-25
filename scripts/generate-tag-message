@@ -1,7 +1,7 @@
 #!/bin/bash
 # Utility script to generate a signed tag for the packaging repo:
 #
-#   https://github.com/freedomofpress/securedrop-debian-packaging
+#   https://github.com/freedomofpress/securedrop-builder
 #
 # Collects "version" field from package changelogs and prepares a summary
 # commit message when incrementing the tag.
@@ -19,7 +19,7 @@ if [[ $# != 1 ]]; then
 fi
 
 new_version="$1"
-printf 'securedrop-debian-packaging %s\n\n' "$new_version"
+printf 'securedrop-builder %s\n\n' "$new_version"
 # Inspect all changelogs, prepare a pretty list of packages & versions
 for pkg in securedrop-*; do
     pkg_version="$(dpkg-parsechangelog -SVersion --file "${pkg}/debian/changelog-buster" | perl -npE 's/\+buster$//')"
