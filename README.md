@@ -2,7 +2,7 @@
 
 # SecureDrop Debian Packaging
 
-[![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-debian-packaging/tree/main)
+[![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-builder/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-builder/tree/main)
 
 This repository contains the packaging files and tooling for building Debian packages for projects for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Development/staging packages are placed on `apt-test.freedom.press` for installation in Debian-based TemplateVMs, and production packages are placed on `apt.freedom.press`. Please note that the SecureDrop Workstation is currently in a limited beta phase and not yet recommended for general use.
 
@@ -82,7 +82,7 @@ Remember that the following steps needs to be done from the same virtual environ
 
 ### 1. Create updated build-requirements.txt for the project
 
-From the `securedrop-debian-packaging` directory,
+From the `securedrop-builder` directory,
 
 ```shell
 PKG_DIR=/home/user/code/securedrop-client make requirements
@@ -147,7 +147,7 @@ Summarizing release manager steps, at a high level, for changes into this reposi
 7. Build tarballs, and create a detached signature with the release key
 8. Copy your build logs into your project's corresponding directory in the `build-logs` repository, and push your changes to the `main` branch, see https://github.com/freedomofpress/build-logs/commit/fc0eb9551678c8f58ea0017f1eb291375ea5bd9e for example.
 9. Commit these tarballs in the `tarballs/` directory
-10. Open a PR to the `securedrop-debian-packaging` repository with a test plan to verify the checksum in the build logs and tarball signature. The reviewer can perform verification by running:
+10. Open a PR to the `securedrop-builder` repository with a test plan to verify the checksum in the build logs and tarball signature. The reviewer can perform verification by running:
 
 ```shell
 sha256sum <package>.tar.gz
@@ -188,8 +188,8 @@ Clone this repository for access to the packaging tooling.
 
 ```shell
 cd ..
-git clone git@github.com:freedomofpress/securedrop-debian-packaging.git
-cd securedrop-debian-packaging
+git clone git@github.com:freedomofpress/securedrop-builder.git
+cd securedrop-builder
 ```
 
 If you are releasing a new version (rather than rebuilding a package from a previous version),
@@ -255,8 +255,8 @@ Clone this repository for access to the packaging tooling.
 
 ```shell
 cd ..
-git clone git@github.com:freedomofpress/securedrop-debian-packaging.git
-cd securedrop-debian-packaging
+git clone git@github.com:freedomofpress/securedrop-builder.git
+cd securedrop-builder
 ```
 
 If you are releasing a new version (rather than rebuilding a package from a previous version),
