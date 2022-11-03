@@ -102,10 +102,10 @@ common-steps:
         # Copy built debian packages to the relevant workstation repo and git push.
         mkdir -p ./workstation/${CODENAME}-nightlies/
         cp /tmp/workspace/${CODENAME}/*.deb ./workstation/${CODENAME}-nightlies/ ||:
-        git add workstation/${CODENAME}-nightlies/*.deb ||:
 
         # Clean up old nightlies too
         ~/project/scripts/clean-old-nightlies.py workstation/${CODENAME}-nightlies
+        git add .
 
         # If there are changes, diff-index will fail, so we commit and push
         git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build (${CODENAME})"
