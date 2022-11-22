@@ -5,5 +5,5 @@ alembic/script.py.mako usr/share/securedrop-client/alembic/
 alembic/versions/*.py usr/share/securedrop-client/alembic/versions/
 files/sd-app-qubes-gpg-domain.sh etc/profile.d/
 files/securedrop-client usr/bin/
-files/securedrop-client.desktop usr/share/applications/
+files/press.freedom.SecureDropClient.desktop usr/share/applications/
 files/usr.bin.securedrop-client /etc/apparmor.d/
