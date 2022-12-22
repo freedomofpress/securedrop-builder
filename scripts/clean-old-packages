@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+"""
+Clean up old packages, specifying how many to keep
+
+Example:
+    ./clean-old-packages securedrop-dev-packages-lfs/workstation/buster-nightlies 7
+
+"""
+import argparse
+import functools
+import subprocess
+from collections import defaultdict
+from pathlib import Path
+from typing import Tuple
+
+from debian import debfile
+
+
+def sort_versions(one: Tuple[str, Path], two: Tuple[str, Path]):
+    """sort two Debian package versions"""
+    status = subprocess.run(['dpkg', '--compare-versions', one[0], 'lt', two[0]])
+    if status.returncode == 1:
+        # false, two is bigger
+        return 1
+    else:
+        # true, one is bigger
+        return -1
+
+
+def fix_name(name: str) -> str:
+    """
+    Linux packages embed the version in the name, so we'd never have multiple
+    packages meet the deletion threshold. Silly string manipulation to drop
+    the version.
+    E.g. "linux-image-5.15.26-grsec-securedrop" -> "linux-image-securedrop"
+    """
+    if name.endswith(('-securedrop', '-workstation')):
+        suffix = name.split('-')[-1]
+    else:
+        return name
+    if name.startswith('linux-image-'):
+        return f'linux-image-{suffix}'
+    elif name.startswith('linux-headers-'):
+        return f'linux-headers-{suffix}'
+    return name
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Cleans up old packages"
+    )
+    parser.add_argument(
+        "directory",
+        type=Path,
+        help="Directory to clean up",
+    )
+    parser.add_argument(
+        "keep",
+        type=int,
+        help="Number of packages to keep"
+    )
+    args = parser.parse_args()
+    if not args.directory.is_dir():
+        raise RuntimeError(f"Directory, {args.directory}, doesn't exist")
+    print(f'Only keeping the latest {args.keep} packages')
+    data = defaultdict(dict)
+    for deb in args.directory.glob('*.deb'):
+        control = debfile.DebFile(deb).control.debcontrol()
+        name = fix_name(control['Package'])
+        data[name][control['Version']] = deb
+
+    for name, versions in sorted(data.items()):
+        if len(versions) <= args.keep:
+            # Nothing to delete
+            continue
+        print(f'### {name}')
+        items = sorted(versions.items(), key=functools.cmp_to_key(sort_versions), reverse=True)
+        keeps = items[:args.keep]
+        print('Keeping:')
+        for _, keep in keeps:
+            print(f'* {keep.name}')
+        delete = items[args.keep:]
+        print('Deleting:')
+        for _, path in delete:
+            print(f'* {path.name}')
+            path.unlink()
+
+
+if __name__ == '__main__':
+    main()
