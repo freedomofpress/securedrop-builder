@@ -104,11 +104,19 @@ common-steps:
         cp /tmp/workspace/${CODENAME}/*.deb ./workstation/${CODENAME}-nightlies/ ||:
 
         # Clean up old nightlies too
-        ~/project/scripts/clean-old-packages workstation/${CODENAME}-nightlies 14
+        ~/project/scripts/clean-old-packages workstation/${CODENAME}-nightlies 7
         git add .
 
         # If there are changes, diff-index will fail, so we commit
         git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build (${CODENAME})"
+
+        # Clean up other old packages
+        ~/project/scripts/clean-old-packages core/focal 4
+        ~/project/scripts/clean-old-packages workstation/bullseye 4
+        # softly fail for bookworm because that directory doesn't exist yet
+        ~/project/scripts/clean-old-packages workstation/bookworm 4 ||:
+        git add .
+        git diff-index --quiet HEAD || git commit -m "Cleanup old packages"
 
         git push origin main
 
