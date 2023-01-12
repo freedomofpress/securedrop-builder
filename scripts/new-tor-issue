@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""
+Creates a new issue to track Tor updates or appends a comment
+to any existing issues
+"""
+
+import json
+import random
+import subprocess
+import tempfile
+
+REPOSITORY = "freedomofpress/securedrop"
+# TODO: Add more
+SALUTATIONS = ["Aloha", "Bonjour", "Ciao", "Dear human overlords"]
+TEMPLATE = """\
+{salutation},
+
+A new Tor update is available.
+
+Details should be available on the [Tor forum](https://forum.torproject.net/c/news/tor-release-announcement/28).
+
+<details><summary>Here is the commit I just pushed to
+apt-test:</summary>
+
+```diff
+{patch}
+```
+</details>
+
+* [x] CI adds new packages to apt-test
+* [ ] Install tor, tor-geoipdb packages from apt-test on a prod
+      install and let them sit overnight
+* [ ] Verify that tor is still running after reboot, services
+      available, no errors or unexpected messages in logs
+* [ ] Submit a PR to `securedrop-debian-packages-lfs` to deploy
+      the same packages
+
+P.S.  This issue was created by `scripts/new-tor-issue` via the CI job `reprepro-update-tor`.
+"""
+TITLE = "New Tor update available"
+
+
+def main():
+    patch = subprocess.check_output(["git", "format-patch", "HEAD~1", "--stdout"]).decode().strip()
+    # Query open issues to see if there's a task already open
+    existing = json.loads(subprocess.check_output(
+        ["gh", "issue", "list", "-R", REPOSITORY,
+         "-S", TITLE, "--json", "title,number"]
+    ))
+    with tempfile.TemporaryFile("w") as message:
+        message.write(TEMPLATE.format(salutation=random.choice(SALUTATIONS), patch=patch))
+        message.seek(0)
+        for issue in existing:
+            # Looks like there's already an open issue
+            if issue["title"] == TITLE:
+                subprocess.run(
+                    ["gh", "issue", "comment", "-R", REPOSITORY,
+                     str(issue["number"]), "-F", "-"],
+                    stdin=message, check=True
+                )
+                return
+
+        # Create a new issue
+        subprocess.run(
+            ["gh", "issue", "create", "-R", REPOSITORY,
+             "--title", TITLE, "-F", "-"],
+            stdin=message, check=True
+        )
+
+
+if __name__ == "__main__":
+    main()
