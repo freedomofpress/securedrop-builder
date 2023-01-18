@@ -91,7 +91,7 @@ common-steps:
       name: Commit workstation debs for deployment to apt-test.freedom.press
       command: |
         apt-get update
-        apt-get install -y ca-certificates git git-lfs openssh-client python3
+        apt-get install -y ca-certificates git git-lfs openssh-client python3 python3-debian
 
         git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
         cd securedrop-dev-packages-lfs
@@ -99,16 +99,24 @@ common-steps:
         git config user.email "securedrop@freedom.press"
         git config user.name "sdcibot"
 
-        # Copy built debian packages to the relevant workstation repo and git push.
+        # Copy built debian packages to the relevant workstation repo
         mkdir -p ./workstation/${CODENAME}-nightlies/
         cp /tmp/workspace/${CODENAME}/*.deb ./workstation/${CODENAME}-nightlies/ ||:
 
         # Clean up old nightlies too
-        ~/project/scripts/clean-old-nightlies.py workstation/${CODENAME}-nightlies
+        ~/project/scripts/clean-old-packages workstation/${CODENAME}-nightlies 7
         git add .
 
-        # If there are changes, diff-index will fail, so we commit and push
+        # If there are changes, diff-index will fail, so we commit
         git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build (${CODENAME})"
+
+        # Clean up other old packages
+        ~/project/scripts/clean-old-packages core/focal 4
+        ~/project/scripts/clean-old-packages workstation/bullseye 4
+        # softly fail for bookworm because that directory doesn't exist yet
+        ~/project/scripts/clean-old-packages workstation/bookworm 4 ||:
+        git add .
+        git diff-index --quiet HEAD || git commit -m "Cleanup old packages"
 
         git push origin main
 
