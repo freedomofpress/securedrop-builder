@@ -310,6 +310,11 @@ workflows:
       - lint-and-test
       - reprotest-wheels
       - reprotest-debs
+      - build-rpm:
+          matrix:
+            parameters:
+              package:
+                - securedrop-updater
       - build:
           matrix:
             parameters:
