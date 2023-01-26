@@ -202,8 +202,8 @@ jobs:
             mv repo/pool/main/t/tor/*.deb core/focal/
             git add core/focal/*.deb
             # If there are changes, diff-index will fail, so we commit and push
-            git diff-index --quiet HEAD || git commit -m "Automatically updating Tor packages" \
-                && git push origin main && ../scripts/new-tor-issue
+            git diff-index --quiet HEAD || (git commit -m "Automatically updating Tor packages" \
+                && git push origin main && ../scripts/new-tor-issue)
 
 
   build: &build
