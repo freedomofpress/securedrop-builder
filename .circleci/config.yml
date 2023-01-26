@@ -174,7 +174,7 @@ jobs:
 
   reprepro-update-tor:
     docker:
-      - image: debian:bullseye
+      - image: debian:bullseye-backports
     steps:
       - checkout
       - *addsshkeys
@@ -182,7 +182,8 @@ jobs:
           name: clone and run reprepro update
           command: |
             apt-get update
-            apt-get install -y reprepro ca-certificates dctrl-tools git git-lfs openssh-client
+            apt-get install -y reprepro ca-certificates dctrl-tools git git-lfs openssh-client \
+                gh python3
 
             # Clone the dev repo and configure it
             git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
@@ -201,7 +202,8 @@ jobs:
             mv repo/pool/main/t/tor/*.deb core/focal/
             git add core/focal/*.deb
             # If there are changes, diff-index will fail, so we commit and push
-            git diff-index --quiet HEAD || git commit -m "Automatically updating Tor packages" && git push origin main
+            git diff-index --quiet HEAD || git commit -m "Automatically updating Tor packages" \
+                && git push origin main && ../scripts/new-tor-issue
 
 
   build: &build
