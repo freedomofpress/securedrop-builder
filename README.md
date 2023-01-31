@@ -215,7 +215,7 @@ sha256sum /path/to/built/package.deb
 
 Save and publish your build logs to the `build-logs` repository, e.g. https://github.com/freedomofpress/build-logs/commit/786eb46672b07b5c635d87a075770b53a0ce3df9
 
-Commit the deb to a new `securedrop-debian-packages-lfs` branch (this will be added as a `git-lfs` object).
+Commit the deb to a new `securedrop-apt-prod` branch (this will be added as a `git-lfs` object).
 
 Commit all new and modified `reprepro` files created via the publish script (`sudo apt install reprepro` if not already installed):
 ```shell

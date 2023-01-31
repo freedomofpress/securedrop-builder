@@ -32,7 +32,7 @@ apt-test:</summary>
       install and let them sit overnight
 * [ ] Verify that tor is still running after reboot, services
       available, no errors or unexpected messages in logs
-* [ ] Submit a PR to `securedrop-debian-packages-lfs` to deploy
+* [ ] Submit a PR to `securedrop-apt-prod` to deploy
       the same packages
 
 P.S.  This issue was created by `scripts/new-tor-issue` via the CI job `reprepro-update-tor`.
