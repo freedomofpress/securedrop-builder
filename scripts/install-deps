@@ -24,6 +24,10 @@ sudo apt-get install  \
     python3-setuptools \
     desktop-file-utils -y
 
+echo "Patching dh_virtualenv for Python 3.11 support"
+# See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1030170
+sudo sed -i "s/inspect.getargspec/inspect.getfullargspec/" /usr/bin/dh_virtualenv
+
 # Inspect the wheel files present locally. If repo was cloned
 # without git-lfs, they'll be "text/plain", rather than "application/zip".
 wheel_mime_types="$(find workstation-bootstrap/ -type f -iname '*.whl' -exec file --mime-type {} + | perl -F':\s+' -lanE 'say $F[-1]' | sort -u)"
