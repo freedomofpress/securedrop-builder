@@ -58,7 +58,7 @@
 
 ## Build and deploy a package to `apt-test`
 
-1. Open a Terminal in `sd-dev-dvm` (see [How to create the DispVM for building packages](#how-to-create-the-dispvm-for-building-packages)).
+1. Open a Terminal in `sd-dev-dvm` (see https://developers.securedrop.org/en/latest/workstation_release_management.html#how-to-create-the-dispvm-for-building-packages).
 2. Clone `securedrop-builder` and install its dependencies:
     ```shell
     git clone git@github.com:freedomofpress/securedrop-builder.git
@@ -108,25 +108,6 @@
 ## Build and deploy a package to `apt-prod`
 
 Once the `release` branch containing your package is merged into `main` in https://github.com/freedomofpress/securedrop-debian-packages-lfs, it will be deloyed to https://apt.freedom.press.
-
-## How to create the DispVM for building packages
-
-To avoid inadvertently contaminating a build environment with development changes, we'll use a DispVM for building SecureDrop Workstation packages. To do this, we'll create a VM hierarchy with a Debian 11 TemplateVM (for customizing system packages), an AppVM based on that TemplateVM (to customize home directory), and finally a DispVM that reuses that AppVM image and deletes customizations on each run. 
-
-In dom0, run:
-```
-qvm-clone debian-11 t-sd-dev  # Templates default to no NetVM
-qvm-volume resize t-sd-dev:root 20G
-qvm-create t-sd-dev-dvm --label blue --template t-sd-dev  # This creates an AppVM, which will default to having network access
-qvm-prefs t-sd-dev-dvm template_for_dispvms True  # And now we configure our AppVM to be a template for creating our named DispVM
-qvm-features t-sd-dev-dvm appmenus-dispvm 1
-qvm-create sd-dev-dvm --label blue --template t-sd-dev-dvm --class DispVM  # Create the actual named DispVM
-```
-
-A couple pointers:
-* You may wish to customize the `t-sd-dev-dvm` home directory to contain personal dotfiles, containing your git config and setting `QUBES_GPG_DOMAIN`.
-* You can save time by installing the dependencies for `securedrop-builder` inside `t-sd-dev` (which doesn't have a network) by installing these 
-* dependencies directly: https://github.com/freedomofpress/securedrop-builder/blob/c0167ee9f73feab10bf73d1dd1706309eddf4591/scripts/install-deps#L5-L22
 
 ## Updating our bootstrapped build tools
 
