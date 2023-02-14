@@ -3,7 +3,7 @@
 Clean up old packages, specifying how many to keep
 
 Example:
-    ./clean-old-packages securedrop-dev-packages-lfs/workstation/buster-nightlies 7
+    ./clean-old-packages securedrop-apt-test/workstation/buster-nightlies 7
 
 """
 import argparse

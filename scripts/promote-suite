@@ -5,8 +5,8 @@ Promote a suite of packages to the prod repository
 This expects you have a directory layout like the following:
 .
 ├── securedrop-builder (this repository)
-├── securedrop-dev-packages-lfs (contains packages to promote)
-└── securedrop-debian-packages-lfs (where packages should be promoted to)
+├── securedrop-apt-test (contains packages to promote)
+└── securedrop-apt-prod (where packages should be promoted to)
 
 Example:
     ./promote-suite workstation/bullseye
@@ -23,8 +23,8 @@ from typing import Tuple
 from debian import debfile
 
 BUILDER = Path(__name__).absolute().parent
-DEV_LFS = BUILDER.parent / 'securedrop-dev-packages-lfs'
-PROD_LFS = BUILDER.parent / 'securedrop-debian-packages-lfs'
+DEV_LFS = BUILDER.parent / 'securedrop-apt-test'
+PROD_LFS = BUILDER.parent / 'securedrop-apt-prod'
 
 
 def sort_versions(one: Tuple[str, Path], two: Tuple[str, Path]):

@@ -93,8 +93,8 @@ common-steps:
         apt-get update
         apt-get install -y ca-certificates git git-lfs openssh-client python3 python3-debian
 
-        git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
-        cd securedrop-dev-packages-lfs
+        git clone git@github.com:freedomofpress/securedrop-apt-test.git
+        cd securedrop-apt-test
 
         git config user.email "securedrop@freedom.press"
         git config user.name "sdcibot"
@@ -186,8 +186,8 @@ jobs:
                 gh python3
 
             # Clone the dev repo and configure it
-            git clone git@github.com:freedomofpress/securedrop-dev-packages-lfs.git
-            cd securedrop-dev-packages-lfs
+            git clone git@github.com:freedomofpress/securedrop-apt-test.git
+            cd securedrop-apt-test
             git lfs install
             git config user.email "securedrop@freedom.press"
             git config user.name "sdcibot"
