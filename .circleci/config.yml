@@ -25,8 +25,8 @@ common-steps:
       name: Create nightly version for python packages
       command: |
         cd ~/packaging/securedrop-*
-        # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
-        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1))-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+        # Nightly versioning format is: LATEST_TAG.devYYMMDDHHMMSS
+        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).dev$(date +%Y%m%d%H%M%S)"
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
@@ -75,8 +75,8 @@ common-steps:
       command: |
         CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-buster | head -n1)
         if [[ "$IS_NIGHTLY" == "nightly" ]]; then
-            # Nightly versioning format is: LATEST_TAG-dev-YYMMDD-HHMMSS
-            export VERSION_TO_BUILD="$CURRENT_VERSION-dev-$(date +%Y%m%d)-$(date +%H%M%S)"
+            # Nightly versioning format is: LATEST_TAG.devYYMMDDHHMMSS
+            export VERSION_TO_BUILD="$CURRENT_VERSION.dev$(date +%Y%m%d%H%M%S)"
         else
             export VERSION_TO_BUILD="$CURRENT_VERSION"
         fi
