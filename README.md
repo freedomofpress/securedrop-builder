@@ -1,34 +1,66 @@
 > By contributing to this project, you agree to abide by our [Code of Conduct](https://github.com/freedomofpress/.github/blob/main/CODE_OF_CONDUCT.md).
 
-# SecureDrop Debian Packaging
-
 [![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-builder/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-builder/tree/main)
 
-This repository contains the packaging files and tooling for building Debian packages for projects for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation) based on Qubes OS. Development/staging packages are placed on `apt-test.freedom.press` for installation in Debian-based TemplateVMs, and production packages are placed on `apt.freedom.press`. Please note that the SecureDrop Workstation is currently in a limited beta phase and not yet recommended for general use.
+# securedrop-builder
 
-## Packaging a Python-based SecureDrop project
+`securedrop-builder` is the tool we use to package Python projects into Debian packages for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation).
 
-The following process is used for Python-based projects for the Qubes SecureDrop Workstation, namely, `securedrop-proxy` and `securedrop-client`:
+* For instructions on how to build [SecureDrop](https://github.com/freedomofpress/securedrop) Debian packages, see https://developers.securedrop.org/en/latest/release_management.html.
 
-![gif explaining what is committed where](images/securedrop-pip-mirror.gif)
+* For building SecureDrop Workstation RPMs, see our [qubes-template-securedrop-workstation](https://github.com/freedomofpress/qubes-template-securedrop-workstation#build-instructions) and [securedrop-workstation-dom0-config](https://github.com/freedomofpress/securedrop-workstation/wiki/Building-securedrop-workstation-dom0-config-RPM-package) docs.
 
-The following diagram shows the makefile targets/scripts in this repository, the produced artifacts and the locations where these artifacts are stored:
+## Getting Started
 
-![Packaging Workflow](images/diagram.png)
+1. Clone `securedrop-builder` and install its dependencies:
 
-### Packaging Dependencies
+    ```shell
+    git clone git@github.com:freedomofpress/securedrop-builder.git
+    cd securedrop-builder
+    make install-deps  # This also confifgures the git-lfs repo used to store SecureDrop Workstation dependencies (https://github.com/freedomofpress/securedrop-builder/tree/HEAD/workstation-bootstrap/wheels)
+    ```
 
-In a Debian AppVM in Qubes:
+2. Build a package in one of the following ways:
+    ```shell
+    # From a release tag signed by the SecureDrop Release Signing key
+    PKG_VERSION=x.y.z make securedrop-client
+    ```
+    
+    ```shell
+    # From an rc tag signed by a maintainer (the rc tag must be the most recent entry in the changelog) 
+    PKG_VERSION=x.y.z-rcN make securedrop-client
+    ```
+    
+    ```shell
+    # From a source tarball
+    # First give the Debian package you want to build a version number by setting it in the changelog
+    PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-client
+    PKG_PATH=local/path/to/securedrop-client/dist/securedrop-client-x.y.z.tar.gz make securedrop-client
+    ```
+    
+    ```shell
+    # From a local source checkout
+    # First give the Debian package you want to build a version number by setting it in the changelog
+    PKG_VERSION=x.y.z-rcN ./scripts/update-changelog securedrop-client
+    PKG_DIR=local/path/to/securedrop-client make securedrop-client
+    ```
+    
+## Which packages can `securedrop-builder` build?
 
-```shell
-make install-deps
-```
+* [securedrop-client](https://github.com/freedomofpress/securedrop-client)
+* [securedrop-export](https://github.com/freedomofpress/securedrop-export)
+* [securedrop-keyring](https://github.com/freedomofpress/securedrop-keyring)
+* [securedrop-log](https://github.com/freedomofpress/securedrop-log)
+* [securedrop-proxy](https://github.com/freedomofpress/securedrop-proxy)
+* [securedrop-workstation-config](https://github.com/freedomofpress/securedrop-builder/tree/main/securedrop-workstation-config)
+* [secruedrop-workstation-viewer](https://github.com/freedomofpress/securedrop-builder/tree/main/securedrop-workstation-viewer)
 
-**Note:** either run `make install-deps` each time you start your debian packaging AppVM, or make
-sure that you install them into the template for your debian packaging AppVM.
 
-The install target will configure [git-lfs](https://git-lfs.github.com/), used for storing
-binary wheel files.
+## Build and deploy a package
+
+Refer to https://developers.securedrop.org/en/latest/workstation_release_management.html.
+
+_If you don't need to deploy a package and just want to test locally, you can start by building it from a source checkout (see :ref:`Getting Started`) and then install it in its corresponding AppVM._
 
 ## Updating our bootstrapped build tools
 
@@ -133,151 +165,3 @@ If you wish to test the new wheels in a local build before submitting a PR,
 or as part of PR review, you can do so by:
 
 Then run e.g. `PKG_VERSION=0.4.1 make securedrop-client` to verify that the new wheels are working.
-
-## Make a release
-
-Summarizing release manager steps, at a high level, for changes into this repository. Further detail is available in the [SecureDrop Workstation Release Management documentation](https://github.com/freedomofpress/securedrop-workstation#release-a-subproject)
-
-1. Update versions as necessary in the project's repository, and open a pull request
-2. Do a test build following steps in "Build a package" section below
-3. Create a PR to this repository with updated build logic (if necessary) and updated debian changelog (using `./scripts/update-changelog`). Note around the time this PR is merged, there should be a corresponding tag in the associated package code's repository. Otherwise, nightly builds will fail
-4. Push the release tag for use in building to the project's repository
-5. Merge the project's repository code
-6. Re-run CI in this repository, it will use the latest tag and build logic to test the build
-7. Build tarballs, and create a detached signature with the release key
-8. Copy your build logs into your project's corresponding directory in the `build-logs` repository, and push your changes to the `main` branch, see https://github.com/freedomofpress/build-logs/commit/fc0eb9551678c8f58ea0017f1eb291375ea5bd9e for example.
-9. Commit these tarballs in the `tarballs/` directory
-10. Open a PR to the `securedrop-builder` repository with a test plan to verify the checksum in the build logs and tarball signature. The reviewer can perform verification by running:
-
-```shell
-sha256sum <package>.tar.gz
-gpg --verify <package>.tar.gz.asc <package>.tar.gz
-```
-
-11. Once the PR above is merged, create a new tag from the merge commit which will later be used to verify the integrity of the tarballs prior to building the debian packages
-12. Observe nightlies the next day to ensure *all* packages are built properly
-
-## Build a package
-
-Next, checkout the project you intend to package and enter that directory:
-
-```shell
-git clone git@github.com:freedomofpress/securedrop-foobar.git
-cd securedrop-foobar
-```
-
-Verify the release tag for the project:
-
-```shell
-git tag -v x.y.z
-```
-
-Checkout the release tag:
-
-```shell
-git checkout x.y.z
-```
-
-If it hasn't been added already, generate a tarball to be used in the build process:
-
-```shell
-python3 setup.py sdist
-```
-
-Clone this repository for access to the packaging tooling.
-
-```shell
-cd ..
-git clone git@github.com:freedomofpress/securedrop-builder.git
-cd securedrop-builder
-```
-
-If you are releasing a new version (rather than rebuilding a package from a previous version),
-you must update the changelog.
-
-Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
-
-```shell
-PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-foobar
-```
-
-Build the package:
-
-```shell
-PKG_VERSION=x.y.z make securedrop-foobar
-```
-
-Output package hash so you can copy it into the build logs in the next step:
-
-```shell
-sha256sum /path/to/built/package.deb
-```
-
-Save and publish your build logs to the `build-logs` repository, e.g. https://github.com/freedomofpress/build-logs/commit/786eb46672b07b5c635d87a075770b53a0ce3df9
-
-Commit the deb to a new `securedrop-apt-prod` branch (this will be added as a `git-lfs` object).
-
-Commit all new and modified `reprepro` files created via the publish script (`sudo apt install reprepro` if not already installed):
-```shell
-./tools/publish
-
-```
-
-Now open a PR and link to the new `build-logs` commit. A release key holder will add a detached signature to the package in your PR. Make sure the detached signature matches new Release file by running:
-```shell
-gpg --verify repo/public/dists/buster/Release.gpg repo/public/dists/buster/Release
-```
-
-Once the PR is merged, the new packages will be picked up by a script and deployed to https://apt.freedom.press within 30 minutes.
-
-## Build a package for development or test (skip signature verfication)
-
-Checkout the project you intend to package and enter that directory:
-
-```shell
-git clone git@github.com:freedomofpress/securedrop-foobar.git
-cd securedrop-foobar
-```
-
-If there is a dev or rc tag you are testing, then checkout that tag, e.g.
-
-```shell
-git checkout x.y.zrc1
-```
-
-Update `setup.py` with the rc or dev version number, e.g. `0.5.0dev1` or `0.5.0rc1`. In order for the debian packaging tool to work, you cannot use a `-` or `.` or `_` between the vesion number and the `dev` or `rc` portion of the string. Now you can generate a tarball to be used in the build process:
-
-```shell
-python3 setup.py sdist
-```
-
-Clone this repository for access to the packaging tooling.
-
-```shell
-cd ..
-git clone git@github.com:freedomofpress/securedrop-builder.git
-cd securedrop-builder
-```
-
-If you are releasing a new version (rather than rebuilding a package from a previous version),
-you must update the changelog.
-
-Run the following script to create a new entry that you will update with the same bullets from the package's own changelog.
-
-```shell
-./scripts/update-changelog securedrop-foobar
-```
-
-Build the package, e.g. `for x.y.zrc1`:
-
-```shell
-PKG_VERSION=x.y.zrc1 PKG_PATH=path/to/securedrop-foobar/dist/securedrop-foobar-x.y.z.rc1.tar.gz make securedrop-foobar
-```
-
-## Packaging non-Python based SecureDrop projects
-
-TODO
-
-## Intro to packaging
-
-For an introduction to packaging Python projects into Debian packages, one can see the [SecureDrop Debian Packaging Guide](https://securedrop-debian-packaging-guide.readthedocs.io/en/latest/). Note that these guidelines on Read the Docs are for educational purposes only. The README you are currently reading is the canonical reference for SecureDrop Workstation packagers.
