@@ -56,58 +56,11 @@
 * [secruedrop-workstation-viewer](https://github.com/freedomofpress/securedrop-builder/tree/main/securedrop-workstation-viewer)
 
 
-## Build and deploy a package to `apt-test`
+## Build and deploy a package
 
-1. Open a Terminal in `sd-dev-dvm` (see https://developers.securedrop.org/en/latest/workstation_release_management.html#how-to-create-the-dispvm-for-building-packages).
-2. Clone `securedrop-builder` and install its dependencies:
-    ```shell
-    git clone git@github.com:freedomofpress/securedrop-builder.git
-    cd securedrop-builder
-    make install-deps  # This also confifgures the git-lfs repo used to store SecureDrop Workstation dependencies (https://github.com/freedomofpress/securedrop-builder/tree/HEAD/workstation-bootstrap/wheels)
-    ```
-3. Create a changelog entry for the new version of the package you are about to build.
-    ```shell
-    PKG_VERSION=x.y.z-rcN ./scripts/update-changelog securedrop-foobar
-    ```
-4. Build the package.
-    ```shell
-    PKG_VERSION=x.y.z-rcN make securedrop-foobar
-    ```
-5. Ouput the package hash so you can copy it into the build logs in a following step.
-    ```
-    sha256sum bulid/debbuild/packaging/securedrop-foobar_x.y.z-rcN.deb
-    ```
-6. Save and publish your terminal history to the [build-logs repository](https://github.com/freedomofpress/build-logs/).
+Refer to https://developers.securedrop.org/en/latest/workstation_release_management.html.
 
-7. Open a PR to https://github.com/freedomofpress/securedrop-dev-packages-lfs with your package. Once merged, your package will be deployed to https://apt-test.freedom.press.
-
-## Build and deploy a package to `apt-qa`
-
-1. Open a Terminal in `sd-dev-dvm` (see [How to create the DispVM for building packages](#how-to-create-the-dispvm-for-building-packages)).
-2. Clone `securedrop-builder` and install its dependencies:
-    ```shell
-    git clone git@github.com:freedomofpress/securedrop-builder.git
-    cd securedrop-builder
-    make install-deps  # This also confifgures the git-lfs repo used to store SecureDrop Workstation dependencies (https://github.com/freedomofpress/securedrop-builder/tree/HEAD/workstation-bootstrap/wheels)
-    ```
-3. Build the package.
-    ```shell
-    # The x.y.z release tag must by signed by the SecureDrop Release Signing key
-    PKG_VERSION=x.y.z make securedrop-foobar
-    ```
-4. Ouput the package hash so you can copy it into the build logs in a following step.
-    ```shell
-    sha256sum bulid/debbuild/packaging/securedrop-foobar_x.y.z.deb
-    ```
-5. Confirm the hash matches the x.yr.z-rcN package that was approved for release.
-6. Save and publish your terminal history to the [build-logs repository](https://github.com/freedomofpress/build-logs/).
-7. Add your package to a new branch called `release` in https://github.com/freedomofpress/securedrop-debian-packages-lfs. 
-8. Update the apt repo distribution files by running `./tools/publish` and push those changes to the `release` branch as well. This will deploy your pakcage to https://apt-qa.freedom.press.
-9. Open a PR in https://github.com/freedomofpress/securedrop-debian-packages-lfs to merge `release` into `main` and link to the new `build-logs` commit.
-
-## Build and deploy a package to `apt-prod`
-
-Once the `release` branch containing your package is merged into `main` in https://github.com/freedomofpress/securedrop-debian-packages-lfs, it will be deloyed to https://apt.freedom.press.
+_If you don't need to deploy a package and just want to test locally, you can start by building it from a source checkout (see :ref:`Getting Started`) and then install it in its corresponding AppVM._
 
 ## Updating our bootstrapped build tools
 
