@@ -35,14 +35,14 @@ if [[ -z "${PKG_VERSION:-}" ]]; then
 fi
 
 
-# Look for a changelog as d/changelog-$platform, d/changelog, or d/changelog-buster
+# Look for a changelog as d/changelog-$platform, d/changelog, or d/changelog-bullseye
 if [[ -f "${TOPLEVEL}/${PKG_NAME}/debian/changelog-${VERSION_CODENAME}" ]]; then
     changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-${VERSION_CODENAME}"
 else
     if [[ -f "${TOPLEVEL}/${PKG_NAME}/debian/changelog" ]]; then
         changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog"
     else
-        changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-buster"
+        changelog="${TOPLEVEL}/${PKG_NAME}/debian/changelog-bullseye"
     fi
 fi
 
