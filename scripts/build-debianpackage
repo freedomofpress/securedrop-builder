@@ -151,12 +151,12 @@ if [[ -f "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$VERSION_CODENAME" ]]; then
     mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-$VERSION_CODENAME" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
 fi
 if [[ ! -f "$TOP_BUILDDIR/$PKG_NAME/debian/changelog" ]]; then
-    echo "Moving legacy buster changelog into place"
-    mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-buster" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
+    echo "Moving legacy bullseye changelog into place"
+    mv "$TOP_BUILDDIR/$PKG_NAME/debian/changelog-bullseye" "$TOP_BUILDDIR/$PKG_NAME/debian/changelog"
 fi
 
 # Adjust platform in version number with sed magic to only replace the first instance
-sed -i "0,/buster/s//${VERSION_CODENAME}/" debian/changelog
+sed -i "0,/bullseye/s//${VERSION_CODENAME}/" debian/changelog
 
 # Adds reproducibility step
 SOURCE_DATE_EPOCH="$(dpkg-parsechangelog -STimestamp)"
