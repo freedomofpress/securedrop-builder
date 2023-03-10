@@ -61,8 +61,9 @@ common-steps:
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
         ls ~/project/build/debbuild/packaging/*.deb
-        mkdir -p /tmp/workspace/${VERSION_CODENAME}
+        mkdir -p /tmp/workspace/${VERSION_CODENAME} /tmp/workspace/buildinfo
         mv ~/project/build/debbuild/packaging/*.deb /tmp/workspace/${VERSION_CODENAME}
+        mv ~/project/build/debbuild/packaging/*.buildinfo /tmp/workspace/buildinfo
 
   - &addsshkeys
     add_ssh_keys:
@@ -92,12 +93,22 @@ common-steps:
       command: |
         apt-get update
         apt-get install -y ca-certificates git git-lfs openssh-client python3 python3-debian
+        git config --global user.email "securedrop@freedom.press"
+        git config --global user.name "sdcibot"
 
+        # First publish buildinfo files
+        git clone git@github.com:freedomofpress/build-logs.git
+        cd build-logs
+        mkdir -p "buildinfo/$(date +%Y)"
+        cp /tmp/workspace/buildinfo/*.buildinfo "buildinfo/$(date +%Y)"
+        git add .
+        git diff-index --quiet HEAD || git commit -m "Publishing buildinfo files for ${CODENAME} workstation nightlies"
+        git push origin main
+
+        # Now the packages themselves
+        cd ..
         git clone git@github.com:freedomofpress/securedrop-apt-test.git
         cd securedrop-apt-test
-
-        git config user.email "securedrop@freedom.press"
-        git config user.name "sdcibot"
 
         # Copy built debian packages to the relevant workstation repo
         mkdir -p ./workstation/${CODENAME}-nightlies/
