@@ -46,4 +46,7 @@ else
     fi
 fi
 
+# Normalize version, convert any - to ~, e.g. 0.9.0-rc1 to 0.9.0~rc1
+PKG_VERSION=$(echo $PKG_VERSION | sed 's/-/~/g')
+
 dch -b --newversion "${PKG_VERSION}+${VERSION_CODENAME}" --distribution unstable -c "$changelog"
