@@ -33,6 +33,19 @@ fi
 CUR_DIR="$(git rev-parse --show-toplevel)"
 VERSION_CODENAME=$("${CUR_DIR}/scripts/codename")
 
+# It is the callers' responsibility to ensure we are using the desired version
+# securedrop-builder, however we double-check it for them as a failsafe.
+if [[ -n "${SD_BUILDER_GITREF:-}" ]]; then
+    if [[ $SD_BUILDER_GITREF != $(git rev-parse HEAD) ]]; then
+        echo "Wrong version of securedrop-builder in use!"
+        echo "Wanted: ${SD_BUILDER_GITREF}"
+        echo "Currently using: $(git rev-parse HEAD)"
+        exit 1
+    fi
+else
+    SD_BUILDER_GITREF=$(git rev-parse HEAD)
+fi
+
 # Disable use of pip cache during debhelper build actions.
 export DH_PIP_EXTRA_ARGS="--no-cache-dir --require-hashes"
 # Point dh-virtualenv/pip to our prebuilt wheels
@@ -95,14 +108,12 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
     else
         if [[ -f "${PKG_PATH}" ]]; then
             # It's a file and not a directory, must be a legacy tarball
-            echo "Extracting legacy tarball"
-            rm -rf "/tmp/${PKG_NAME}"
-            mkdir -p "/tmp/${PKG_NAME}"
-            tar --strip-components=1 -C "/tmp/$PKG_NAME" -xvf "$PKG_PATH"
-            PKG_PATH="/tmp/${PKG_NAME}/"
+            echo "Building from a tarball is no longer supported, it must be done from Git"
+            exit 1
         fi
     fi
-
+    # Store commit hash to be exported via buildinfo
+    SD_PKG_GITREF=$(git -C "$PKG_PATH" rev-parse HEAD)
 
     # Copy the source tree to the packaging workspace
     cp -rT "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
@@ -164,10 +175,15 @@ fi
 printf "Building package '%s' with version '%s'...\\n" "$PKG_NAME" "$CHANGELOG_VERSION"
 dpkg-buildpackage -us -uc
 
-# Tell the user the path of the files built
-pkg_path="$(find "$TOP_BUILDDIR" -type f -iname "${PKG_NAME}_${CHANGELOG_VERSION}*.deb" | head -n1)"
-if [[ -f "$pkg_path" ]]; then
-    echo "Package location: $pkg_path"
-else
-    echo "Could not find package, look in $TOP_BUILDDIR"
+# Find the names of the build package and buildinfo file by reading d/files
+pkg_path=$(grep '.deb' debian/files | awk '{print $1}')
+buildinfo=$(grep '.buildinfo' debian/files | awk '{print $1}')
+
+# Add in our extra metadata to buildinfo
+echo " SD_BUILDER_GITREF=\"${SD_BUILDER_GITREF}\"" >> "${TOP_BUILDDIR}/${buildinfo}"
+if [[ -n "${SD_PKG_GITREF:-}" ]]; then
+    # packages that are fully in this repo won't have this set
+    echo " SD_PKG_GITREF=\"${SD_PKG_GITREF}\"" >> "${TOP_BUILDDIR}/${buildinfo}"
 fi
+# Tell the user the path of the files built
+echo "Package location: ${TOP_BUILDDIR}/${pkg_path}"
