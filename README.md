@@ -24,13 +24,13 @@
     ```shell
     # From a release tag x.y.z signed by the SecureDrop Release Signing key
     PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-client
-    PKG_GITREF=x.y.z make securedrop-client
+    SD_PKG_GITREF=x.y.z make securedrop-client
     ```
     
     ```shell
     # From a non-release tag or branch
     PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
-    PKG_GITREF=<ref> make securedrop-client
+    SD_PKG_GITREF=<ref> make securedrop-client
     ```
     
     ```shell
@@ -166,4 +166,4 @@ Finally, submit a PR containing the new wheels and updated files.
 If you wish to test the new wheels in a local build before submitting a PR,
 or as part of PR review, you can do so by:
 
-Then run e.g. `PKG_GITREF=0.4.1 make securedrop-client` to verify that the new wheels are working.
+Then run e.g. `SD_PKG_GITREF=0.4.1 make securedrop-client` to verify that the new wheels are working.

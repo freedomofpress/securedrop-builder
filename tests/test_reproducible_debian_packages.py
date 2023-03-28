@@ -34,7 +34,7 @@ def test_deb_builds_are_reproducible(pkg_name):
     """
 
     cmd_env = os.environ.copy()
-    cmd_env["PKG_GITREF"] = os.environ.get("PKG_GITREF", PACKAGE_BUILD_TARGETS[pkg_name])
+    cmd_env["SD_PKG_GITREF"] = os.environ.get("SD_PKG_GITREF", PACKAGE_BUILD_TARGETS[pkg_name])
     cmd_env["TERM"] = "xterm-256color"
     cmd = [
         "reprotest",
