@@ -23,6 +23,8 @@ def lookup_buildinfos(buildinfos: Path) -> dict:
         info = BuildInfo(path.read_text())
         for details in info['Checksums-Sha256']:
             if details['name'].endswith('.deb'):
+                if details['name'] in data:
+                    raise ValueError(f"ERROR: duplicate checksum for {details['name']}")
                 data[details['name']] = details['sha256']
     return data
 
