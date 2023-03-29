@@ -1,11 +1,14 @@
 #!/bin/bash
 # Wrapper script to build Debian packages for the SecureDrop Workstation.
-# Requires a source tarball to build the package, defined via `PKG_PATH`.
-# The script will check for a suitable tarball on an adjacent directory.
+# Requires a source tarball to build the package, defined via `PKG_PATH`,
+# or a git reference defined via `PKG_GITREF`. If `PKG_GITREF` matches the
+# release tag format, it will be treated as a tag and expected to be signed
+# with the production release key.
+#
 # Explicit configuration is available via the following env vars:
 #
 #   * PKG_PATH
-#   * PKG_VERSION
+#   * PKG_GITREF
 #   * PKG_NAME
 #
 set -e
@@ -17,6 +20,13 @@ set -o pipefail
 if [[ -z "${PKG_NAME:-}" ]]; then
     echo "Set PKG_NAME of the build";
     exit 1
+fi
+
+if [[ -z "${PKG_PATH:-}" ]]; then
+    if  [[ -z "${PKG_GITREF:-}" ]]; then
+        echo "Set PKG_PATH or PKG_GITREF";
+        exit 1
+    fi
 fi
 
 # Store root of repo, since we'll change dirs several times.
@@ -40,28 +50,6 @@ mkdir -p "$TOP_BUILDDIR"
 rm -rf "${TOP_BUILDDIR:?}/${PKG_NAME}"
 mkdir -p "${TOP_BUILDDIR}/${PKG_NAME}"
 
-
-# Look up most recent release from GitHub repo
-function find_latest_version() {
-    repo_url="https://github.com/freedomofpress/${PKG_NAME}/tags"
-    curl -s "$repo_url" \
-        | perl -nE '$_ =~ m#/releases/tag/(v?[\d\.]+)\"# and say $1' \
-        | head -n 1
-}
-
-# If not building from an existing source tree AND not specifying
-# a prod release version, grab the latest prod tag.
-if [[ -z "${PKG_VERSION:-}" ]] && [[ -z "${PKG_PATH:-}" ]]; then
-    echo "PKG_VERSION not set, inferring from recent releases..."
-    PKG_VERSION="$(find_latest_version)"
-    if [[ -z "$PKG_VERSION" ]]; then
-        echo "Failed to infer version"
-        exit 1
-    else
-        echo "Using PKG_VERSION: $PKG_VERSION"
-    fi
-fi
-
 # Ensures that a given git tag is signed with the prod release key
 # If "rc" is in the tag name, this will fail.
 function verify_git_tag() {
@@ -69,6 +57,7 @@ function verify_git_tag() {
     local t
     d="$1"
     t="$2"
+    echo "checking signature for tag $t" >&2
     prod_fingerprint="2359E6538C0613E652955E6C188EDD3B7B22E6A3"
     if ! git -C "$d" tag --verify "$t" 2>&1 \
         | grep -q -F "using RSA key $prod_fingerprint" ; then
@@ -85,13 +74,12 @@ function setup_source_tree() {
     git clone "$repo_url" "$build_dir"
 
     if [[ -n "${PKG_GITREF:-}" ]]; then
-        # Can't expect a prod sig on a gitref, likely a feature branch
+        # if PKG_GITREF looks like a release tag, check for a release signature
+        [[ "$PKG_GITREF" =~ ^(0|[1-9][0-9]*).(0|[1-9][0-9]*).(0|[1-9][0-9]*)$ ]] && verify_git_tag "$build_dir" "$PKG_GITREF"
         git -C "$build_dir" checkout "$PKG_GITREF"
     else
-        # Verify tag, using only the prod key
-        verify_git_tag "$build_dir" "$PKG_VERSION"
-        # Tag is verified, proceed with checkout
-        git -C "$build_dir" checkout "$PKG_VERSION"
+        echo "Neither PKG_PATH nor PKG_GITREF were defined - please specify one" >&2
+        exit 2
     fi
 }
 
@@ -102,7 +90,6 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
 
     if [[ -z "${PKG_PATH:-}" ]]; then
         # Build from source
-        echo "PKG_PATH not set, building from source (version $PKG_VERSION)..."
         setup_source_tree
         PKG_PATH="/tmp/${PKG_NAME}/"
     else
@@ -158,22 +145,23 @@ fi
 # Adjust platform in version number with sed magic to only replace the first instance
 sed -i "0,/buster/s//${VERSION_CODENAME}/" debian/changelog
 
-# Grab package version from changelog
-CHANGELOG_VERSION=`dpkg-parsechangelog --show-field Version`
-
-# If PKG_VERSION was set, check that it matches the version in debian/changelog
-if ! [[ -z "${PKG_VERSION:-}" ]]; then
-    if ! [[ "$PKG_VERSION" == "$CHANGELOG_VERSION" ]]; then
-        echo "Changelog version is $CHANGELOG_VERSION, but the specified version is $PKG_VERSION."
-    fi
-fi
-
 # Adds reproducibility step
 SOURCE_DATE_EPOCH="$(dpkg-parsechangelog -STimestamp)"
 export SOURCE_DATE_EPOCH
 
+# Grab package version from changelog
+CHANGELOG_VERSION=$(dpkg-parsechangelog --show-field Version)
+
+# If PKG_GITREF is set and is a release tag, check that it matches the version in debian/changelog
+if [[ -n "${PKG_GITREF:-}" ]] && [[ "${PKG_GITREF:-}" =~ ^(0|[1-9][0-9]*).(0|[1-9][0-9]*).(0|[1-9][0-9]*)$ ]]; then
+    if ! [[ "$PKG_GITREF+$VERSION_CODENAME" == "$CHANGELOG_VERSION" ]]; then
+        echo "Changelog version is $CHANGELOG_VERSION, but the provided tag is $PKG_GITREF. Aborting build."
+        exit 2
+    fi
+fi
+
 # Build the package
-printf "Building package '%s' from version '%s'...\\n" "$PKG_NAME" "$CHANGELOG_VERSION"
+printf "Building package '%s' with version '%s'...\\n" "$PKG_NAME" "$CHANGELOG_VERSION"
 dpkg-buildpackage -us -uc
 
 # Tell the user the path of the files built
