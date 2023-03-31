@@ -1,15 +1,12 @@
 #!/bin/bash
 # Wrapper script to build Debian packages for the SecureDrop Workstation.
-# Requires a source tarball to build the package, defined via `PKG_PATH`,
-# or a git reference defined via `PKG_GITREF`. If `PKG_GITREF` matches the
-# release tag format, it will be treated as a tag and expected to be signed
-# with the production release key.
-#
-# Explicit configuration is available via the following env vars:
-#
-#   * PKG_PATH
-#   * PKG_GITREF
-#   * PKG_NAME
+# Requires a Git repository to build the package. The following environment
+# variables control what the script does:
+# * PKG_NAME (required): name of the package to build
+# * SD_PKG_GITREF: Git ref to check out and build. If this matches the release tag
+#                  format (X.Y.Z), it will be treated as a tag and expected to be signed
+#                  with the production release key.
+# * PKG_PATH: Path to a Git tree to build from
 #
 set -e
 set -u
