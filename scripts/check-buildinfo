@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""
+Check newly added packages against their buildinfo files
+
+Example:
+    ./check-buildinfo package.deb package.buildinfo
+
+"""
+import argparse
+import hashlib
+import subprocess
+import sys
+from pathlib import Path
+from typing import List
+
+from debian.deb822 import BuildInfo
+
+
+def lookup_buildinfos(buildinfos: Path) -> dict:
+    """Extract checksums out of every buildinfo file we can find"""
+    data = {}
+    for path in buildinfos.glob("**/*.buildinfo"):
+        info = BuildInfo(path.read_text())
+        for details in info['Checksums-Sha256']:
+            if details['name'].endswith('.deb'):
+                if details['name'] in data:
+                    raise ValueError(f"ERROR: duplicate checksum for {details['name']}")
+                data[details['name']] = details['sha256']
+    return data
+
+
+def check_package(package: Path, buildinfos: dict) -> bool:
+    """Verify the package's checksum matches buildinfo"""
+    try:
+        expected = buildinfos[str(package.name)]
+    except KeyError:
+        print(f"ERROR: Unable to find buildinfo containing {package.name}")
+        return False
+    actual = hashlib.sha256(package.read_bytes()).hexdigest()
+    if actual == expected:
+        print(f"OK: got expected checksum {actual} for {package.name}")
+        return True
+    else:
+        print(f"ERROR: package is {actual}, buildinfo has {expected} for {package.name}")
+        return False
+
+
+def added_files(against="origin/main") -> List[Path]:
+    """Get list of added files compared to main"""
+    added = []
+    output = subprocess.check_output([
+        "git", "log",
+        # Only list added files
+        "--diff-filter=A",
+        # Set our terminal width to be huge so it doesn't truncate
+        "--stat=999999",
+        # Output nothing else
+        "--pretty=",
+        f"{against}..HEAD"
+    ], text=True)
+    for line in output.splitlines():
+        if "|" not in line:
+            continue
+        path = Path(line.split("|", 1)[0].strip())
+        if path.name.endswith('.deb') and path.exists():
+            # Wasn't deleted in an intermediate commit
+            added.append(path)
+    added.sort(key=lambda x: x.name)
+    return added
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Check packages against their buildinfo files"
+    )
+    parser.add_argument("buildinfos", type=Path, help="Folder with buildinfo files")
+    args = parser.parse_args()
+    buildinfos = lookup_buildinfos(args.buildinfos)
+    status = 0
+    added = added_files()
+    if not added:
+        print("No new packages detected.")
+        sys.exit(0)
+    for package in added:
+        if not check_package(package, buildinfos):
+            status = 1
+    sys.exit(status)
+
+
+if __name__ == '__main__':
+    main()
