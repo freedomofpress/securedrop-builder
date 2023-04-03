@@ -284,6 +284,47 @@ jobs:
     environment:
       CODENAME: bookworm
 
+  build-rpm:
+    parameters:
+      package:
+        type: string
+    docker:
+      - image: fedora:32
+    environment:
+      PKG_NAME: << parameters.package >>
+    steps:
+      - checkout
+      - *addsshkeys
+      - run:
+          name: Clone and install dependencies
+          command: |
+            dnf install git git-lfs make -y
+            git clone https://github.com/freedomofpress/${PKG_NAME}.git
+            cd ${PKG_NAME}
+            make install-deps
+      - run:
+          name: Bump version and build rpm
+          command: |
+            cd ${PKG_NAME}
+            # Version format is "${VERSION}-0.YYYYMMDDHHMMSS.fXX", which sorts lower than "${VERSION}-1"
+            rpmdev-bumpspec --new="$(cat VERSION)-0.$(date +%Y%m%d%H%M%S)%{?dist}" rpm-build/SPECS/${PKG_NAME}.spec
+            make build-rpm
+      - run:
+          name: Commit and push
+          command: |
+            cd ${PKG_NAME}
+            git clone git@github.com:freedomofpress/securedrop-yum-test.git
+            cd securedrop-yum-test
+            git lfs install
+            git config user.email "securedrop@freedom.press"
+            git config user.name "sdcibot"
+            mkdir -p workstation/dom0/f32-nightlies
+            cp -v ../rpm-build/RPMS/noarch/*.rpm workstation/dom0/f32-nightlies/
+            git add .
+            # If there are changes, diff-index will fail, so we commit and push
+            git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build" && git push origin main
+
+
 workflows:
   build-packages:
     jobs:
@@ -365,3 +406,10 @@ workflows:
             - push-bullseye
             - build2
             - build2-metapackage
+      # This pushes to a totally separate repository so it can run in parallel
+      # to the debs
+      - build-rpm:
+          matrix:
+            parameters:
+              package:
+                - securedrop-updater
