@@ -22,27 +22,29 @@
 
 2. Build a package in one of the following ways:
     ```shell
-    # From a release tag signed by the SecureDrop Release Signing key
-    PKG_VERSION=x.y.z make securedrop-client
+    # From a release tag x.y.z signed by the SecureDrop Release Signing key
+    PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-client
+    PKG_GITREF=x.y.z make securedrop-client
     ```
     
     ```shell
-    # From an rc tag signed by a maintainer (the rc tag must be the most recent entry in the changelog) 
-    PKG_VERSION=x.y.z-rcN make securedrop-client
+    # From a non-release tag or branch
+    PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
+    PKG_GITREF=<ref> make securedrop-client
     ```
     
     ```shell
     # From a source tarball
     # First give the Debian package you want to build a version number by setting it in the changelog
-    PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-client
+    PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
     PKG_PATH=local/path/to/securedrop-client/dist/securedrop-client-x.y.z.tar.gz make securedrop-client
     ```
     
     ```shell
     # From a local source checkout
     # First give the Debian package you want to build a version number by setting it in the changelog
-    PKG_VERSION=x.y.z-rcN ./scripts/update-changelog securedrop-client
-    PKG_DIR=local/path/to/securedrop-client make securedrop-client
+    PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
+    PKG_PATH=local/path/to/securedrop-client make securedrop-client
     ```
     
 ## Which packages can `securedrop-builder` build?
@@ -164,4 +166,4 @@ Finally, submit a PR containing the new wheels and updated files.
 If you wish to test the new wheels in a local build before submitting a PR,
 or as part of PR review, you can do so by:
 
-Then run e.g. `PKG_VERSION=0.4.1 make securedrop-client` to verify that the new wheels are working.
+Then run e.g. `PKG_GITREF=0.4.1 make securedrop-client` to verify that the new wheels are working.
