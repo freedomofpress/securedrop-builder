@@ -1,3 +1,9 @@
+securedrop-proxy (0.4.1~rc1+bullseye) unstable; urgency=medium
+
+  * See changelog.md
+
+ -- SecureDrop Team <securedrop@freedom.press>  Tue, 02 May 2023 16:53:12 +0000
+
 securedrop-proxy (0.4.0+buster) unstable; urgency=medium
 
   * See changelog.md
