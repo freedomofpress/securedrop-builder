@@ -1,3 +1,9 @@
+securedrop-keyring (0.1.7+bullseye) unstable; urgency=medium
+
+  * Update release key fingerprint to 2021 key in preinst
+
+ -- SecureDrop Team <securedrop@freedom.press>  Tue, 02 May 2023 16:54:44 +0000
+
 securedrop-keyring (0.1.6+buster) unstable; urgency=medium
 
   * Update public key with new expiration date 
