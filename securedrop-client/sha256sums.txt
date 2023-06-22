@@ -32,6 +32,8 @@ a3c066acee22a1c94f63938341d4fb374e3fdd69366ed6603d7b24bed1efc565  python-editor-
 42e5b2a7583cd278dff00ae1fc6b8b735da0502ceeb0914991eaaf5f91ac84ac  python_editor-1.0.3-py3-none-any.whl
 7cec5239ce6ec4f6bf3d1b8c7e4d34ebe1b86d3896fe9657a8465ee4d7282bc8  requests-2.26.0-py2.py3-none-any.whl
 b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7  requests-2.26.0.tar.gz
+9f7f0f507fe7a9e10ea51e666da60aafcfcda94c71f0cac477dbadd8d25de49f  requests-2.31.0-py3-none-any.whl
+942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1  requests-2.31.0.tar.gz
 c08f77bae5f900b1fbcd3b5aae1c931dc877e7289d69aa5a8b1e3c3f4e0dc561  securedrop-sdk-0.4.0.tar.gz
 54b870fd3566914c2ba13aeb5c7eaa0be8ac128be72b45613843c0b75040bd39  securedrop_sdk-0.4.0-py3-none-any.whl
 eb52689b06ca7433c1cac3b91f320400bd3b358790b7ff4b6367cb1c81d37561  six-1.11.0-py2.py3-none-any.whl
