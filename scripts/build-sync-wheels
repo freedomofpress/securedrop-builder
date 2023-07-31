@@ -102,6 +102,7 @@ def main():
             "--no-binary",
             ":all:",
             "--require-hashes",
+            "--no-build-isolation",
             "--dest",
             tmpdir,
             "--requirement",
