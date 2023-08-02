@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""
+Creates new issues for the monthly kernel update
+"""
+
+import subprocess
+import tempfile
+from datetime import date
+
+SERVER = "freedomofpress/securedrop"
+WORKSTATION = "freedomofpress/securedrop-workstation"
+SERVER_TEMPLATE = """\
+Being done with coordination in https://github.com/freedomofpress/securedrop-workstation/issues/{crossref}.
+
+## Checklist
+* [ ] Source tarball saved internally
+* [ ] Uploaded to apt-test.freedom.press
+* [ ] Tested on recommended hardware (see below)
+* [ ] Uploaded to apt.freedom.press and released
+
+## Testing matrix
+[Instructions on testing procedure](https://developers.securedrop.org/en/latest/kernel.html)
+
+To update to the new kernel, please use `sudo apt-get update && sudo unattended-upgrades -d` (not `sudo apt-get upgrade`) OR wait 24h for the automatic update to happen.
+
+* [ ] NUC12:
+* [ ] NUC11:
+* [ ] NUC10:
+* [ ] NUC8:
+* [ ] NUC7:
+"""
+WORKSTATION_TEMPLATE = """\
+Being done in coordination with https://github.com/freedomofpress/securedrop/issues/{crossref}.
+
+## Checklist
+* [ ] Source tarball saved internally
+* [ ] Uploaded to apt-test.freedom.press
+* [ ] Tested in our template ([instructions](https://developers.securedrop.org/en/latest/kernel.html))
+* [ ] Uploaded to apt.freedom.press and released
+"""
+TITLE = "{} Linux kernel update".format(date.today().strftime("%B %Y"))
+
+
+def issue(action: str, repo: str, text: str, args=None) -> str:
+    if args is None:
+        args = []
+    with tempfile.TemporaryFile("w") as message:
+        message.write(text)
+        message.seek(0)
+        resp = subprocess.run(
+            ["gh", "issue", action, "-R", repo,
+             "--title", TITLE, "-F", "-"] + args,
+            stdin=message, capture_output=True, text=True,
+            check=True
+        )
+    print(resp.stdout)
+    # The last line of the output should be the URL that was
+    # just created/updated, the parse the number out of the URL
+    return resp.stdout.strip().rsplit("/", 1)[1]
+
+
+def main():
+    server_issue = issue("create", SERVER, SERVER_TEMPLATE)
+    workstation_issue = issue("create", WORKSTATION, WORKSTATION_TEMPLATE)
+    # Now again, but with the numbers filled in
+    issue("edit", SERVER, SERVER_TEMPLATE.format(crossref=workstation_issue), [server_issue])
+    issue("edit", WORKSTATION, WORKSTATION_TEMPLATE.format(crossref=server_issue), [workstation_issue])
+
+
+if __name__ == "__main__":
+    main()
