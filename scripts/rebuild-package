@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+
+import argparse
+import email.utils
+import os
+import subprocess
+import sys
+import textwrap
+from datetime import datetime
+from pathlib import Path
+
+from debian.deb822 import BuildInfo
+
+print("WARNING: this will clobber your system!")
+print("WARNING: only run this inside a container")
+if not os.getuid() == 0:
+    print("ERROR: script must be run as root")
+    sys.exit(1)
+
+parser = argparse.ArgumentParser(description="Rebuild a package from a buildinfo")
+parser.add_argument("buildinfo", type=Path, help="Path to buildinfo file")
+args = parser.parse_args()
+
+if not args.buildinfo.exists():
+    print(f"ERROR: {args.buildinfo} does not exist")
+    sys.exit(1)
+
+
+def get_build_date(info: BuildInfo) -> datetime:
+    # Copied from <https://salsa.debian.org/python-debian-team/python-debian/-/blob/07a2c045eb7f1c10b9f659ebf664b0db194ee8eb/lib/debian/deb822.py#L2069>
+    # TODO: Remove once bookworm is our base OS
+    if 'build-date' not in info:
+        raise KeyError("'Build-Date' field not found in buildinfo")
+    timearray = email.utils.parsedate_tz(info['build-date'])
+    if timearray is None:
+        raise ValueError("Invalid 'Build-Date' field specified")
+    ts = email.utils.mktime_tz(timearray)
+    return datetime.fromtimestamp(ts)
+
+
+buildinfo = BuildInfo(args.buildinfo.read_text())
+print(f"Will attempt to rebuild {buildinfo['Source']}")
+timestr = get_build_date(buildinfo).isoformat().replace('-', '').replace(':', '')
+version = str(buildinfo.get_version())
+if version.endswith("bullseye"):
+    distro = "bullseye"
+elif version.endswith("bookworm"):
+    distro = "bookworm"
+else:
+    print(f"ERROR: Could not detect distro from version: {version}")
+    sys.exit(1)
+# Set up snapshot as an apt source at the build time. There's a small race
+# condition here if the absolutely latest updates weren't applied but it should
+# be good enough.
+sources_list = f"""\
+deb http://snapshot.debian.org/archive/debian/{timestr}Z {distro} main
+deb http://snapshot.debian.org/archive/debian/{timestr}Z {distro}-updates main
+deb http://snapshot.debian.org/archive/debian-security/{timestr}Z {distro}-security main
+"""
+print("Creating /etc/apt/sources.list.d/snapshot.list with the following:\n")
+print(textwrap.indent(sources_list, "  "))
+# snapshot is pretty slow, so if the correct version exists on the main mirrors,
+# it'll get pulled from there otherwise it should fall back to snapshot
+Path("/etc/apt/sources.list.d/snapshot.list").write_text(sources_list)
+print("Creating /etc/apt/apt.conf.d/99rebuild")
+# Copied from <https://github.com/fepitre/debrebuild/blob/fe9fdb176872c34ef29170f3eb7d081db17ff437/debrebuild.py#L679>
+Path("/etc/apt/apt.conf.d/99rebuild").write_text(f"""\
+Acquire::Check-Valid-Until "false";
+Acquire::Languages "none";
+Acquire::http::Dl-Limit "1000";
+Acquire::https::Dl-Limit "1000";
+Acquire::Retries "5";
+""")
+#subprocess.check_call(["apt-get", "update"])
+to_install = []
+for relation in buildinfo.relations['installed-build-depends']:
+    relation = relation[0]
+    if relation['name'].startswith('g++'):
+        # FIXME: apt treats as a regex, will get pulled in by build-essential anyways
+        continue
+    to_install.append(f"{relation['name']}{relation['version'][0]}{relation['version'][1]}")
+print("Installing dependencies...")
+subprocess.check_call(["apt-get", "install", "-y"] + to_install)
+for name, value in buildinfo.get_environment().items():
+    os.putenv(name, value)
+os.putenv("PKG_GITREF", "0.9.0")
+subprocess.check_call(['make', buildinfo['Source']])
