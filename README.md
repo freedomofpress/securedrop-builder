@@ -4,7 +4,7 @@
 
 # securedrop-builder
 
-`securedrop-builder` is the tool we use to package Python projects into Debian packages for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation).
+`securedrop-builder` is the tool we use to package Python projects into Debian packages for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation). This repository also holds copies of reproducibly built wheels included with some Debian packages, in the `wheels` subdirectory of the package.
 
 * For instructions on how to build [SecureDrop](https://github.com/freedomofpress/securedrop) Debian packages, see https://developers.securedrop.org/en/latest/release_management.html.
 
@@ -100,8 +100,9 @@ the requirements files which are used for build of these packages (`build-requir
 using `make requirements` are kept up to date in latest `main` of those repositories.
 
 If new dependencies were added in the `build-requirements.txt` of that
-repo that are not in the FPF PyPI mirror (`./localwheels/` in this repository), then the maintainer needs
-to do the following (we are taking `securedrop-client` project as example):
+repo that are not in the `wheels` subdirectory for the package in this repository,
+then the maintainer needs to do the following (we are taking `securedrop-client` project
+as an example):
 
 ### 0. Enable the virtualenv
 
@@ -133,8 +134,7 @@ pytest==3.10.1
 
 Please build the wheel by using the following command.
 	PKG_DIR=/home/user/code/securedrop-client make build-wheels
-Then add the newly built wheels and sources to ./localwheels/.
-Also update the index HTML files accordingly commit your changes.
+Then add the newly built wheels and sources to the `wheels` subdirectory for the package.
 After these steps, please rerun the command again.
 ```
 
@@ -153,12 +153,13 @@ This above command will let you know about any new wheels + sources. It will
 build/download sources from PyPI (by verifying it against the sha256sums from
 the `requirements.txt` of the project).
 
-### 3. Commit changes to the localwheels directory (if only any update of wheels)
+### 3. Commit changes to the wheels directory (if only any update of wheels)
 
-Now add these built artifacts to version control:
+Now add these built artifacts to version control, from the relevant package
+directory:
 
 ```shell
-git add localwheels/
+git add wheels/
 git commit
 ```
 

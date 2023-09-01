@@ -50,9 +50,7 @@ build-wheels: ## Builds the wheels and adds them to the localwheels directory
 	./scripts/verify-sha256sum-signature $$(basename ${PKG_DIR})
 	./scripts/build-sync-wheels
 	./scripts/sync-sha256sums $$(basename ${PKG_DIR})
-	@printf "Done! Now please follow the instructions in\n"
-	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/"
-	@printf "to push these changes to the FPF PyPI index\n"
+	@echo Done!
 
 .PHONY: test
 test: ## Run simple test suite (skips reproducibility checks)
