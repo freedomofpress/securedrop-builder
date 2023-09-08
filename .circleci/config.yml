@@ -60,6 +60,7 @@ common-steps:
     run:
       name: Build debian package
       command: |
+        source .venv/bin/activate
         export VERSION_CODENAME=$(~/project/scripts/codename)
         export PKG_PATH=~/packaging/$PKG_NAME/
         export PKG_VERSION=$VERSION_TO_BUILD

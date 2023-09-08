@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# To update the requirements files with sha256sums from our local PyPI.
+# To update the requirements files with sha256sums from our local wheels.
 
 import argparse
 import os
@@ -15,14 +15,20 @@ SKIP_PACKAGES = ["pyqt5", "sip"]
 
 def parse_args():
     # For backwards-compat
-    if "PKG_DIR" in os.environ and \
-            not any(arg.startswith("--pkg-dir") for arg in sys.argv):
+    if "PKG_DIR" in os.environ and not any(
+        arg.startswith("--pkg-dir") for arg in sys.argv
+    ):
         sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
-    parser = argparse.ArgumentParser(description="Update requirements files with sha256sums from our wheels")
+    parser = argparse.ArgumentParser(
+        description="Update requirements files with sha256sums from our wheels"
+    )
     parser.add_argument("--pkg-dir", help="Package directory", required=True)
     parser.add_argument("--project", help="Project to update")
-    parser.add_argument("--requirements", help="Directory that contains requirements.txt inside the package directory",
-                        default="requirements")
+    parser.add_argument(
+        "--requirements",
+        help="Directory that contains requirements.txt inside the package directory",
+        default="requirements",
+    )
     return parser.parse_args()
 
 
@@ -32,11 +38,12 @@ def main():
     if args.project is not None:
         project_name = args.project
     else:
-        project_name = utils.project_name(pkg_dir)
+        project_name = utils.get_project_name(pkg_dir)
     requirements_file = pkg_dir / args.requirements / "requirements.txt"
     if not requirements_file.exists():
         poetry_lock = requirements_file.parent.parent / "poetry.lock"
-        if poetry_lock.exists():
+        pyproject_toml = requirements_file.parent.parent / "pyproject.toml"
+        if poetry_lock.exists() and pyproject_toml.exists():
             requirements_file = poetry_lock
         else:
             print("Could not find project requirements, checked:")
@@ -49,18 +56,24 @@ def main():
     # First remove index line and any PyQt or sip dependency
 
     if requirements_file.name == "poetry.lock":
-        dependencies = utils.parse_poetry_lock(requirements_file)
+        dependencies = utils.get_poetry_names_and_versions(
+            requirements_file, pyproject_toml
+        )
     else:
-        dependencies = utils.parse_requirements_txt(requirements_file)
+        dependencies = utils.get_requirements_names_and_versions(requirements_file)
 
     dependencies = [dep for dep in dependencies if dep[0] not in SKIP_PACKAGES]
 
     verify_sha256sums_file(project)
 
-    build_requirements_file = pkg_dir / args.requirements / "build-requirements.txt"
+    if (pkg_dir / args.requirements).exists():
+        build_requirements_file = pkg_dir / args.requirements / "build-requirements.txt"
+    else:
+        # If there is no 'requirements' directory, we look in the project root
+        build_requirements_file = pkg_dir / "build-requirements.txt"
 
     shasums_file = project / "sha256sums.txt"
-    # Now let us update the files along with the sha256sums from localwheels
+    # Now let us update the files along with the sha256sums from local wheels
     add_sha256sums(build_requirements_file, dependencies, shasums_file, pkg_dir)
 
 
@@ -82,10 +95,9 @@ def verify_sha256sums_file(project: Path):
     subprocess.check_call(["./scripts/verify-sha256sum-signature", project.name])
 
 
-
-
-def add_sha256sums(path: Path, dependencies: list[(str, str)],
-                   shasums_file: Path, pkg_dir: Path) -> None:
+def add_sha256sums(
+    path: Path, dependencies: list[(str, str)], shasums_file: Path, pkg_dir: Path
+) -> None:
     """Adds all the required sha256sums to the wheels"""
     files = []
 
@@ -104,12 +116,14 @@ def add_sha256sums(path: Path, dependencies: list[(str, str)],
     missing_wheels = []
 
     # For each dependency in the requirements file
-    for (package_name, package_version) in dependencies:
-        wheel_name_prefix = '{}-{}'.format(package_name, package_version)
-        package_othername = '{}-{}'.format(package_name.replace("-", "_"), package_version)
+    for package_name, package_version in dependencies:
+        wheel_name_prefix = "{}-{}".format(package_name, package_version)
+        package_othername = "{}-{}".format(
+            package_name.replace("-", "_"), package_version
+        )
 
         line = ""
-        for (digest, name) in files:
+        for digest, name in files:
             lowername = name.lower()
 
             # Now check if a wheel is already available
@@ -136,8 +150,8 @@ def add_sha256sums(path: Path, dependencies: list[(str, str)],
 
         print("\nPlease build the wheel by using the following command:\n")
         print(f"\tPKG_DIR={pkg_dir} make build-wheels\n")
-        print("Then add the newly built wheels and sources to ./localwheels/.")
-        print("After these steps, please rerun the command again.")
+        print("Then add the newly built wheels and sources to the wheels subdirectory")
+        print("for the project. After these steps, please rerun the command again.")
         sys.exit(1)
 
     # Now update the file
