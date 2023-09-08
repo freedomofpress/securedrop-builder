@@ -3,11 +3,14 @@
 import os
 import sys
 
+from pathlib import Path
+import utils
+
 try:
     import tomllib
 except ImportError:
     # pre-Python 3.11 compatibility
-    import toml as tomllib
+    import tomli as tomllib
 
 # For a requirements file in one of our projects, this script checks if we have at
 # least one corresponding sha256sum (for the source tarball) for each dependency.
@@ -17,94 +20,6 @@ except ImportError:
 # For now, both requirements.txt and poetry.lock/pyproject.toml are supported.
 # Once Poetry support is stable across all components, requirements.txt support
 # can be deprecated.
-
-
-def parse_requirements_txt(requirements_file):
-    """
-    Given a file object pointing to a requirements.txt file, return a dictionary of valid hashes for each
-    dependency declared in it.
-    """
-    lines = requirements_file.readlines()
-    uncommented_lines = [line for line in lines if not line.lstrip().startswith("#")]
-
-    # requirements.txt uses a multiline format, where \ is used as a newline marker.
-    # Unwrap each dependency into a single line, then turn the result into a list
-    # again.
-    dependencies_with_hashes = (
-        "".join(uncommented_lines).replace("\\\n", "").splitlines()
-    )
-
-    # Create a dictionary in the format
-    # {'foo==2.4.0': ['sha256sum', 'sha256sum']}
-    dependencies = {}
-    for dependency_line in dependencies_with_hashes:
-        if not dependency_line:
-            continue
-        try:
-            assert len(dependency_line.split()) >= 2
-        except AssertionError:
-            print(
-                "requirements.txt is not in expected format. Does it include hashes for all requirements?"
-            )
-            sys.exit(1)
-
-        package_name_and_version, *hashes = dependency_line.split()
-        hashes = [hash.replace("--hash=sha256:", "") for hash in hashes]
-        dependencies[package_name_and_version] = hashes
-    return dependencies
-
-
-def get_main_dependencies(pyproject_toml):
-    """
-    Given a file object pointing to a pyproject.toml file, extract a list of the main
-    requirements. This is a distinct step because poetry.lock does not maintain the distinction
-    between different dependency groups (e.g., development-only dependencies).
-    """
-    pyproject_dict = tomllib.load(pyproject_toml)
-
-    # Extract main dependencies
-    main_dependencies = list(pyproject_dict["tool"]["poetry"]["dependencies"].keys())
-
-    # Remove 'python' as it's not a package dependency
-    if "python" in main_dependencies:
-        main_dependencies.remove("python")
-
-    return main_dependencies
-
-
-def parse_poetry_lock(poetry_lock_file, main_dependencies):
-    """
-    Given a file object pointing to a poetry.lock file and a list of dependencies,
-    return a dictionary of valid hashes for each main dependency declared in it,
-    including transitive dependencies.
-    """
-    dependencies = {}
-    parsed_toml = tomllib.loads(poetry_lock_file.read())
-
-    # Create a set to keep track of main and transitive dependencies
-    relevant_dependencies = set(main_dependencies)
-
-    # Identify transitive dependencies (may be enumerated in lockfile
-    # before the dependency which declares them)
-    for package in parsed_toml.get("package", []):
-        package_name = package["name"]
-        if package_name in main_dependencies:
-            for sub_dependency in package.get("dependencies", {}).keys():
-                relevant_dependencies.add(sub_dependency)
-
-    # Build a dictionary of main and transitive dependencies with all their
-    # valid hashes
-    for package in parsed_toml.get("package", []):
-        package_name = package["name"]
-        if package_name in relevant_dependencies:
-            package_name_and_version = f"{package_name}=={package['version']}"
-            dependencies[package_name_and_version] = [
-                file_dict["hash"].replace("sha256:", "")
-                for file_dict in package["files"]
-            ]
-
-    return dependencies
-
 
 """"
 Ensure that we have at least one signed SHA256 sum for each dependency declared
@@ -129,11 +44,7 @@ if __name__ == "__main__":
         sha256sum_data[words[0]] = True
 
     if os.path.exists("poetry.lock") and os.path.exists("pyproject.toml"):
-        with open("pyproject.toml", "r") as l:
-            main_dependencies = get_main_dependencies(l)
-
-        with open("poetry.lock") as f:
-            dependencies = parse_poetry_lock(f, main_dependencies)
+        dependencies = utils.get_poetry_hashes(Path('poetry.lock'), Path('pyproject.toml'))
     else:
         requirements_file = "requirements.txt"
         if not os.path.exists(requirements_file):
@@ -144,8 +55,7 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
 
-        with open(requirements_file) as f:
-            dependencies = parse_requirements_txt(f)
+        dependencies = utils.get_requirements_file_hashes(Path(requirements_file))
 
     for dependency in dependencies.keys():
         found_a_hash = False

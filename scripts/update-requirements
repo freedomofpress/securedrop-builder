@@ -15,14 +15,20 @@ SKIP_PACKAGES = ["pyqt5", "sip"]
 
 def parse_args():
     # For backwards-compat
-    if "PKG_DIR" in os.environ and \
-            not any(arg.startswith("--pkg-dir") for arg in sys.argv):
+    if "PKG_DIR" in os.environ and not any(
+        arg.startswith("--pkg-dir") for arg in sys.argv
+    ):
         sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
-    parser = argparse.ArgumentParser(description="Update requirements files with sha256sums from our wheels")
+    parser = argparse.ArgumentParser(
+        description="Update requirements files with sha256sums from our wheels"
+    )
     parser.add_argument("--pkg-dir", help="Package directory", required=True)
     parser.add_argument("--project", help="Project to update")
-    parser.add_argument("--requirements", help="Directory that contains requirements.txt inside the package directory",
-                        default="requirements")
+    parser.add_argument(
+        "--requirements",
+        help="Directory that contains requirements.txt inside the package directory",
+        default="requirements",
+    )
     return parser.parse_args()
 
 
@@ -36,7 +42,8 @@ def main():
     requirements_file = pkg_dir / args.requirements / "requirements.txt"
     if not requirements_file.exists():
         poetry_lock = requirements_file.parent.parent / "poetry.lock"
-        if poetry_lock.exists():
+        pyproject_toml = requirements_file.parent.parent / "pyproject.toml"
+        if poetry_lock.exists() and pyproject_toml.exists():
             requirements_file = poetry_lock
         else:
             print("Could not find project requirements, checked:")
@@ -49,7 +56,9 @@ def main():
     # First remove index line and any PyQt or sip dependency
 
     if requirements_file.name == "poetry.lock":
-        dependencies = utils.parse_poetry_lock(requirements_file)
+        dependencies = utils.parse_poetry_dependencies(
+            requirements_file, pyproject_toml
+        )
     else:
         dependencies = utils.parse_requirements_txt(requirements_file)
 
@@ -82,10 +91,9 @@ def verify_sha256sums_file(project: Path):
     subprocess.check_call(["./scripts/verify-sha256sum-signature", project.name])
 
 
-
-
-def add_sha256sums(path: Path, dependencies: list[(str, str)],
-                   shasums_file: Path, pkg_dir: Path) -> None:
+def add_sha256sums(
+    path: Path, dependencies: list[(str, str)], shasums_file: Path, pkg_dir: Path
+) -> None:
     """Adds all the required sha256sums to the wheels"""
     files = []
 
@@ -104,12 +112,14 @@ def add_sha256sums(path: Path, dependencies: list[(str, str)],
     missing_wheels = []
 
     # For each dependency in the requirements file
-    for (package_name, package_version) in dependencies:
-        wheel_name_prefix = '{}-{}'.format(package_name, package_version)
-        package_othername = '{}-{}'.format(package_name.replace("-", "_"), package_version)
+    for package_name, package_version in dependencies:
+        wheel_name_prefix = "{}-{}".format(package_name, package_version)
+        package_othername = "{}-{}".format(
+            package_name.replace("-", "_"), package_version
+        )
 
         line = ""
-        for (digest, name) in files:
+        for digest, name in files:
             lowername = name.lower()
 
             # Now check if a wheel is already available
