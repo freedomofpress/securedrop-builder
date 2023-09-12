@@ -2,6 +2,8 @@
 Shared functions between various scripts
 """
 import re
+import sys
+
 try:
     import tomllib
 except ImportError:
@@ -12,7 +14,7 @@ from pathlib import Path
 RE_NAME = re.compile(r'name="(.*?)"')
 
 
-def project_name(path: Path) -> str:
+def get_project_name(path: Path) -> str:
     """Extract the project name from setup.py"""
     setup_py = path / "setup.py"
     if not setup_py.exists():
@@ -24,7 +26,11 @@ def project_name(path: Path) -> str:
                            "If this isn't a Python project, use --project?")
     return search.group(1)
 
-def parse_requirements_txt(path: Path) -> list[(str, str)]:
+def get_requirements_names_and_versions(path: Path) -> list[(str, str)]:
+    """
+    Return a list of package names and versions for all dependencies declared in a
+    requirements.txt file.
+    """
     ret = []
     for line in path.read_text().splitlines():
         if line.startswith('#'):
@@ -36,13 +42,13 @@ def parse_requirements_txt(path: Path) -> list[(str, str)]:
         ret.append((name, version))
     return ret
 
-def parse_poetry_dependencies(path_to_poetry_lock: Path, path_to_pyproject_toml) -> list[(str, str)]:
+def get_poetry_names_and_versions(path_to_poetry_lock: Path, path_to_pyproject_toml) -> list[(str, str)]:
     """
     Return a list of package names and versions for all main (non-development) dependencies,
-    including transitive ones.
+    including transitive ones, defined via Poetry configuration files.
     """
     data = tomllib.loads(path_to_poetry_lock.read_text())
-    relevant_dependencies = get_relevant_poetry_dependencies(get_main_poetry_dependencies(path_to_pyproject_toml), path_to_poetry_lock)
+    relevant_dependencies = get_relevant_poetry_dependencies(path_to_pyproject_toml, path_to_poetry_lock)
     ret = []
     for package in data['package']:
         if package['name'] not in relevant_dependencies:
@@ -51,10 +57,11 @@ def parse_poetry_dependencies(path_to_poetry_lock: Path, path_to_pyproject_toml)
 
     return ret
 
-def get_main_poetry_dependencies(path_to_pyproject_toml: Path) -> list[str]:
+def get_relevant_poetry_dependencies(path_to_pyproject_toml: Path, path_to_poetry_lock: Path) -> list[str]:
     """
     Identify main (non-development) requirements. poetry.lock does not preserve
-    the distinction between different dependency groups.
+    the distinction between different dependency groups, so we have to parse
+    both files.
     """
     pyproject_dict = tomllib.loads(path_to_pyproject_toml.read_text())
 
@@ -65,12 +72,10 @@ def get_main_poetry_dependencies(path_to_pyproject_toml: Path) -> list[str]:
     if "python" in main_dependencies:
         main_dependencies.remove("python")
 
-    return main_dependencies
-
-def get_relevant_poetry_dependencies(main_dependencies, path_to_poetry_lock):
     parsed_toml = tomllib.loads(path_to_poetry_lock.read_text())
 
-    # Create a set to keep track of main and transitive dependencies
+    # Create a set to keep track of main and transitive dependencies (set ensures
+    # no duplicates)
     relevant_dependencies = set(main_dependencies)
 
     # Identify transitive dependencies (may be enumerated in lockfile
@@ -80,8 +85,8 @@ def get_relevant_poetry_dependencies(main_dependencies, path_to_poetry_lock):
         if package_name in main_dependencies:
             for sub_dependency in package.get("dependencies", {}).keys():
                 relevant_dependencies.add(sub_dependency)
-    return relevant_dependencies
 
+    return list(relevant_dependencies)
 
 def get_poetry_hashes(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -> dict[str, list[str]]:
     """
@@ -91,8 +96,7 @@ def get_poetry_hashes(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -
     main depenencies.
     """
     dependencies = {}
-    main_dependencies = get_main_poetry_dependencies(path_to_pyproject_toml)
-    relevant_dependencies = get_relevant_poetry_dependencies(main_dependencies, path_to_poetry_lock)
+    relevant_dependencies = get_relevant_poetry_dependencies(path_to_pyproject_toml, path_to_poetry_lock)
     parsed_toml = tomllib.loads(path_to_poetry_lock.read_text())
 
     for package in parsed_toml.get("package", []):
@@ -106,7 +110,7 @@ def get_poetry_hashes(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -
 
     return dependencies
 
-def get_requirements_file_hashes(path_to_requirements_file: Path) -> dict[str, list[str]]:
+def get_requirements_hashes(path_to_requirements_file: Path) -> dict[str, list[str]]:
     """
     Return a dictionary of valid hashes for each dependency declared in a requirements
     file.

@@ -79,7 +79,7 @@ def main():
     if args.project is not None:
         project_name = args.project
     else:
-        project_name = utils.project_name(Path(args.pkg_dir))
+        project_name = utils.get_project_name(Path(args.pkg_dir))
     local_wheels = os.path.join(project_name, "wheels")
 
     if not os.path.exists(req_path):

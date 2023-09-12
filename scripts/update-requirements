@@ -38,7 +38,7 @@ def main():
     if args.project is not None:
         project_name = args.project
     else:
-        project_name = utils.project_name(pkg_dir)
+        project_name = utils.get_project_name(pkg_dir)
     requirements_file = pkg_dir / args.requirements / "requirements.txt"
     if not requirements_file.exists():
         poetry_lock = requirements_file.parent.parent / "poetry.lock"
@@ -56,11 +56,11 @@ def main():
     # First remove index line and any PyQt or sip dependency
 
     if requirements_file.name == "poetry.lock":
-        dependencies = utils.parse_poetry_dependencies(
+        dependencies = utils.get_poetry_names_and_versions(
             requirements_file, pyproject_toml
         )
     else:
-        dependencies = utils.parse_requirements_txt(requirements_file)
+        dependencies = utils.get_requirements_names_and_versions(requirements_file)
 
     dependencies = [dep for dep in dependencies if dep[0] not in SKIP_PACKAGES]
 

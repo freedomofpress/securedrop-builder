@@ -44,7 +44,9 @@ if __name__ == "__main__":
         sha256sum_data[words[0]] = True
 
     if os.path.exists("poetry.lock") and os.path.exists("pyproject.toml"):
-        dependencies = utils.get_poetry_hashes(Path('poetry.lock'), Path('pyproject.toml'))
+        dependencies = utils.get_poetry_hashes(
+            Path("poetry.lock"), Path("pyproject.toml")
+        )
     else:
         requirements_file = "requirements.txt"
         if not os.path.exists(requirements_file):
@@ -55,7 +57,7 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
 
-        dependencies = utils.get_requirements_file_hashes(Path(requirements_file))
+        dependencies = utils.get_requirements_hashes(Path(requirements_file))
 
     for dependency in dependencies.keys():
         found_a_hash = False
