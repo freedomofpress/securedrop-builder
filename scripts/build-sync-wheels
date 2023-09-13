@@ -107,21 +107,10 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if use_poetry:
-            req_path = os.path.join(tmpdir, "requirements.txt")
-            cmd = [
-                "poetry",
-                "export",
-                "-C",
-                args.pkg_dir,
-                "-f",
-                "requirements.txt",
-                "-o",
-                req_path,
-            ]
-            subprocess.check_call(cmd)
-            print(
-                "Generated a temporary requirements.txt from poetry.lock to use with pip."
-            )
+            poetry_reqs = utils.get_requirements_from_poetry(Path(args.pkg_dir) / 'poetry.lock', Path(args.pkg_dir) / 'pyproject.toml')
+            req_path = os.path.join(tmpdir, 'requirements.txt')
+            with open(req_path, 'w') as req_file:
+                req_file.write(poetry_reqs)
 
         # The --require-hashes option will be used by default if there are
         # hashes in the requirements.txt file. We specify it anyway to guard

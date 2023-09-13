@@ -144,3 +144,19 @@ def get_requirements_hashes(path_to_requirements_file: Path) -> dict[str, list[s
         dependencies[package_name_and_version] = hashes
     return dependencies
 
+
+def get_requirements_from_poetry(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -> str:
+    """
+    Returns a multiline string in requirements.txt format for a set of Poetry main dependencies.
+    """
+    # Get the hashes along with the package names and versions
+    hashes_dict = get_poetry_hashes(path_to_poetry_lock, path_to_pyproject_toml)
+
+    # Form the requirements.txt string
+    requirements = []
+    for package_name_and_version, hashes in hashes_dict.items():
+        hash_strings = [f"--hash=sha256:{h}" for h in hashes]
+        requirement_line = f"{package_name_and_version} {' '.join(hash_strings)}"
+        requirements.append(requirement_line)
+
+    return '\n'.join(requirements)
