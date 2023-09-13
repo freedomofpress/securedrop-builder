@@ -82,9 +82,18 @@ def main():
         project_name = utils.get_project_name(Path(args.pkg_dir))
     local_wheels = os.path.join(project_name, "wheels")
 
+    req_path = os.path.join(args.pkg_dir, args.requirements, "requirements.txt")
+    poetry_lock_path = os.path.join(args.pkg_dir, "poetry.lock")
+
+    use_poetry = False
+    # Check if requirements.txt exists, if not check for poetry.lock and create a temporary requirements.txt
     if not os.path.exists(req_path):
-        print("requirements.txt missing at {0}.".format(req_path))
-        sys.exit(3)
+        if os.path.exists(poetry_lock_path):
+            use_poetry = True
+            print(f'requirements.txt was not found at {req_path}, but poetry.lock was found at {poetry_lock_path}, using.')
+        else:
+            print(f"requirements.txt not found at {req_path} and poetry.lock not found at {poetry_lock_path}.")
+            sys.exit(3)
 
     if os.path.exists(WHEEL_BUILD_DIR):
         shutil.rmtree(WHEEL_BUILD_DIR)
@@ -93,9 +102,22 @@ def main():
         os.mkdir(WHEEL_BUILD_DIR)
 
     with tempfile.TemporaryDirectory() as tmpdir:
+        if use_poetry:
+            req_path = os.path.join(tmpdir, 'requirements.txt')
+            cmd = ["poetry", "export", "-C", args.pkg_dir, "-f", "requirements.txt", "-o", req_path]
+            subprocess.check_call(cmd)
+            print('Generated a temporary requirements.txt from poetry.lock to use with pip.')
+
         # The --require-hashes option will be used by default if there are
         # hashes in the requirements.txt file. We specify it anyway to guard
         # against use of a requirements.txt file without hashes.
+        #
+        # NOTE: Even with this invocation, pip may execute build steps, as
+        # part of its metadata collection process. Switching to
+        # manual downloading and hash verification may be preferable
+        # to make this process more resilient.
+        #
+        # See https://github.com/pypa/pip/issues/1884 for background.
         cmd = [
             "pip3",
             "download",
