@@ -19,9 +19,8 @@ if os.geteuid() == 0:
     # sys.exit(1)
 if "VIRTUAL_ENV" not in os.environ:
     print(
-        "This script should be run in a virtualenv: "
-        "`source .venv/bin/activate`",
-        file=sys.stderr
+        "This script should be run in a virtualenv: " "`source .venv/bin/activate`",
+        file=sys.stderr,
     )
     sys.exit(1)
 
@@ -43,17 +42,18 @@ WHEEL_BUILD_DIR = "/tmp/pip-wheel-build"
 
 
 def main():
-    if "PKG_DIR" in os.environ and \
-            not any(arg.startswith("--pkg-dir") for arg in sys.argv):
+    if "PKG_DIR" in os.environ and not any(
+        arg.startswith("--pkg-dir") for arg in sys.argv
+    ):
         sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
 
-    parser = argparse.ArgumentParser(
-        description="Builds and stores sources and wheels"
-    )
+    parser = argparse.ArgumentParser(description="Builds and stores sources and wheels")
     parser.add_argument("--pkg-dir", help="Package directory", required=True)
     parser.add_argument("--project", help="Project name to update")
     parser.add_argument(
-        "--clobber", action="store_true", default=False,
+        "--clobber",
+        action="store_true",
+        default=False,
         help="Whether to overwrite wheels and source tarballs",
     )
     parser.add_argument(
@@ -90,9 +90,13 @@ def main():
     if not os.path.exists(req_path):
         if os.path.exists(poetry_lock_path):
             use_poetry = True
-            print(f'requirements.txt was not found at {req_path}, but poetry.lock was found at {poetry_lock_path}, using.')
+            print(
+                f"requirements.txt was not found at {req_path}, but poetry.lock was found at {poetry_lock_path}, using."
+            )
         else:
-            print(f"requirements.txt not found at {req_path} and poetry.lock not found at {poetry_lock_path}.")
+            print(
+                f"requirements.txt not found at {req_path} and poetry.lock not found at {poetry_lock_path}."
+            )
             sys.exit(3)
 
     if os.path.exists(WHEEL_BUILD_DIR):
@@ -103,10 +107,21 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if use_poetry:
-            req_path = os.path.join(tmpdir, 'requirements.txt')
-            cmd = ["poetry", "export", "-C", args.pkg_dir, "-f", "requirements.txt", "-o", req_path]
+            req_path = os.path.join(tmpdir, "requirements.txt")
+            cmd = [
+                "poetry",
+                "export",
+                "-C",
+                args.pkg_dir,
+                "-f",
+                "requirements.txt",
+                "-o",
+                req_path,
+            ]
             subprocess.check_call(cmd)
-            print('Generated a temporary requirements.txt from poetry.lock to use with pip.')
+            print(
+                "Generated a temporary requirements.txt from poetry.lock to use with pip."
+            )
 
         # The --require-hashes option will be used by default if there are
         # hashes in the requirements.txt file. We specify it anyway to guard
@@ -144,7 +159,16 @@ def main():
         for project in project_names:
             print(f"Building {project}")
             source_path = os.path.join(WHEEL_BUILD_DIR, project)
-            cmd = ["python3", "-m", "build", "--wheel", source_path, "--no-isolation", "-o", tmpdir]
+            cmd = [
+                "python3",
+                "-m",
+                "build",
+                "--wheel",
+                source_path,
+                "--no-isolation",
+                "-o",
+                tmpdir,
+            ]
             subprocess.check_call(cmd)
             print(f"build command used: {' '.join(cmd)}")
 
