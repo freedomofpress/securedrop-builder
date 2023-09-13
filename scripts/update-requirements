@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# To update the requirements files with sha256sums from our local PyPI.
+# To update the requirements files with sha256sums from our local wheels.
 
 import argparse
 import os
