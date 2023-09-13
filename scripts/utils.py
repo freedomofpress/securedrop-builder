@@ -6,7 +6,7 @@ import sys
 
 try:
     import tomllib
-except ImportError:
+except ModuleNotFoundError:
     # pre-Python 3.11 compatibility
     import toml as tomllib
 from pathlib import Path
