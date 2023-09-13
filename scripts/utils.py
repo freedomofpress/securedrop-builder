@@ -8,7 +8,7 @@ try:
     import tomllib
 except ImportError:
     # pre-Python 3.11 compatibility
-    import tomli as tomllib
+    import toml as tomllib
 from pathlib import Path
 
 RE_NAME = re.compile(r'name="(.*?)"')

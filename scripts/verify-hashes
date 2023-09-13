@@ -10,7 +10,7 @@ try:
     import tomllib
 except ImportError:
     # pre-Python 3.11 compatibility
-    import tomli as tomllib
+    import toml as tomllib
 
 # For a requirements file in one of our projects, this script checks if we have at
 # least one corresponding sha256sum (for the source tarball) for each dependency.
