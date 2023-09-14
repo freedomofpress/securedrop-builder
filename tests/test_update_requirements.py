@@ -1,9 +1,9 @@
-import imp
+from importlib.machinery import SourceFileLoader
 import os
 import sys
 import pytest
 from pathlib import Path
-
+import types
 
 # This below stanza is necessary because the scripts are not
 # structured as a module.
@@ -11,7 +11,10 @@ path_to_script = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "../scripts/update-requirements"
 )
 sys.path.append(os.path.dirname(path_to_script))
-update_requirements = imp.load_source("update-requirements", path_to_script)
+
+update_requirements = types.ModuleType("update-requirements")
+loader = SourceFileLoader("update-requirements", path_to_script)
+loader.exec_module(update_requirements)
 
 TEST_DEPENDENCIES = [('pathlib2', '2.3.2')]
 TEST_SOURCE_HASH = "8eb170f8d0d61825e09a95b38be068299ddeda82f35e96c3301a8a5e7604cb83"
