@@ -122,7 +122,7 @@ def get_requirements_hashes(path_to_requirements_file: Path) -> dict[str, list[s
     # Unwrap each dependency into a single line, then turn the result into a list
     # again.
     dependencies_with_hashes = (
-        "".join(uncommented_lines).replace("\\\n", "").splitlines()
+        "\n".join(uncommented_lines).replace("\\\n", "").splitlines()
     )
 
     # Create a dictionary in the format
