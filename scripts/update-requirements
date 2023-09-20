@@ -98,9 +98,6 @@ def add_sha256sums(
     files = []
 
     lines = shasums_file.read_text().splitlines()
-    print('we are here')
-    print(lines)
-
 
     for line in lines:
         line = line.strip()

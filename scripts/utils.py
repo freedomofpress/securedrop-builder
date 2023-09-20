@@ -18,13 +18,17 @@ def get_project_name(path: Path) -> str:
     """Extract the project name from setup.py"""
     setup_py = path / "setup.py"
     if not setup_py.exists():
-        raise RuntimeError(f"No setup.py in {path}."
-                           "If this isn't a Python project, use --project?")
+        raise RuntimeError(
+            f"No setup.py in {path}." "If this isn't a Python project, use --project?"
+        )
     search = RE_NAME.search(setup_py.read_text())
     if not search:
-        raise RuntimeError(f"Unable to parse name out of {setup_py}. "
-                           "If this isn't a Python project, use --project?")
+        raise RuntimeError(
+            f"Unable to parse name out of {setup_py}. "
+            "If this isn't a Python project, use --project?"
+        )
     return search.group(1)
+
 
 def get_requirements_names_and_versions(path: Path) -> list[(str, str)]:
     """
@@ -33,7 +37,7 @@ def get_requirements_names_and_versions(path: Path) -> list[(str, str)]:
     """
     ret = []
     for line in path.read_text().splitlines():
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
         if "==" not in line:
             continue
@@ -42,22 +46,30 @@ def get_requirements_names_and_versions(path: Path) -> list[(str, str)]:
         ret.append((name, version))
     return ret
 
-def get_poetry_names_and_versions(path_to_poetry_lock: Path, path_to_pyproject_toml) -> list[(str, str)]:
+
+def get_poetry_names_and_versions(
+    path_to_poetry_lock: Path, path_to_pyproject_toml
+) -> list[(str, str)]:
     """
     Return a list of package names and versions for all main (non-development) dependencies,
     including transitive ones, defined via Poetry configuration files.
     """
     data = tomllib.loads(path_to_poetry_lock.read_text())
-    relevant_dependencies = get_relevant_poetry_dependencies(path_to_pyproject_toml, path_to_poetry_lock)
+    relevant_dependencies = get_relevant_poetry_dependencies(
+        path_to_pyproject_toml, path_to_poetry_lock
+    )
     ret = []
-    for package in data['package']:
-        if package['name'] not in relevant_dependencies:
+    for package in data["package"]:
+        if package["name"] not in relevant_dependencies:
             continue
-        ret.append((package['name'], package['version']))
+        ret.append((package["name"], package["version"]))
 
     return ret
 
-def get_relevant_poetry_dependencies(path_to_pyproject_toml: Path, path_to_poetry_lock: Path) -> list[str]:
+
+def get_relevant_poetry_dependencies(
+    path_to_pyproject_toml: Path, path_to_poetry_lock: Path
+) -> list[str]:
     """
     Identify main (non-development) requirements. poetry.lock does not preserve
     the distinction between different dependency groups, so we have to parse
@@ -88,7 +100,10 @@ def get_relevant_poetry_dependencies(path_to_pyproject_toml: Path, path_to_poetr
 
     return list(relevant_dependencies)
 
-def get_poetry_hashes(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -> dict[str, list[str]]:
+
+def get_poetry_hashes(
+    path_to_poetry_lock: Path, path_to_pyproject_toml: Path
+) -> dict[str, list[str]]:
     """
     Get a dictionary for all main (non-development) dependencies and their
     valid hashes as defined in a set of requirements as defined in
@@ -96,7 +111,9 @@ def get_poetry_hashes(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -
     main depenencies.
     """
     dependencies = {}
-    relevant_dependencies = get_relevant_poetry_dependencies(path_to_pyproject_toml, path_to_poetry_lock)
+    relevant_dependencies = get_relevant_poetry_dependencies(
+        path_to_pyproject_toml, path_to_poetry_lock
+    )
     parsed_toml = tomllib.loads(path_to_poetry_lock.read_text())
 
     for package in parsed_toml.get("package", []):
@@ -110,42 +127,40 @@ def get_poetry_hashes(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -
 
     return dependencies
 
+
 def get_requirements_hashes(path_to_requirements_file: Path) -> dict[str, list[str]]:
     """
     Return a dictionary of valid hashes for each dependency declared in a requirements
     file.
     """
     lines = path_to_requirements_file.read_text().splitlines()
-    uncommented_lines = [line for line in lines if not line.lstrip().startswith("#")]
 
-    # requirements.txt uses a multiline format, where \ is used as a newline marker.
-    # Unwrap each dependency into a single line, then turn the result into a list
-    # again.
-    dependencies_with_hashes = (
-        "\n".join(uncommented_lines).replace("\\\n", "").splitlines()
-    )
+    result_dict = {}
+    current_package = None
 
-    # Create a dictionary in the format
-    # {'foo==2.4.0': ['sha256sum', 'sha256sum']}
-    dependencies = {}
-    for dependency_line in dependencies_with_hashes:
-        if not dependency_line:
+    for line in lines:
+        if line.startswith("#") or not line.strip():
             continue
-        try:
-            assert len(dependency_line.split()) >= 2
-        except AssertionError:
-            print(
-                "requirements.txt is not in expected format. Does it include hashes for all requirements?"
-            )
-            sys.exit(1)
 
-        package_name_and_version, *hashes = dependency_line.split()
-        hashes = [hash.replace("--hash=sha256:", "") for hash in hashes]
-        dependencies[package_name_and_version] = hashes
-    return dependencies
+        package_match = re.match(r"(\S+==\S+)", line)
+        hash_match = re.search(r"--hash=sha256:([\da-f]+)", line)
+
+        if package_match:
+            current_package = package_match.group(1)
+            result_dict[current_package] = []
+        elif hash_match and current_package:
+            result_dict[current_package].append(hash_match.group(1))
+
+    for package, hashes in result_dict.items():
+        if not hashes:
+            raise ValueError(f"The package {package} does not have any hashes.")
+
+    return result_dict
 
 
-def get_requirements_from_poetry(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -> str:
+def get_requirements_from_poetry(
+    path_to_poetry_lock: Path, path_to_pyproject_toml: Path
+) -> str:
     """
     Returns a multiline string in requirements.txt format for a set of Poetry main dependencies.
     """
@@ -159,4 +174,4 @@ def get_requirements_from_poetry(path_to_poetry_lock: Path, path_to_pyproject_to
         requirement_line = f"{package_name_and_version} {' '.join(hash_strings)}"
         requirements.append(requirement_line)
 
-    return '\n'.join(requirements)
+    return "\n".join(requirements)
