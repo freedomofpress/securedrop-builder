@@ -1,15 +1,12 @@
 #!/bin/bash
 # Wrapper script to build Debian packages for the SecureDrop Workstation.
-# Requires a source tarball to build the package, defined via `PKG_PATH`,
-# or a git reference defined via `PKG_GITREF`. If `PKG_GITREF` matches the
-# release tag format, it will be treated as a tag and expected to be signed
-# with the production release key.
-#
-# Explicit configuration is available via the following env vars:
-#
-#   * PKG_PATH
-#   * PKG_GITREF
-#   * PKG_NAME
+# Requires a Git repository to build the package. The following environment
+# variables control what the script does:
+# * PKG_NAME (required): name of the package to build
+# * SD_PKG_GITREF: Git ref to check out and build. If this matches the release tag
+#                  format (X.Y.Z), it will be treated as a tag and expected to be signed
+#                  with the production release key.
+# * PKG_PATH: Path to a Git tree to build from
 #
 set -e
 set -u
@@ -23,8 +20,8 @@ if [[ -z "${PKG_NAME:-}" ]]; then
 fi
 
 if [[ -z "${PKG_PATH:-}" ]]; then
-    if  [[ -z "${PKG_GITREF:-}" ]]; then
-        echo "Set PKG_PATH or PKG_GITREF";
+    if  [[ -z "${SD_PKG_GITREF:-}" ]]; then
+        echo "Set PKG_PATH or SD_PKG_GITREF";
         exit 1
     fi
 fi
@@ -32,6 +29,19 @@ fi
 # Store root of repo, since we'll change dirs several times.
 CUR_DIR="$(git rev-parse --show-toplevel)"
 VERSION_CODENAME=$("${CUR_DIR}/scripts/codename")
+
+# It is the callers' responsibility to ensure we are using the desired version
+# securedrop-builder, however we double-check it for them as a failsafe.
+if [[ -n "${SD_BUILDER_GITREF:-}" ]]; then
+    if [[ $SD_BUILDER_GITREF != $(git rev-parse HEAD) ]]; then
+        echo "Wrong version of securedrop-builder in use!"
+        echo "Wanted: ${SD_BUILDER_GITREF}"
+        echo "Currently using: $(git rev-parse HEAD)"
+        exit 1
+    fi
+else
+    SD_BUILDER_GITREF=$(git rev-parse HEAD)
+fi
 
 # Disable use of pip cache during debhelper build actions.
 export DH_PIP_EXTRA_ARGS="--no-cache-dir --require-hashes"
@@ -73,12 +83,12 @@ function setup_source_tree() {
     rm -rf "$build_dir"
     git clone "$repo_url" "$build_dir"
 
-    if [[ -n "${PKG_GITREF:-}" ]]; then
-        # if PKG_GITREF looks like a release tag, check for a release signature
-        [[ "$PKG_GITREF" =~ ^(0|[1-9][0-9]*).(0|[1-9][0-9]*).(0|[1-9][0-9]*)$ ]] && verify_git_tag "$build_dir" "$PKG_GITREF"
-        git -C "$build_dir" checkout "$PKG_GITREF"
+    if [[ -n "${SD_PKG_GITREF:-}" ]]; then
+        # if SD_PKG_GITREF looks like a release tag, check for a release signature
+        [[ "$SD_PKG_GITREF" =~ ^(0|[1-9][0-9]*).(0|[1-9][0-9]*).(0|[1-9][0-9]*)$ ]] && verify_git_tag "$build_dir" "$SD_PKG_GITREF"
+        git -C "$build_dir" checkout "$SD_PKG_GITREF"
     else
-        echo "Neither PKG_PATH nor PKG_GITREF were defined - please specify one" >&2
+        echo "Neither PKG_PATH nor SD_PKG_GITREF were defined - please specify one" >&2
         exit 2
     fi
 }
@@ -95,14 +105,12 @@ if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|se
     else
         if [[ -f "${PKG_PATH}" ]]; then
             # It's a file and not a directory, must be a legacy tarball
-            echo "Extracting legacy tarball"
-            rm -rf "/tmp/${PKG_NAME}"
-            mkdir -p "/tmp/${PKG_NAME}"
-            tar --strip-components=1 -C "/tmp/$PKG_NAME" -xvf "$PKG_PATH"
-            PKG_PATH="/tmp/${PKG_NAME}/"
+            echo "Building from a tarball is no longer supported, it must be done from Git"
+            exit 1
         fi
     fi
-
+    # Store commit hash to be exported via buildinfo
+    SD_PKG_GITREF=$(git -C "$PKG_PATH" rev-parse HEAD)
 
     # Copy the source tree to the packaging workspace
     cp -rT "$PKG_PATH" "$TOP_BUILDDIR/$PKG_NAME/"
@@ -152,10 +160,10 @@ export SOURCE_DATE_EPOCH
 # Grab package version from changelog
 CHANGELOG_VERSION=$(dpkg-parsechangelog --show-field Version)
 
-# If PKG_GITREF is set and is a release tag, check that it matches the version in debian/changelog
-if [[ -n "${PKG_GITREF:-}" ]] && [[ "${PKG_GITREF:-}" =~ ^(0|[1-9][0-9]*).(0|[1-9][0-9]*).(0|[1-9][0-9]*)$ ]]; then
-    if ! [[ "$PKG_GITREF+$VERSION_CODENAME" == "$CHANGELOG_VERSION" ]]; then
-        echo "Changelog version is $CHANGELOG_VERSION, but the provided tag is $PKG_GITREF. Aborting build."
+# If SD_PKG_GITREF is set and is a release tag, check that it matches the version in debian/changelog
+if [[ -n "${SD_PKG_GITREF:-}" ]] && [[ "${SD_PKG_GITREF:-}" =~ ^(0|[1-9][0-9]*).(0|[1-9][0-9]*).(0|[1-9][0-9]*)$ ]]; then
+    if ! [[ "$SD_PKG_GITREF+$VERSION_CODENAME" == "$CHANGELOG_VERSION" ]]; then
+        echo "Changelog version is $CHANGELOG_VERSION, but the provided tag is $SD_PKG_GITREF. Aborting build."
         exit 2
     fi
 fi
@@ -164,10 +172,15 @@ fi
 printf "Building package '%s' with version '%s'...\\n" "$PKG_NAME" "$CHANGELOG_VERSION"
 dpkg-buildpackage -us -uc
 
-# Tell the user the path of the files built
-pkg_path="$(find "$TOP_BUILDDIR" -type f -iname "${PKG_NAME}_${CHANGELOG_VERSION}*.deb" | head -n1)"
-if [[ -f "$pkg_path" ]]; then
-    echo "Package location: $pkg_path"
-else
-    echo "Could not find package, look in $TOP_BUILDDIR"
+# Find the names of the build package and buildinfo file by reading d/files
+pkg_path=$(grep '.deb' debian/files | awk '{print $1}')
+buildinfo=$(grep '.buildinfo' debian/files | awk '{print $1}')
+
+# Add in our extra metadata to buildinfo
+echo " SD_BUILDER_GITREF=\"${SD_BUILDER_GITREF}\"" >> "${TOP_BUILDDIR}/${buildinfo}"
+if [[ -n "${SD_PKG_GITREF:-}" ]]; then
+    # packages that are fully in this repo won't have this set
+    echo " SD_PKG_GITREF=\"${SD_PKG_GITREF}\"" >> "${TOP_BUILDDIR}/${buildinfo}"
 fi
+# Tell the user the path of the files built
+echo "Package location: ${TOP_BUILDDIR}/${pkg_path}"
