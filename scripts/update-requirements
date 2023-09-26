@@ -66,6 +66,10 @@ def main():
 
     verify_sha256sums_file(project)
 
+    # If there is no 'requirements' directory, we look in the project root
+    if not (pkg_dir / args.requirements).exists():
+        args.requirements = ""
+
     build_requirements_file = pkg_dir / args.requirements / "build-requirements.txt"
 
     shasums_file = project / "sha256sums.txt"
