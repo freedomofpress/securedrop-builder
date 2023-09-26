@@ -30,41 +30,46 @@ EXPECTED_DEPENDENCIES = [
     ("cowsay", "6.0"),
     ("soupsieve", "2.5"),
 ]
+EXPECTED_DEPENDENCY_NAMES = [name for name, _ in EXPECTED_DEPENDENCIES]
 EXPECTED_KEYS = [f"{name}=={version}" for name, version in EXPECTED_DEPENDENCIES]
 
 
 def test_get_requirements_names_and_versions():
-    assert (
-        get_requirements_names_and_versions(REQUIREMENTS_TXT_PATH)
-        == EXPECTED_DEPENDENCIES
+    assert sorted(get_requirements_names_and_versions(REQUIREMENTS_TXT_PATH)) == sorted(
+        EXPECTED_DEPENDENCIES
     )
 
 
 def test_get_poetry_names_and_versions():
     output = get_poetry_names_and_versions(POETRY_LOCK_PATH, PYPROJECT_TOML_PATH)
-    assert output == EXPECTED_DEPENDENCIES
+    assert sorted(output) == sorted(EXPECTED_DEPENDENCIES)
 
 
 def test_get_relevant_poetry_dependencies():
-    expected_output = ["colorama", "cowsay", "beautifulsoup4", "soupsieve"]
     output = get_relevant_poetry_dependencies(PYPROJECT_TOML_PATH, POETRY_LOCK_PATH)
     # Ensure we correctly ignore development-only dependencies
     assert "pytest" not in output
-    assert sorted(output) == sorted(expected_output)
+    assert sorted(output) == sorted(EXPECTED_DEPENDENCY_NAMES)
+
+
+def _check_hashes(output):
+    assert sorted(list(output)) == sorted(EXPECTED_KEYS)
+    for dep in output.keys():
+        # We should have at least one hash per dependency
+        assert len(output[dep]) > 0
+        # Hex-encoded SHA-256 hashes are 64 characters long
+        for hash in output[dep]:
+            assert len(hash) == 64
 
 
 def test_get_poetry_hashes():
     output = get_poetry_hashes(POETRY_LOCK_PATH, PYPROJECT_TOML_PATH)
-    assert list(output.keys()) == EXPECTED_KEYS
-    assert all(len(output[dep]) > 0 for dep in output.keys())
-    assert all(all(len(hash) == 64 for hash in output[dep]) for dep in output.keys())
+    _check_hashes(output)
 
 
 def test_get_requirements_hashes():
     output = get_requirements_hashes(REQUIREMENTS_TXT_PATH)
-    assert list(output.keys()) == EXPECTED_KEYS
-    assert all(len(output[dep]) > 0 for dep in output.keys())
-    assert all(all(len(hash) == 64 for hash in output[dep]) for dep in output.keys())
+    _check_hashes(output)
 
 
 def test_get_requirements_from_poetry():

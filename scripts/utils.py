@@ -108,7 +108,7 @@ def get_poetry_hashes(
     Get a dictionary for all main (non-development) dependencies and their
     valid hashes as defined in a set of requirements as defined in
     pyproject.toml/poetry.lock. This includes transitive dependencies of
-    main depenencies.
+    main dependencies.
     """
     dependencies = {}
     relevant_dependencies = get_relevant_poetry_dependencies(

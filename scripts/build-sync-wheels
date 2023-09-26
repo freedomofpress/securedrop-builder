@@ -19,7 +19,7 @@ if os.geteuid() == 0:
     # sys.exit(1)
 if "VIRTUAL_ENV" not in os.environ:
     print(
-        "This script should be run in a virtualenv: " "`source .venv/bin/activate`",
+        "This script should be run in a virtualenv: `source .venv/bin/activate`",
         file=sys.stderr,
     )
     sys.exit(1)
