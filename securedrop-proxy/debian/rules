@@ -3,7 +3,7 @@
 %:
 	dh $@ --with python-virtualenv
 
-REQUIREMENTS_FILE=requirements/build-requirements.txt
+REQUIREMENTS_FILE=build-requirements.txt
 
 override_dh_virtualenv:
 	test -e $(REQUIREMENTS_FILE)
