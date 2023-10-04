@@ -73,7 +73,7 @@ def main():
     build_requirements_file = pkg_dir / args.requirements / "build-requirements.txt"
 
     shasums_file = project / "sha256sums.txt"
-    # Now let us update the files along with the sha256sums from localwheels
+    # Now let us update the files along with the sha256sums from local wheels
     add_sha256sums(build_requirements_file, dependencies, shasums_file, pkg_dir)
 
 
@@ -150,8 +150,8 @@ def add_sha256sums(
 
         print("\nPlease build the wheel by using the following command:\n")
         print(f"\tPKG_DIR={pkg_dir} make build-wheels\n")
-        print("Then add the newly built wheels and sources to ./localwheels/.")
-        print("After these steps, please rerun the command again.")
+        print("Then add the newly built wheels and sources to the wheels subdirectory")
+        print("for the project. After these steps, please rerun the command again.")
         sys.exit(1)
 
     # Now update the file

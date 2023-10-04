@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# A script to update the sha256sums from localwheels directory
+# A script to update the sha256sums from local wheels directory
 
 import os
 import subprocess
