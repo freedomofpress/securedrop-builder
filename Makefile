@@ -46,17 +46,15 @@ requirements: ## Creates requirements files for the Python projects
 	./scripts/update-requirements
 
 .PHONY: build-wheels
-build-wheels: ## Builds the wheels and adds them to the localwheels directory
+build-wheels: ## Builds the wheels and adds them to the wheels subdirectory
 	./scripts/verify-sha256sum-signature $$(basename ${PKG_DIR})
 	./scripts/build-sync-wheels
 	./scripts/sync-sha256sums $$(basename ${PKG_DIR})
-	@printf "Done! Now please follow the instructions in\n"
-	@printf "https://github.com/freedomofpress/securedrop-debian-packaging-guide/"
-	@printf "to push these changes to the FPF PyPI index\n"
+	@echo Done!
 
 .PHONY: test
 test: ## Run simple test suite (skips reproducibility checks)
-	pytest -v tests/test_update_requirements.py tests/test_deb_package.py
+	pytest -v tests/test_update_requirements.py tests/test_deb_package.py tests/test_utils.py
 
 .PHONY: reprotest
 reprotest: ## Runs only reproducibility tests, for .deb and .whl files

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Wrapper to verify that the checksums file, used to track the integrity
-# of the assets in the PyPI mirror, has a valid signature.
+# of the local wheels, has a valid signature.
 #
 # We expect a valid signature to correspond to a SecureDrop Maintainer,
 # so we create a temporary keyring in order to force gpg to use *only*

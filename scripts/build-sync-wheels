@@ -19,9 +19,8 @@ if os.geteuid() == 0:
     # sys.exit(1)
 if "VIRTUAL_ENV" not in os.environ:
     print(
-        "This script should be run in a virtualenv: "
-        "`source .venv/bin/activate`",
-        file=sys.stderr
+        "This script should be run in a virtualenv: `source .venv/bin/activate`",
+        file=sys.stderr,
     )
     sys.exit(1)
 
@@ -43,17 +42,18 @@ WHEEL_BUILD_DIR = "/tmp/pip-wheel-build"
 
 
 def main():
-    if "PKG_DIR" in os.environ and \
-            not any(arg.startswith("--pkg-dir") for arg in sys.argv):
+    if "PKG_DIR" in os.environ and not any(
+        arg.startswith("--pkg-dir") for arg in sys.argv
+    ):
         sys.argv.extend(["--pkg-dir", os.environ["PKG_DIR"]])
 
-    parser = argparse.ArgumentParser(
-        description="Builds and stores sources and wheels"
-    )
+    parser = argparse.ArgumentParser(description="Builds and stores sources and wheels")
     parser.add_argument("--pkg-dir", help="Package directory", required=True)
     parser.add_argument("--project", help="Project name to update")
     parser.add_argument(
-        "--clobber", action="store_true", default=False,
+        "--clobber",
+        action="store_true",
+        default=False,
         help="Whether to overwrite wheels and source tarballs",
     )
     parser.add_argument(
@@ -79,12 +79,25 @@ def main():
     if args.project is not None:
         project_name = args.project
     else:
-        project_name = utils.project_name(Path(args.pkg_dir))
+        project_name = utils.get_project_name(Path(args.pkg_dir))
     local_wheels = os.path.join(project_name, "wheels")
 
+    req_path = os.path.join(args.pkg_dir, args.requirements, "requirements.txt")
+    poetry_lock_path = os.path.join(args.pkg_dir, "poetry.lock")
+
+    use_poetry = False
+    # Check if requirements.txt exists, if not check for poetry.lock and create a temporary requirements.txt
     if not os.path.exists(req_path):
-        print("requirements.txt missing at {0}.".format(req_path))
-        sys.exit(3)
+        if os.path.exists(poetry_lock_path):
+            use_poetry = True
+            print(
+                f"requirements.txt was not found at {req_path}, but poetry.lock was found at {poetry_lock_path}, using."
+            )
+        else:
+            print(
+                f"requirements.txt not found at {req_path} and poetry.lock not found at {poetry_lock_path}."
+            )
+            sys.exit(3)
 
     if os.path.exists(WHEEL_BUILD_DIR):
         shutil.rmtree(WHEEL_BUILD_DIR)
@@ -93,9 +106,22 @@ def main():
         os.mkdir(WHEEL_BUILD_DIR)
 
     with tempfile.TemporaryDirectory() as tmpdir:
+        if use_poetry:
+            poetry_reqs = utils.get_requirements_from_poetry(Path(args.pkg_dir) / 'poetry.lock', Path(args.pkg_dir) / 'pyproject.toml')
+            req_path = os.path.join(tmpdir, 'requirements.txt')
+            with open(req_path, 'w') as req_file:
+                req_file.write(poetry_reqs)
+
         # The --require-hashes option will be used by default if there are
         # hashes in the requirements.txt file. We specify it anyway to guard
         # against use of a requirements.txt file without hashes.
+        #
+        # NOTE: Even with this invocation, pip may execute build steps, as
+        # part of its metadata collection process. Switching to
+        # manual downloading and hash verification may be preferable
+        # to make this process more resilient.
+        #
+        # See https://github.com/pypa/pip/issues/1884 for background.
         cmd = [
             "pip3",
             "download",
@@ -122,7 +148,16 @@ def main():
         for project in project_names:
             print(f"Building {project}")
             source_path = os.path.join(WHEEL_BUILD_DIR, project)
-            cmd = ["python3", "-m", "build", "--wheel", source_path, "--no-isolation", "-o", tmpdir]
+            cmd = [
+                "python3",
+                "-m",
+                "build",
+                "--wheel",
+                source_path,
+                "--no-isolation",
+                "-o",
+                tmpdir,
+            ]
             subprocess.check_call(cmd)
             print(f"build command used: {' '.join(cmd)}")
 

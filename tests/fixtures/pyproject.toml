@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "test"
+version = "0.1.0"
+description = ""
+authors = ["SecureDrop Team <securedrop@freedom.press>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+colorama = "0.4.6"
+cowsay = "^6.0"
+beautifulsoup4 = "^4.12.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"

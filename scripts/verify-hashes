@@ -3,96 +3,68 @@
 import os
 import sys
 
-if len(sys.argv) != 2:
-    print("Usage: ./scripts/verify-hashes path/to/sha256sums.txt")
-    sys.exit(1)
+from pathlib import Path
+import utils
 
-requirements_file = "requirements.txt"
-if not os.path.exists(requirements_file):
-    requirements_file = "requirements/requirements.txt"
-    if not os.path.exists(requirements_file):
-        print("Cannot find requirements.txt")
+# For a requirements file in one of our projects, this script checks if we have at
+# least one corresponding sha256sum (for the source tarball) for each dependency.
+# The script should be run from the project directory whose requirements you
+# want to parse.
+#
+# For now, both requirements.txt and poetry.lock/pyproject.toml are supported.
+# Once Poetry support is stable across all components, requirements.txt support
+# can be deprecated.
+
+
+def main():
+    """ "
+    Ensure that we have at least one signed SHA256 sum for each dependency declared
+    in a project's requirements file. This will be the source tarball.
+    """
+    if len(sys.argv) != 2:
+        print("Usage: ./scripts/verify-hashes path/to/sha256sums.txt")
         sys.exit(1)
 
-# This is the already gpg signed and verified data
-sha256sum_data = {}
-with open(sys.argv[1]) as fobj:
-    data = fobj.readlines()
+    sha256sum_data = {}
+    with open(sys.argv[1]) as fobj:
+        data = fobj.readlines()
+    for line in data:
+        line = line.strip()
+        if line.startswith("#"):
+            continue
+        words = line.split()
+        if len(words[0]) != 64:
+            print(f"'{words[0]}' does not appear to be a sha256sum - exiting.")
+            sys.exit(3)
+        sha256sum_data[words[0]] = True
 
-for line in data:
-    line = line.strip()
-    if line.startswith('#'):
-        continue
-    words = line.split()
-    # just check that the sums are of correct length
-    if len(words[0]) != 64:
-        print("Wrong sha256sum {0}".format(words[0]))
-        sys.exit(3)
-    sha256sum_data[words[0]] = True
+    if os.path.exists("poetry.lock") and os.path.exists("pyproject.toml"):
+        dependencies = utils.get_poetry_hashes(
+            Path("poetry.lock"), Path("pyproject.toml")
+        )
+    else:
+        requirements_file = "requirements.txt"
+        if not os.path.exists(requirements_file):
+            requirements_file = "requirements/requirements.txt"
+            if not os.path.exists(requirements_file):
+                print(
+                    "Cannot find poetry.lock/pyproject.toml or requirements.txt or requirements/requirements.txt"
+                )
+                sys.exit(1)
+
+        dependencies = utils.get_requirements_hashes(Path(requirements_file))
+
+    for dependency in dependencies.keys():
+        found_a_hash = False
+        for requirements_sha_256_hash in dependencies[dependency]:
+            if requirements_sha_256_hash in sha256sum_data:
+                found_a_hash = True
+        if not found_a_hash:
+            print(f"Missing sha256sum for package: {dependency} - exiting.")
+            sys.exit(1)
+
+    sys.exit(0)
 
 
-# Now read the requirements.txt file
-lines = []
-with open(requirements_file) as fobj:
-    lines = fobj.readlines()
-
-# Now we want to verify that for each dependency in the project
-# to be packaged, has a matching source tarball on FPF's PyPI.
-
-# Remove lines with comments.
-uncommented_lines = [line for line in lines if not line.lstrip().startswith('#')]
-
-# The hashes for a given requirement will be distributed
-# across multiple lines, e.g.
-#
-# atomicwrites==1.2.1 \
-#    --hash=sha256:0312ad34fcad8fac3704d441f7b317e50af620823353ec657a53e981f92920c0 \
-#    --hash=sha256:ec9ae8adaae229e4f8446952d204a3e4b5fdd2d099f9be3aaf556120135fb3ee
-#
-# Let's create a list with one list element per dependency.
-
-dependencies_with_hashes = ''.join(uncommented_lines).replace('\\\n', '').splitlines()
-
-# Now we'll construct a dict containing each dependency,
-# and a list of its hashes, e.g.:
-#
-# {
-#   'alembic': ['04bcb970ca8659c3607ddd8ffd86cc9d6a99661c9bc590955e8813c66bfa582b']
-# }
-#
-# Note that at this point the hashes can be of upstream wheels.
-
-dependencies = {}
-for dependency_line in dependencies_with_hashes:
-    if not dependency_line:
-        continue
-
-    package_name_and_version = dependency_line.split()[0]
-
-    # If this fails, we are missing a hash in requirements.txt.
-    assert len(dependency_line.split()) >= 2
-
-    hashes = []
-    for sha_256_hash in dependency_line.split()[1:]:
-        hashes.append(sha_256_hash.replace("--hash=sha256:", ""))
-
-    dependencies.update({
-        package_name_and_version: hashes
-    })
-
-# Now check, for each dependency that there is at least one matching hash
-# on FPF's PyPI (this will be the hash of the source tarball).
-for dependency in dependencies.keys():
-
-    found_a_hash = False
-    for requirements_sha_256_hash in dependencies[dependency]:
-        if requirements_sha_256_hash in sha256sum_data:
-            found_a_hash = True
-
-    # If we get here, it means we did not find a corresponding hash in our
-    # sha256sums data (representing the state of FPF's PyPI)
-    if not found_a_hash:
-        print("Missing sha256sum for package: {0}".format(dependency))
-        sys.exit(1)
-
-sys.exit(0)
+if __name__ == "__main__":
+    main()
