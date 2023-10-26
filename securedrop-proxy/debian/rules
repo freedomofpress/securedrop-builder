@@ -3,8 +3,7 @@
 %:
 	dh $@ --with python-virtualenv
 
-# For backwards compatibility; can be set to build-requirements.txt once fully switched to new path
-REQUIREMENTS_FILE=$(shell test -e build-requirements.txt && echo "build-requirements.txt" || echo "requirements/build-requirements.txt")
+REQUIREMENTS_FILE=build-requirements.txt
 
 override_dh_virtualenv:
 	test -e $(REQUIREMENTS_FILE)
