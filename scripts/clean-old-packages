@@ -13,17 +13,29 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Tuple
 
+import rpm
 from debian import debfile
 
 
-def sort_versions(one: Tuple[str, Path], two: Tuple[str, Path]):
+def sort_deb_versions(one: Tuple[str, Path], two: Tuple[str, Path]):
     """sort two Debian package versions"""
     status = subprocess.run(['dpkg', '--compare-versions', one[0], 'lt', two[0]])
     if status.returncode == 1:
-        # false, two is bigger
+        # false, one is bigger
         return 1
     else:
-        # true, one is bigger
+        # true, two is bigger
+        return -1
+
+
+def sort_rpm_versions(one: Tuple[str, Path], two: Tuple[str, Path]):
+    """sort two RPM package versions"""
+    status = subprocess.run(['rpmdev-vercmp', one[0], two[0]], stdout=subprocess.DEVNULL)
+    if status.returncode == 11:
+        # false, one is bigger
+        return 1
+    else:  # status.returncode == 12
+        # true, two is bigger
         return -1
 
 
@@ -45,6 +57,35 @@ def fix_name(name: str) -> str:
     return name
 
 
+def rpm_info(path: Path) -> Tuple[str, str]:
+    """
+    learned this incantation from <https://web.archive.org/web/20120911204323/http://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch16s05.html>
+    and help(headers)
+    """
+    ts = rpm.ts()
+    with path.open() as f:
+        headers = ts.hdrFromFdno(f)
+    return headers[rpm.RPMTAG_NAME], headers[rpm.RPMTAG_VERSION] + '-' + headers[rpm.RPMTAG_RELEASE]
+
+
+def cleanup(data, to_keep: int, sorter):
+    for name, versions in sorted(data.items()):
+        if len(versions) <= to_keep:
+            # Nothing to delete
+            continue
+        print(f'### {name}')
+        items = sorted(versions.items(), key=functools.cmp_to_key(sorter), reverse=True)
+        keeps = items[:to_keep]
+        print('Keeping:')
+        for _, keep in keeps:
+            print(f'* {keep.name}')
+        delete = items[to_keep:]
+        print('Deleting:')
+        for _, path in delete:
+            print(f'* {path.name}')
+            path.unlink()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Cleans up old packages"
@@ -63,27 +104,18 @@ def main():
     if not args.directory.is_dir():
         raise RuntimeError(f"Directory, {args.directory}, doesn't exist")
     print(f'Only keeping the latest {args.keep} packages')
-    data = defaultdict(dict)
+    debs = defaultdict(dict)
+    rpms = defaultdict(dict)
     for deb in args.directory.glob('*.deb'):
         control = debfile.DebFile(deb).control.debcontrol()
         name = fix_name(control['Package'])
-        data[name][control['Version']] = deb
+        debs[name][control['Version']] = deb
+    for rpm in args.directory.glob('*.rpm'):
+        name, version = rpm_info(rpm)
+        rpms[name][version] = rpm
 
-    for name, versions in sorted(data.items()):
-        if len(versions) <= args.keep:
-            # Nothing to delete
-            continue
-        print(f'### {name}')
-        items = sorted(versions.items(), key=functools.cmp_to_key(sort_versions), reverse=True)
-        keeps = items[:args.keep]
-        print('Keeping:')
-        for _, keep in keeps:
-            print(f'* {keep.name}')
-        delete = items[args.keep:]
-        print('Deleting:')
-        for _, path in delete:
-            print(f'* {path.name}')
-            path.unlink()
+    cleanup(debs, args.keep, sort_deb_versions)
+    cleanup(rpms, args.keep, sort_rpm_versions)
 
 
 if __name__ == '__main__':
