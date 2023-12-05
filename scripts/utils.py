@@ -80,26 +80,25 @@ def get_relevant_poetry_dependencies(
     """
     pyproject_dict = tomllib.loads(path_to_pyproject_toml.read_text())
 
-    # Extract main dependencies
-    main_dependencies = pyproject_dict["tool"]["poetry"]["dependencies"]
-
-    # Remove 'python' as it's not a package dependency
-    if "python" in main_dependencies:
-        del main_dependencies["python"]
-
-    parsed_toml = tomllib.loads(path_to_poetry_lock.read_text())
-
     # Create a set to keep track of main and transitive dependencies (set ensures
     # no duplicates)
-    relevant_dependencies = set(main_dependencies)
+    relevant_dependencies = set(
+        name.lower() for name in pyproject_dict["tool"]["poetry"]["dependencies"]
+    )
+
+    # Remove 'python' as it's not a package dependency
+    if "python" in relevant_dependencies:
+        relevant_dependencies.remove("python")
+
+    parsed_toml = tomllib.loads(path_to_poetry_lock.read_text())
 
     # Identify transitive dependencies (may be enumerated in lockfile
     # before the dependency which declares them)
     for package in parsed_toml.get("package", []):
         package_name = package["name"]
-        if package_name in main_dependencies:
+        if package_name in relevant_dependencies:
             for sub_dependency in package.get("dependencies", {}):
-                relevant_dependencies.add(sub_dependency)
+                relevant_dependencies.add(sub_dependency.lower())
 
     return list(relevant_dependencies)
 

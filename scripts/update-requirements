@@ -52,9 +52,6 @@ def main():
             sys.exit(1)
 
     project = Path(__file__).parent.parent / project_name
-
-    # First remove index line and any PyQt or sip dependency
-
     if requirements_file.name == "poetry.lock":
         dependencies = utils.get_poetry_names_and_versions(
             requirements_file, pyproject_toml
