@@ -68,7 +68,7 @@ function verify_git_tag() {
 
 # Clone and checkout the source
 function setup_source_tree() {
-    repo_url="https://github.com/freedomofpress/${PKG_NAME}"
+    repo_url="https://github.com/freedomofpress/securedrop-client"
     build_dir="/tmp/${PKG_NAME}"
     rm -rf "$build_dir"
     git clone "$repo_url" "$build_dir"
@@ -86,21 +86,13 @@ function setup_source_tree() {
 # If the package is contained in the list, it should be a python package. In
 # that case, we should extract tarball, and validate wheel hashes.
 if [[ "${PKG_NAME}" =~ ^(securedrop-client|securedrop-proxy|securedrop-export|securedrop-log)$ ]]; then
+    NAME=$(echo $PKG_NAME | cut -d '-' -f2)
     echo "${PKG_NAME} is a Python package"
 
     if [[ -z "${PKG_PATH:-}" ]]; then
         # Build from source
         setup_source_tree
-        PKG_PATH="/tmp/${PKG_NAME}/"
-    else
-        if [[ -f "${PKG_PATH}" ]]; then
-            # It's a file and not a directory, must be a legacy tarball
-            echo "Extracting legacy tarball"
-            rm -rf "/tmp/${PKG_NAME}"
-            mkdir -p "/tmp/${PKG_NAME}"
-            tar --strip-components=1 -C "/tmp/$PKG_NAME" -xvf "$PKG_PATH"
-            PKG_PATH="/tmp/${PKG_NAME}/"
-        fi
+        PKG_PATH="/tmp/${PKG_NAME}/${NAME}"
     fi
 
 
