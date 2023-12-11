@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "workstation-bootsrap"
+version = "0.1.0"
+description = "Requirements for building wheels"
+authors = ["SecureDrop Team"]
+license = "GPLv3+"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+build = "0.3.0"
+wheel = "0.36.2"
+pip = "21.3.1"
+setuptools-scm = "5.0.2"
+pytest-runner = "5.3.0"
+cython = "0.29.33"
+flit_core = "2.3.0"
+# Sub-dependencies which we're explicitly freezing for now,
+# to ensure consistent build behavior with pip-compile based
+# boostrap.
+packaging = "20.9"
+pyparsing = "2.4.7"
+pep517 = "0.9.1"
+pytoml = "0.1.21"
+toml = "0.10.2"
+setuptools = "54.0.0"
