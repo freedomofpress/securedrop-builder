@@ -14,7 +14,7 @@ pip = "21.3.1"
 setuptools-scm = "5.0.2"
 pytest-runner = "5.3.0"
 cython = "0.29.33"
-flit_core = "2.3.0"
+flit-core = "2.3.0"
 # Sub-dependencies which we're explicitly freezing for now,
 # to ensure consistent build behavior with pip-compile based
 # boostrap.
