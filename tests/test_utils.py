@@ -28,6 +28,7 @@ EXPECTED_DEPENDENCIES = [
     ("beautifulsoup4", "4.12.2"),
     ("colorama", "0.4.6"),
     ("cowsay", "6.0"),
+    ("fortune-python", "1.0.3"),
     ("soupsieve", "2.5"),
 ]
 EXPECTED_DEPENDENCY_NAMES = [name for name, _ in EXPECTED_DEPENDENCIES]

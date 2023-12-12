@@ -56,6 +56,17 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "fortune-python"
+version = "1.0.3"
+description = "A Fortune clone in Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "fortune-python-1.0.3.tar.gz", hash = "sha256:e9d516d696a793519b9a3ce5c5f22f0b5eef5bd9fdea40b009dc22ca864e1b55"},
+    {file = "fortune_python-1.0.3-py3-none-any.whl", hash = "sha256:8a045c93da39621454d39c188f3874b3c686499a62e73a077c0d853ec5157344"},
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -139,4 +150,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d50a30a52449453ec493a0b572214f497fdeab8cdf117ce4765ac1bd850f7a2a"
+content-hash = "ac0d52db6858569d5e17976352df32e6675410bf25d0c4fe4f1488acce3bffc4"
