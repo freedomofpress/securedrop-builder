@@ -15,12 +15,3 @@ setuptools-scm = "5.0.2"
 pytest-runner = "5.3.0"
 cython = "0.29.33"
 flit-core = "2.3.0"
-# Sub-dependencies which we're explicitly freezing for now,
-# to ensure consistent build behavior with pip-compile based
-# boostrap.
-packaging = "20.9"
-pyparsing = "2.4.7"
-pep517 = "0.9.1"
-pytoml = "0.1.21"
-toml = "0.10.2"
-setuptools = "54.0.0"
