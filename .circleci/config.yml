@@ -28,12 +28,13 @@ common-steps:
     run:
       name: Create nightly version for python packages
       command: |
-        cd ~/packaging/securedrop-*
+        cd ~/packaging/monorepo
         # Nightly versioning format is: LATEST_TAG.devYYMMDDHHMMSS
         export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).dev$(date +%Y%m%d%H%M%S)"
         # Enable access to this env var in subsequent run steps
         echo $VERSION_TO_BUILD > ~/packaging/sd_version
         echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
+        cd $NAME
         ./update_version.sh $VERSION_TO_BUILD
         git tag $VERSION_TO_BUILD
 
@@ -42,7 +43,7 @@ common-steps:
       name: Clone the repository to be packaged
       command: |
         mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/${PKG_NAME}.git
+        git clone https://github.com/freedomofpress/securedrop-client.git monorepo
 
   - &updatedebianchangelog
     run:
@@ -62,7 +63,7 @@ common-steps:
       command: |
         source .venv/bin/activate
         export VERSION_CODENAME=$(~/project/scripts/codename)
-        export PKG_PATH=~/packaging/$PKG_NAME/
+        export PKG_PATH=~/packaging/monorepo/$NAME/
         export PKG_VERSION=$VERSION_TO_BUILD
         make $PKG_NAME
         ls ~/project/build/debbuild/packaging/*.deb
@@ -234,7 +235,8 @@ jobs:
     docker:
       - image: debian:<< parameters.image >>
     environment:
-      PKG_NAME: << parameters.package >>
+      NAME: << parameters.package >>
+      PKG_NAME: securedrop-<< parameters.package >>
       SCHEDULE_NAME: << pipeline.schedule.name >>
       IS_NIGHTLY: << parameters.nightly >>
     steps:
@@ -350,10 +352,10 @@ workflows:
           matrix:
             parameters:
               package: &packages
-                - securedrop-client
-                - securedrop-export
-                - securedrop-log
-                - securedrop-proxy
+                - client
+                - export
+                - log
+                - proxy
               image:
                 - bullseye
                 - bookworm
