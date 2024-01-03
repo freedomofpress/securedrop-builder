@@ -98,7 +98,7 @@ common-steps:
       name: Commit workstation debs for deployment to apt-test.freedom.press
       command: |
         apt-get update
-        apt-get install -y ca-certificates git git-lfs openssh-client python3 python3-debian
+        apt-get install -y ca-certificates git git-lfs openssh-client python3 python3-debian python3-rpm
         git config --global user.email "securedrop@freedom.press"
         git config --global user.name "sdcibot"
 
@@ -329,17 +329,25 @@ jobs:
           name: Commit and push
           command: |
             apt-get update
-            apt-get install -y ca-certificates git git-lfs openssh-client
+            apt-get install -y ca-certificates git git-lfs openssh-client python3-rpm python3-debian
             git clone git@github.com:freedomofpress/securedrop-yum-test.git
             cd securedrop-yum-test
             git lfs install
             git config user.email "securedrop@freedom.press"
             git config user.name "sdcibot"
             mkdir -p workstation/dom0/f32-nightlies
+            # Copy the new packages over and cleanup the old ones
             cp -v /tmp/workspace/*.rpm workstation/dom0/f32-nightlies/
+            ~/project/scripts/clean-old-packages workstation/dom0/f32-nightlies 7
             git add .
-            # If there are changes, diff-index will fail, so we commit and push
-            git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build" && git push origin main
+            # If there are changes, diff-index will fail, so we commit
+            git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
+            # And clean up non-nightly packages too
+            ~/project/scripts/clean-old-packages workstation/dom0/f32 4
+            git add .
+            git diff-index --quiet HEAD || git commit -m "Cleanup old packages"
+
+            git push origin main
 
 
 workflows:
