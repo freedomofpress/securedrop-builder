@@ -63,7 +63,7 @@ def get_poetry_names_and_versions(
     )
     ret = []
     for package in data["package"]:
-        if package["name"] not in relevant_dependencies:
+        if normalize(package["name"]) not in relevant_dependencies:
             continue
         ret.append((package["name"], package["version"]))
 
@@ -83,7 +83,7 @@ def get_relevant_poetry_dependencies(
     # Create a set to keep track of main and transitive dependencies (set ensures
     # no duplicates)
     relevant_dependencies = set(
-        name.lower() for name in pyproject_dict["tool"]["poetry"]["dependencies"]
+        normalize(name) for name in pyproject_dict["tool"]["poetry"]["dependencies"]
     )
 
     # Remove 'python' as it's not a package dependency
@@ -95,10 +95,10 @@ def get_relevant_poetry_dependencies(
     # Identify transitive dependencies (may be enumerated in lockfile
     # before the dependency which declares them)
     for package in parsed_toml.get("package", []):
-        package_name = package["name"]
+        package_name = normalize(package["name"])
         if package_name in relevant_dependencies:
             for sub_dependency in package.get("dependencies", {}):
-                relevant_dependencies.add(sub_dependency.lower())
+                relevant_dependencies.add(normalize(sub_dependency))
 
     return list(relevant_dependencies)
 
@@ -119,7 +119,7 @@ def get_poetry_hashes(
     parsed_toml = tomllib.loads(path_to_poetry_lock.read_text())
 
     for package in parsed_toml.get("package", []):
-        package_name = package["name"]
+        package_name = normalize(package["name"])
         if package_name in relevant_dependencies:
             package_name_and_version = f"{package_name}=={package['version']}"
             dependencies[package_name_and_version] = [
@@ -177,3 +177,12 @@ def get_requirements_from_poetry(
         requirements.append(requirement_line)
 
     return "\n".join(requirements)
+
+
+def normalize(dependency_name: str) -> str:
+    """
+    For consistent comparisons between pyproject.toml and lockfile,
+    normalize names consistent with PEP503.  This implementation is drawn directly from
+    <https://peps.python.org/pep-0503/#normalized-names>.
+    """
+    return re.sub(r"[-_.]+", "-", dependency_name).lower()
