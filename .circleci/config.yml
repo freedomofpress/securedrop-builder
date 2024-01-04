@@ -320,7 +320,7 @@ jobs:
 
   push-rpm:
     docker:
-      - image: debian:bullseye
+      - image: fedora:32
     steps:
       - checkout
       - *attach
@@ -328,8 +328,7 @@ jobs:
       - run:
           name: Commit and push
           command: |
-            apt-get update
-            apt-get install -y ca-certificates git git-lfs openssh-client python3-rpm python3-debian
+            dnf install -y ca-certificates git git-lfs openssh-clients python3-rpm python3-debian rpmdevtools
             git clone git@github.com:freedomofpress/securedrop-yum-test.git
             cd securedrop-yum-test
             git lfs install
