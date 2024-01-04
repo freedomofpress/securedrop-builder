@@ -182,7 +182,7 @@ def get_requirements_from_poetry(
 def normalize(dependency_name: str) -> str:
     """
     For consistent comparisons between pyproject.toml and lockfile,
-    normalize names consistent with PEP503:
-    https://peps.python.org/pep-0503/#normalized-names
+    normalize names consistent with PEP503.  This implementation is drawn directly from
+    <https://peps.python.org/pep-0503/#normalized-names>.
     """
     return re.sub(r"[-_.]+", "-", dependency_name).lower()
