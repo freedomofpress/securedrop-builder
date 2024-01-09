@@ -1,7 +1,7 @@
-import pytest
-import subprocess
 import os
+import subprocess
 
+import pytest
 
 PACKAGE_BUILD_TARGETS = {
     "securedrop-client": "main",
@@ -16,8 +16,8 @@ PACKAGE_NAMES = PACKAGE_BUILD_TARGETS.keys()
 
 def get_repo_root():
     cmd = "git rev-parse --show-toplevel".split()
-    top_level = subprocess.check_output(cmd).decode("utf-8").rstrip()
-    return top_level
+    return subprocess.check_output(cmd).decode("utf-8").rstrip()
+
 
 repo_root = get_repo_root()
 

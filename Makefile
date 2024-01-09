@@ -1,6 +1,22 @@
 DEFAULT_GOAL: help
 SHELL := /bin/bash
 
+.PHONY: check-lint
+check-lint:
+	@ruff check .
+
+.PHONY: fix-lint
+fix-lint:
+	@ruff check . --fix
+
+.PHONY: check-format
+check-format:
+	@ruff format --check .
+
+.PHONY: fix-format
+fix-format:
+	@ruff format .
+
 .PHONY: securedrop-proxy
 securedrop-proxy: ## Builds Debian package for securedrop-proxy code
 	PKG_NAME="securedrop-proxy" ./scripts/build-debianpackage

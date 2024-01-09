@@ -1,21 +1,20 @@
 import os
-import pytest
 import sys
 from pathlib import Path
 
+import pytest
+
 # Adjusting the path to import utils module
-path_to_script = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../scripts/utils.py"
-)
+path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../scripts/utils.py")
 sys.path.append(os.path.dirname(path_to_script))
 
 from utils import (
-    get_requirements_names_and_versions,
+    get_poetry_hashes,
     get_poetry_names_and_versions,
     get_relevant_poetry_dependencies,
-    get_poetry_hashes,
-    get_requirements_hashes,
     get_requirements_from_poetry,
+    get_requirements_hashes,
+    get_requirements_names_and_versions,
 )
 
 # These tests generally verify that our utility functions correctly parse the
@@ -33,6 +32,8 @@ EXPECTED_DEPENDENCIES = [
 ]
 EXPECTED_DEPENDENCY_NAMES = [name for name, _ in EXPECTED_DEPENDENCIES]
 EXPECTED_KEYS = [f"{name}=={version}" for name, version in EXPECTED_DEPENDENCIES]
+# Hex-encoded SHA-256 hashes are 64 characters long
+SHA256_HASH_LENGTH = 64
 
 
 def test_get_requirements_names_and_versions():
@@ -58,9 +59,8 @@ def _check_hashes(output):
     for _, hashes in output.items():
         # We should have at least one hash per dependency
         assert len(hashes) > 0
-        # Hex-encoded SHA-256 hashes are 64 characters long
         for hash in hashes:
-            assert len(hash) == 64
+            assert len(hash) == SHA256_HASH_LENGTH
 
 
 def test_get_poetry_hashes():

@@ -123,8 +123,7 @@ def get_poetry_hashes(
         if package_name in relevant_dependencies:
             package_name_and_version = f"{package_name}=={package['version']}"
             dependencies[package_name_and_version] = [
-                file_dict["hash"].replace("sha256:", "")
-                for file_dict in package["files"]
+                file_dict["hash"].replace("sha256:", "") for file_dict in package["files"]
             ]
 
     return dependencies
@@ -160,9 +159,7 @@ def get_requirements_hashes(path_to_requirements_file: Path) -> dict[str, list[s
     return result_dict
 
 
-def get_requirements_from_poetry(
-    path_to_poetry_lock: Path, path_to_pyproject_toml: Path
-) -> str:
+def get_requirements_from_poetry(path_to_poetry_lock: Path, path_to_pyproject_toml: Path) -> str:
     """
     Returns a multiline string in requirements.txt format for a set of Poetry main dependencies.
     """
