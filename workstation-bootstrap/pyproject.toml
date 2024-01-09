@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "workstation-bootsrap"
+version = "0.1.0"
+description = "Requirements for building wheels"
+authors = ["SecureDrop Team"]
+license = "GPLv3+"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+build = "0.3.0"
+wheel = "0.36.2"
+pip = "21.3.1"
+setuptools-scm = "5.0.2"
+pytest-runner = "5.3.0"
+cython = "0.29.33"
+flit-core = "2.3.0"

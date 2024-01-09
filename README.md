@@ -26,27 +26,27 @@
     PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-client
     PKG_GITREF=x.y.z make securedrop-client
     ```
-    
+
     ```shell
     # From a non-release tag or branch
     PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
     PKG_GITREF=<ref> make securedrop-client
     ```
-    
+
     ```shell
     # From a source tarball
     # First give the Debian package you want to build a version number by setting it in the changelog
     PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
     PKG_PATH=local/path/to/securedrop-client/dist/securedrop-client-x.y.z.tar.gz make securedrop-client
     ```
-    
+
     ```shell
     # From a local source checkout
     # First give the Debian package you want to build a version number by setting it in the changelog
     PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
     PKG_PATH=local/path/to/securedrop-client make securedrop-client
     ```
-    
+
 ## Which packages can `securedrop-builder` build?
 
 * [securedrop-client](https://github.com/freedomofpress/securedrop-client)
@@ -70,25 +70,25 @@ We use [build](https://pypa-build.readthedocs.io/en/latest/) toolchain to build 
 If we have to update the tool, use the following steps
 
 ```shell
-# First create a new fresh virtualenv
-rm -rf .venv && python3 -m venv .venv
+# Ensure you are running in a cleanly boostrapped virtual environment
+rm -rf .venv
+make install-deps
 source .venv/bin/activate
-# Then install pip-tools, from pinned dependencies
-python3 -m pip install -r workstation-bootstrap/requirements.txt
-# Then update the requirements.in file as required
-pip-compile --allow-unsafe --generate-hashes \
-    --output-file=workstation-bootstrap/requirements.txt workstation-bootstrap/requirements.in
-# Now we are ready for bootstrapping
-./scripts/build-sync-wheels --project workstation-bootstrap --pkg-dir ./workstation-bootstrap --requirements .
-# Here we have the new wheels ready
-# Now let us recreate our new sha256sums for bootstrapping
+# Perform the required dependency operations using Poetry.
+# Use "poetry update <foo>" to update an individual dependency per pyproject.toml
+# Use "poetry lock --no-update" to pick up pyproject.toml additions/removals
+# Use -C to run commands in the workstation-bootstrap directory, e.g.:
+poetry -C workstation-bootstrap/ lock --no-update
+# Now we are ready to build updated wheels:
+./scripts/build-sync-wheels --project workstation-bootstrap --pkg-dir ./workstation-bootstrap
+# Once the new wheels are ready, we recreate our sha256sums:
 ./scripts/sync-sha256sums ./workstation-bootstrap
-# now let us sign the list of sha256sums
+# Sign the list of sha256sums
 gpg --armor --output workstation-bootstrap/sha256sums.txt.asc --detach-sig  workstation-bootstrap/sha256sums.txt
 # We can even verify if we want
 ./scripts/verify-sha256sum-signature ./workstation-bootstrap/
 # Update the build-requirements.txt file
-./scripts/update-requirements --pkg-dir ./workstation-bootstrap/ --project workstation-bootstrap --requirements .
+./scripts/update-requirements --pkg-dir ./workstation-bootstrap/ --project workstation-bootstrap
 ```
 
 Make sure that your GPG public key is stored in `pubkeys/`, so CI can verify the signatures.
