@@ -237,7 +237,6 @@ jobs:
     environment:
       NAME: << parameters.package >>
       PKG_NAME: securedrop-<< parameters.package >>
-      SCHEDULE_NAME: << pipeline.schedule.name >>
       IS_NIGHTLY: << parameters.nightly >>
     steps:
       - checkout
@@ -384,13 +383,6 @@ workflows:
                 - securedrop-workstation
 
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 6 * * *"
-          filters:
-            branches:
-              only:
-                - main
     jobs:
       # We need bullseye packages to be pushed if bookworm jobs fail.
       # So bookworm jobs run in a separate track ("build2") that is identical,
