@@ -237,7 +237,6 @@ jobs:
     environment:
       NAME: << parameters.package >>
       PKG_NAME: securedrop-<< parameters.package >>
-      SCHEDULE_NAME: << pipeline.schedule.name >>
       IS_NIGHTLY: << parameters.nightly >>
     steps:
       - checkout
