@@ -42,8 +42,6 @@ ignore = [
     "SIM108",
     # Flags any subprocess use
     "S603",
-    # Ruff formatter makes a best effort, but may result in some lines exceeding 100 characters
-    "E501",
 ]
 
 [tool.ruff.lint.per-file-ignores]

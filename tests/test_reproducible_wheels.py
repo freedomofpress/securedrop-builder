@@ -22,9 +22,9 @@ def test_wheel_builds_match_version_control(name):
         ]
     )
     build_cmd = (
-        f"./scripts/build-sync-wheels --pkg-dir /tmp/monorepo-{name}/{name} --project securedrop-{name}"
-        " --clobber".split()
-    )
+        f"./scripts/build-sync-wheels --pkg-dir /tmp/monorepo-{name}/{name} "
+        f"--project securedrop-{name} --clobber"
+    ).split()
     subprocess.check_call(build_cmd)
     # Check for modified files (won't catch new, untracked files)
     subprocess.check_call("git diff --exit-code".split())

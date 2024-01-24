@@ -6,8 +6,6 @@ on: [push, pull_request]
 jobs:
   checks:
     runs-on: ubuntu-latest
-    # We use a standard Debian image to mirror a typical developer environment.
-    # This should be updated whenever a new Debian stable version is available.
     container: debian:bullseye
     steps:
       - uses: actions/checkout@v4
@@ -15,9 +13,6 @@ jobs:
         run: |
           apt-get update && apt-get install --yes --no-install-recommends make python3-pip
           pip install -r test-requirements.txt
-      - name: Run lint check
+      - name: Run lint checks
         run: |
-          make check-lint
-      - name: Run format check
-        run: |
-          make check-format
+          make lint

@@ -1,20 +1,14 @@
 DEFAULT_GOAL: help
 SHELL := /bin/bash
 
-.PHONY: check-lint
-check-lint:
+.PHONY: lint
+lint:
 	@ruff check .
-
-.PHONY: fix-lint
-fix-lint:
-	@ruff check . --fix
-
-.PHONY: check-format
-check-format:
 	@ruff format --check .
 
-.PHONY: fix-format
-fix-format:
+.PHONY: fix
+fix:
+	@ruff check . --fix
 	@ruff format .
 
 .PHONY: securedrop-proxy
