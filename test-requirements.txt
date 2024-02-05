@@ -1,3 +1,4 @@
 pytest
 pytest-mock
 virtualenv<16
+ruff

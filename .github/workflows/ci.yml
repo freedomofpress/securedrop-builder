@@ -1,0 +1,18 @@
+---
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install --yes --no-install-recommends make python3-pip
+          pip install -r test-requirements.txt
+      - name: Run lint checks
+        run: |
+          make lint

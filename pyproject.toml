@@ -1,0 +1,56 @@
+[project]
+name = "securedrop-builder"
+version = "0.1.0"
+requires-python = ">=3.9"
+
+[tool.ruff]
+line-length = 100
+select = [
+    # pycodestyle errors
+    "E",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+    # flake8-gettext
+    "INT",
+    # flake8-pie
+    "PIE",
+    # pylint
+    "PL",
+    # flake8-pytest-style
+    "PT",
+    # flake8-pyi
+    "PYI",
+    # flake8-return
+    "RET",
+    # flake8-bandit
+    "S",
+    # flake8-simplify
+    "SIM",
+    # pyupgrade
+    "UP",
+    # pycodestyle warnings
+    "W",
+    # Unused noqa directive
+    "RUF100",
+]
+ignore = [
+    # Find contextlib.suppress() is harder to read
+    "SIM105",
+    # Find ternary statements harder to read
+    "SIM108",
+    # Flags any subprocess use
+    "S603",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Asserts in tests are fine
+"**/tests/*" = [
+    # use of `assert`
+    "S101",
+    # insecure temporary file/directory
+    "S108",
+    # code needs to be reorganized into modules - see https://github.com/freedomofpress/securedrop-builder/issues/465
+    "E402"
+]
