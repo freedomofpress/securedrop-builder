@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ "$1" = "/dev/null" ]]; then
+	diffoscope --new $2;
+else
+	diffoscope $1 $2;
+fi

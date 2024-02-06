@@ -24,118 +24,11 @@ common-steps:
         apt-get install reprotest faketime -y --no-install-recommends
         .venv/bin/pip install -r test-requirements.txt
 
-  - &getnightlyversion
-    run:
-      name: Create nightly version for python packages
-      command: |
-        cd ~/packaging/monorepo
-        # Nightly versioning format is: LATEST_TAG.devYYMMDDHHMMSS
-        export VERSION_TO_BUILD="$(git describe --tags $(git rev-list --tags --max-count=1)).dev$(date +%Y%m%d%H%M%S)"
-        # Enable access to this env var in subsequent run steps
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-        cd $NAME
-        ./update_version.sh $VERSION_TO_BUILD
-        git tag $VERSION_TO_BUILD
-
-  - &clonefromenv
-    run:
-      name: Clone the repository to be packaged
-      command: |
-        mkdir ~/packaging && cd ~/packaging
-        git clone https://github.com/freedomofpress/securedrop-client.git monorepo
-
-  - &updatedebianchangelog
-    run:
-      name: Update debian changelog if nightly
-      command: |
-        cd ~/project/$PKG_NAME/debian
-        export DEBFULLNAME='Automated builds'
-        export DEBEMAIL=securedrop@freedom.press
-        if [[ "$IS_NIGHTLY" == "nightly" ]]; then
-            dch --changelog changelog-buster --distribution unstable --package "$PKG_NAME" --newversion $VERSION_TO_BUILD+buster "This is an automated build."
-            echo "Bumped debian/changelog"
-        fi
-
-  - &builddebianpackage
-    run:
-      name: Build debian package
-      command: |
-        source .venv/bin/activate
-        export VERSION_CODENAME=$(~/project/scripts/codename)
-        export PKG_PATH=~/packaging/monorepo/$NAME/
-        export PKG_VERSION=$VERSION_TO_BUILD
-        make $PKG_NAME
-        ls ~/project/build/debbuild/packaging/*.deb
-        mkdir -p /tmp/workspace/${VERSION_CODENAME} /tmp/workspace/buildinfo
-        mv ~/project/build/debbuild/packaging/*.deb /tmp/workspace/${VERSION_CODENAME}
-        mv ~/project/build/debbuild/packaging/*.buildinfo /tmp/workspace/buildinfo
-
   - &addsshkeys
     add_ssh_keys:
       fingerprints:
         - "85:3a:62:40:e2:91:ab:00:a0:67:9d:c5:26:e1:09:9f"
 
-  - &setmetapackageversion
-    run:
-      name: Get and set metapackage version via distribution changelog
-      command: |
-        CURRENT_VERSION=$(grep -oP "\d+\.\d+\.\d+" ${PKG_NAME}/debian/changelog-buster | head -n1)
-        if [[ "$IS_NIGHTLY" == "nightly" ]]; then
-            # Nightly versioning format is: LATEST_TAG.devYYMMDDHHMMSS
-            export VERSION_TO_BUILD="$CURRENT_VERSION.dev$(date +%Y%m%d%H%M%S)"
-        else
-            export VERSION_TO_BUILD="$CURRENT_VERSION"
-        fi
-        echo "Will build: $VERSION_TO_BUILD"
-        # Enable access to this env var in subsequent run steps
-        mkdir -p ~/packaging
-        echo $VERSION_TO_BUILD > ~/packaging/sd_version
-        echo 'export VERSION_TO_BUILD=$(cat ~/packaging/sd_version)' >> $BASH_ENV
-
-  - &commitworkstationdebs
-    run:
-      name: Commit workstation debs for deployment to apt-test.freedom.press
-      command: |
-        apt-get update
-        apt-get install -y ca-certificates git git-lfs openssh-client python3 python3-debian python3-rpm
-        git config --global user.email "securedrop@freedom.press"
-        git config --global user.name "sdcibot"
-
-        # First publish buildinfo files
-        git clone git@github.com:freedomofpress/build-logs.git
-        cd build-logs
-        mkdir -p "buildinfo/$(date +%Y)"
-        cp /tmp/workspace/buildinfo/*.buildinfo "buildinfo/$(date +%Y)"
-        git add .
-        git diff-index --quiet HEAD || git commit -m "Publishing buildinfo files for ${CODENAME} workstation nightlies"
-        git push origin main
-
-        # Now the packages themselves
-        cd ..
-        git clone git@github.com:freedomofpress/securedrop-apt-test.git
-        cd securedrop-apt-test
-
-        # Copy built debian packages to the relevant workstation repo
-        mkdir -p ./workstation/${CODENAME}-nightlies/
-        cp /tmp/workspace/${CODENAME}/*.deb ./workstation/${CODENAME}-nightlies/ ||:
-
-        # Clean up old nightlies too
-        ~/project/scripts/clean-old-packages workstation/${CODENAME}-nightlies 7
-        git add .
-
-        # If there are changes, diff-index will fail, so we commit
-        git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build (${CODENAME})"
-
-        # Clean up other old packages
-        ~/project/scripts/clean-old-packages core/focal 4
-        ~/project/scripts/clean-old-packages workstation/bullseye 4
-        # softly fail for bookworm because that directory doesn't exist yet
-        ~/project/scripts/clean-old-packages workstation/bookworm 4 ||:
-        git add .
-        git diff-index --quiet HEAD || git commit -m "Cleanup old packages"
-
-        git push origin main
 
 version: 2.1
 
@@ -150,7 +43,6 @@ jobs:
       - run:
           name: install test requirements, run linters, and run tests
           command: |
-            make lint-desktop-files
             source .venv/bin/activate
             sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
             make test
@@ -172,22 +64,6 @@ jobs:
             # Have our "ci" user take over the git repo
             chown ci:root -R .
             sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py"
-
-  reprotest-debs:
-    docker:
-      - image: debian:bullseye
-    steps:
-      - checkout
-      - *installdeps
-      - *installtestdeps
-      - run:
-          name: install test requirements and run tests
-          command: |
-            source .venv/bin/activate
-            # Patch reprotest in-place to skip 'setarch' prefix, which fails under containers.
-            # We cannot use Ubuntu 20.04 python3.8 to build Debian 10 python3.7 packages.
-            sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
-            pytest -vvs tests/test_reproducible_debian_packages.py
 
   reprepro-update-tor:
     docker:
@@ -222,72 +98,6 @@ jobs:
             git diff-index --quiet HEAD || (git commit -m "Automatically updating Tor packages" \
                 && git push origin main && ../scripts/new-tor-issue)
 
-
-  build: &build
-    parameters:
-      package:
-        type: string
-      image:
-        type: string
-      nightly:
-        type: string
-        default: ""
-    docker:
-      - image: debian:<< parameters.image >>
-    environment:
-      NAME: << parameters.package >>
-      PKG_NAME: securedrop-<< parameters.package >>
-      IS_NIGHTLY: << parameters.nightly >>
-    steps:
-      - checkout
-      - *installdeps
-      - *clonefromenv
-      - *getnightlyversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build2: *build
-
-  build-metapackage: &build-metapackage
-    parameters:
-      package:
-        type: string
-      image:
-        type: string
-      nightly:
-        type: string
-        default: ""
-    environment:
-      PKG_NAME: << parameters.package >>
-      IS_NIGHTLY: << parameters.nightly >>
-    docker:
-      - image: debian:<< parameters.image >>
-    steps:
-      - checkout
-      - *installdeps
-      - *setmetapackageversion
-      - *updatedebianchangelog
-      - *builddebianpackage
-      - *persist
-
-  build2-metapackage: *build-metapackage
-
-  push-bullseye: &push
-    docker:
-      - image: debian:bullseye
-    environment:
-      CODENAME: bullseye
-    steps:
-      - checkout
-      - *attach
-      - *addsshkeys
-      - *commitworkstationdebs
-
-  push-bookworm:
-    <<: *push
-    environment:
-      CODENAME: bookworm
 
   build-rpm:
     parameters:
@@ -353,28 +163,6 @@ workflows:
     jobs:
       - lint-and-test
       - reprotest-wheels
-      - reprotest-debs
-      - build:
-          matrix:
-            parameters:
-              package: &packages
-                - client
-                - export
-                - log
-                - proxy
-              image:
-                - bullseye
-                - bookworm
-      - build-metapackage:
-          matrix:
-            parameters:
-              package: &metapackages
-                - securedrop-keyring
-                - securedrop-workstation-config
-                - securedrop-workstation-viewer
-              image:
-                - bullseye
-                - bookworm
       - build-rpm:
           matrix:
             parameters:
@@ -391,56 +179,11 @@ workflows:
               only:
                 - main
     jobs:
-      # We need bullseye packages to be pushed if bookworm jobs fail.
-      # So bookworm jobs run in a separate track ("build2") that is identical,
-      # except the push-bullseye job only depends on the bullseye jobs and the
-      # final step is push-bookworm, which might fail.
       - reprepro-update-tor
-      - build:
-          matrix:
-            parameters:
-              package: *packages
-              image:
-                - bullseye
-              nightly: ["nightly"]
-      - build2:
-          matrix:
-            parameters:
-              package: *packages
-              image:
-                - bookworm
-              nightly: ["nightly"]
-      - build-metapackage:
-          matrix:
-            parameters:
-              package: *metapackages
-              image:
-                - bullseye
-              nightly: ["nightly"]
-      - build2-metapackage:
-          matrix:
-            parameters:
-              package: *metapackages
-              image:
-                - bookworm
-              nightly: ["nightly"]
-      - push-bullseye:
-          requires:
-            - reprepro-update-tor
-            - build
-            - build-metapackage
-      # This should be last as we do expect it to fail occasionally.
-      - push-bookworm:
-          requires:
-            - push-bullseye
-            - build2
-            - build2-metapackage
       - build-rpm:
           matrix:
             parameters:
               package: *rpmpackages
-      # This pushes to a totally separate repository, so it can run in parallel
-      # to the debs
       - push-rpm:
           requires:
             - build-rpm
