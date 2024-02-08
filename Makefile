@@ -21,9 +21,9 @@ requirements: ## Creates requirements files for the Python projects
 
 .PHONY: build-wheels
 build-wheels: ## Builds the wheels and adds them to the wheels subdirectory
-	./scripts/verify-sha256sum-signature $$(basename ${PKG_DIR})
+	./scripts/verify-sha256sum-signature securedrop-$$(basename ${PKG_DIR})
 	./scripts/build-sync-wheels
-	./scripts/sync-sha256sums $$(basename ${PKG_DIR})
+	./scripts/sync-sha256sums securedrop-$$(basename ${PKG_DIR})
 	@echo Done!
 
 .PHONY: test

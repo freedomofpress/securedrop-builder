@@ -8,8 +8,8 @@
 
 ## Updating our bootstrapped build tools
 
-We use [build](https://pypa-build.readthedocs.io/en/latest/) toolchain to build our reproducible wheels.
-If we have to update the tool, use the following steps
+We use the [build](https://pypa-build.readthedocs.io/en/latest/) toolchain to build our reproducible wheels.
+If we have to update the tools, use the following steps
 
 ```shell
 # Ensure you are running in a cleanly boostrapped virtual environment
@@ -37,35 +37,31 @@ Make sure that your GPG public key is stored in `pubkeys/`, so CI can verify the
 
 ## Updating Python wheels
 
-Maintainers of `securedrop-client` and `securedrop-proxy` must ensure that
-the requirements files which are used for build of these packages (`build-requirements.txt`)
-using `make requirements` are kept up to date in latest `main` of those repositories.
-
-If new dependencies were added in the `build-requirements.txt` of that
-repo that are not in the `wheels` subdirectory for the package in this repository,
-then the maintainer needs to do the following (we are taking `securedrop-client` project
-as an example):
+When adding a new production dependency to a component, new wheels will need to be built
+plus updates to `build-requirements.txt`. This should be done after you have updated the
+dependencies in the component's `pyproject.toml` and `poetry.lock` files.
 
 ### 0. Enable the virtualenv
 
-You can create a fresh virtualenv and install the build tools from our bootstrapped wheels.
+Create a fresh virtualenv and install the build tools from our bootstrapped wheels.
 
 ```shell
 rm -rf .venv
 make install-deps
 ```
 
-Remember that the following steps needs to be done from the same virtual environment.
+The following steps needs to be done from the same virtual environment.
 
-### 1. Create updated build-requirements.txt for the project
+### 1. Try to update build-requirements.txt for the project
 
-From the `securedrop-builder` directory,
+From the `securedrop-builder` directory, run the following, where `<component>`
+is what you're trying to update dependencies for, e.g. "client", "proxy", etc.
 
 ```shell
-PKG_DIR=/home/user/code/securedrop-client make requirements
+PKG_DIR=/home/user/code/securedrop-client/<component> make requirements
 ```
 
-This will create the proper `build-requirements.txt` file in the project directory along with the binary wheel
+This will create/update the `build-requirements.txt` file in the project directory along with the binary wheel
 hashes from our own Python package index server.
 
 If we are missing any wheels from our cache/build/server, it will let you know with a following message.
@@ -93,7 +89,10 @@ PKG_DIR=/home/user/code/securedrop-client make build-wheels
 
 This above command will let you know about any new wheels + sources. It will
 build/download sources from PyPI (by verifying it against the sha256sums from
-the `requirements.txt` of the project).
+the `poetry.lock` of the project).
+
+If your package contains compiled code (e.g. C or Rust extensions), it must be
+built for all Debian versions we support.
 
 ### 3. Commit changes to the wheels directory (if only any update of wheels)
 
@@ -105,4 +104,15 @@ git add wheels/
 git commit
 ```
 
-Finally, submit a PR containing the new wheels and updated files.
+Submit a PR containing the new wheels and updated files.
+
+### 4. Update build-requirements.txt
+
+After building and committing the new wheels, re-run the command from step 1:
+
+```shell
+PKG_DIR=/home/user/code/securedrop-client/<component> make requirements
+```
+
+This will update the build-requirements.txt file, commit and open a PR with these
+changes. Note that CI will likely fail until the PR from step 3 is merged.
