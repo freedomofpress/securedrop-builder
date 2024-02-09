@@ -1,7 +1,0 @@
-Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: securedrop-proxy
-Source: https://github.com/freedomofpress/securedrop-proxy
-
-Files: *
-Copyright: 2020 Freedom of the Press Foundation <securedrop@freedom.press>
-License: GPLv3+

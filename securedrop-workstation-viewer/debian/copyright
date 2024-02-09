@@ -1,7 +1,0 @@
-Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: securedrop-workstation-svs-disp
-Source: https://github.com/freedomofpress/securedrop-builder
-
-Files: *
-Copyright: 2020 Freedom of the Press Foundation <securedrop@freedom.press>
-License: GPLv3+

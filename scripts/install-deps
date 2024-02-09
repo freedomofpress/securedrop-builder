@@ -9,10 +9,7 @@ sudo apt-get update
 sudo apt-get install  \
     build-essential \
     curl \
-    devscripts \
-    dh-make \
-    dh-python \
-    dh-virtualenv \
+    file \
     git-lfs \
     libffi-dev \
     libssl-dev \
@@ -21,8 +18,7 @@ sudo apt-get install  \
     python3-pip \
     python3-virtualenv \
     python3-venv \
-    python3-setuptools \
-    desktop-file-utils -y
+    python3-setuptools -y
 
 # Inspect the wheel files present locally. If repo was cloned
 # without git-lfs, they'll be "text/plain", rather than "application/zip".

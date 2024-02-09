@@ -4,65 +4,7 @@
 
 # securedrop-builder
 
-`securedrop-builder` is the tool we use to package Python projects into Debian packages for the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation). This repository also holds copies of reproducibly built wheels included with some Debian packages, in the `wheels` subdirectory of the package.
-
-* For instructions on how to build [SecureDrop](https://github.com/freedomofpress/securedrop) Debian packages, see https://developers.securedrop.org/en/latest/release_management.html.
-
-* For building SecureDrop Workstation RPMs, see our [qubes-template-securedrop-workstation](https://github.com/freedomofpress/qubes-template-securedrop-workstation#build-instructions) and [securedrop-workstation-dom0-config](https://github.com/freedomofpress/securedrop-workstation/wiki/Building-securedrop-workstation-dom0-config-RPM-package) docs.
-
-## Getting Started
-
-1. Clone `securedrop-builder` and install its dependencies:
-
-    ```shell
-    git clone git@github.com:freedomofpress/securedrop-builder.git
-    cd securedrop-builder
-    make install-deps  # This also confifgures the git-lfs repo used to store SecureDrop Workstation dependencies (https://github.com/freedomofpress/securedrop-builder/tree/HEAD/workstation-bootstrap/wheels)
-    ```
-
-2. Build a package in one of the following ways:
-    ```shell
-    # From a release tag x.y.z signed by the SecureDrop Release Signing key
-    PKG_VERSION=x.y.z ./scripts/update-changelog securedrop-client
-    PKG_GITREF=x.y.z make securedrop-client
-    ```
-
-    ```shell
-    # From a non-release tag or branch
-    PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
-    PKG_GITREF=<ref> make securedrop-client
-    ```
-
-    ```shell
-    # From a source tarball
-    # First give the Debian package you want to build a version number by setting it in the changelog
-    PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
-    PKG_PATH=local/path/to/securedrop-client/dist/securedrop-client-x.y.z.tar.gz make securedrop-client
-    ```
-
-    ```shell
-    # From a local source checkout
-    # First give the Debian package you want to build a version number by setting it in the changelog
-    PKG_VERSION=<version> ./scripts/update-changelog securedrop-client
-    PKG_PATH=local/path/to/securedrop-client make securedrop-client
-    ```
-
-## Which packages can `securedrop-builder` build?
-
-* [securedrop-client](https://github.com/freedomofpress/securedrop-client)
-* [securedrop-export](https://github.com/freedomofpress/securedrop-export)
-* [securedrop-keyring](https://github.com/freedomofpress/securedrop-keyring)
-* [securedrop-log](https://github.com/freedomofpress/securedrop-log)
-* [securedrop-proxy](https://github.com/freedomofpress/securedrop-proxy)
-* [securedrop-workstation-config](https://github.com/freedomofpress/securedrop-builder/tree/main/securedrop-workstation-config)
-* [secruedrop-workstation-viewer](https://github.com/freedomofpress/securedrop-builder/tree/main/securedrop-workstation-viewer)
-
-
-## Build and deploy a package
-
-Refer to https://developers.securedrop.org/en/latest/workstation_release_management.html.
-
-_If you don't need to deploy a package and just want to test locally, you can start by building it from a source checkout (see :ref:`Getting Started`) and then install it in its corresponding AppVM._
+`securedrop-builder` is the tool we use to build reproducible Python wheels for [SecureDrop Workstation components](https://github.com/freedomofpress/securedrop-client).
 
 ## Updating our bootstrapped build tools
 
@@ -164,7 +106,3 @@ git commit
 ```
 
 Finally, submit a PR containing the new wheels and updated files.
-If you wish to test the new wheels in a local build before submitting a PR,
-or as part of PR review, you can do so by:
-
-Then run e.g. `PKG_GITREF=0.4.1 make securedrop-client` to verify that the new wheels are working.
