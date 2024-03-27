@@ -1,6 +1,7 @@
 """
 Shared functions between various scripts
 """
+
 import re
 
 try:
