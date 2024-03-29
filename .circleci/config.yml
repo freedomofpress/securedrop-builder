@@ -65,40 +65,6 @@ jobs:
             chown ci:root -R .
             sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py"
 
-  reprepro-update-tor:
-    docker:
-      - image: debian:bullseye-backports
-    steps:
-      - checkout
-      - *addsshkeys
-      - run:
-          name: clone and run reprepro update
-          command: |
-            apt-get update
-            apt-get install -y reprepro ca-certificates dctrl-tools git git-lfs openssh-client \
-                gh python3
-
-            # Clone the dev repo and configure it
-            git clone git@github.com:freedomofpress/securedrop-apt-test.git
-            cd securedrop-apt-test
-            git lfs install
-            git config user.email "securedrop@freedom.press"
-            git config user.name "sdcibot"
-
-            # Import the Tor repo signing key
-            gpg --import repo/conf/updates-keys/*.gpg
-            # Run reprepro update, skip export since we just want the debs (and we don't have
-            # the repo signing key anyways)
-            REPREPRO_BASE_DIR=repo reprepro --export=never update
-
-            # Move the new packages over, intentionally leaving the old ones around
-            mv repo/pool/main/t/tor/*.deb core/focal/
-            git add core/focal/*.deb
-            # If there are changes, diff-index will fail, so we commit and push
-            git diff-index --quiet HEAD || (git commit -m "Automatically updating Tor packages" \
-                && git push origin main && ../scripts/new-tor-issue)
-
-
   build-rpm:
     parameters:
       package:
@@ -179,7 +145,6 @@ workflows:
               only:
                 - main
     jobs:
-      - reprepro-update-tor
       - build-rpm:
           matrix:
             parameters:
