@@ -1,14 +1,5 @@
 ---
 common-steps:
-  - &persist
-    persist_to_workspace:
-      root: /tmp/workspace
-      paths:
-        - "*"
-
-  - &attach
-    attach_workspace:
-      at: /tmp/workspace
 
   - &installdeps
     run:
@@ -23,11 +14,6 @@ common-steps:
       command: |
         apt-get install reprotest faketime -y --no-install-recommends
         .venv/bin/pip install -r test-requirements.txt
-
-  - &addsshkeys
-    add_ssh_keys:
-      fingerprints:
-        - "85:3a:62:40:e2:91:ab:00:a0:67:9d:c5:26:e1:09:9f"
 
 
 version: 2.1
@@ -65,76 +51,11 @@ jobs:
             chown ci:root -R .
             sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py"
 
-  build-rpm:
-    parameters:
-      package:
-        type: string
-    docker:
-      - image: fedora:32
-    environment:
-      PKG_NAME: << parameters.package >>
-    steps:
-      - checkout
-      - run:
-          name: Clone and install dependencies
-          command: |
-            dnf install git make -y
-            git clone https://github.com/freedomofpress/${PKG_NAME}.git
-            cd ${PKG_NAME}
-            make install-deps
-      - run:
-          name: Bump version and build rpm
-          command: |
-            cd ${PKG_NAME}
-            # Version format is "${VERSION}-0.YYYYMMDDHHMMSS.fXX", which sorts lower than "${VERSION}-1"
-            rpmdev-bumpspec --new="$(cat VERSION)-0.$(date +%Y%m%d%H%M%S)%{?dist}" rpm-build/SPECS/*.spec
-            make build-rpm
-            mkdir -p /tmp/workspace/
-            cp -v rpm-build/RPMS/noarch/*.rpm /tmp/workspace/
-      - *persist
-
-  push-rpm:
-    docker:
-      - image: fedora:32
-    steps:
-      - checkout
-      - *attach
-      - *addsshkeys
-      - run:
-          name: Commit and push
-          command: |
-            dnf install -y ca-certificates git git-lfs openssh-clients python3-rpm python3-debian rpmdevtools
-            git clone git@github.com:freedomofpress/securedrop-yum-test.git
-            cd securedrop-yum-test
-            git lfs install
-            git config user.email "securedrop@freedom.press"
-            git config user.name "sdcibot"
-            mkdir -p workstation/dom0/f32-nightlies
-            # Copy the new packages over and cleanup the old ones
-            cp -v /tmp/workspace/*.rpm workstation/dom0/f32-nightlies/
-            ~/project/scripts/clean-old-packages workstation/dom0/f32-nightlies 7
-            git add .
-            # If there are changes, diff-index will fail, so we commit
-            git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
-            # And clean up non-nightly packages too
-            ~/project/scripts/clean-old-packages workstation/dom0/f32 4
-            git add .
-            git diff-index --quiet HEAD || git commit -m "Cleanup old packages"
-
-            git push origin main
-
-
 workflows:
-  build-packages:
+  builder_ci:
     jobs:
       - lint-and-test
       - reprotest-wheels
-      - build-rpm:
-          matrix:
-            parameters:
-              package: &rpmpackages
-                - securedrop-updater
-                - securedrop-workstation
 
   nightly:
     triggers:
@@ -145,10 +66,4 @@ workflows:
               only:
                 - main
     jobs:
-      - build-rpm:
-          matrix:
-            parameters:
-              package: *rpmpackages
-      - push-rpm:
-          requires:
-            - build-rpm
+      - reprotest-wheels
