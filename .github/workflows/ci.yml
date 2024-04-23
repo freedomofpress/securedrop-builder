@@ -1,7 +1,7 @@
 ---
 name: CI
 
-on: [push, pull_request]
+on: [merge_group, push, pull_request]
 
 jobs:
   checks:
