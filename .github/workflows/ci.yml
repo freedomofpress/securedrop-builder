@@ -6,7 +6,7 @@ on: [push, pull_request]
 jobs:
   checks:
     runs-on: ubuntu-latest
-    container: debian:bullseye
+    container: debian:bookworm
     steps:
       - name: Bootstrap Debian system package dependencies
         run: |
