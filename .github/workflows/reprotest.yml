@@ -1,10 +1,14 @@
 ---
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *"
 
 jobs:
-  checks:
+  reprotest:
     runs-on: ubuntu-latest
     container: debian:bullseye
     steps:
@@ -19,11 +23,11 @@ jobs:
           # Installs Python & bootstrap wheels, and initializes a virtualenv at .venv
           make install-deps
           ./.venv/bin/pip install -r test-requirements.txt
-      - name: Run linters
+      - name: Test wheel reproducibility
         run: |
-          . ./.venv/bin/activate
-          make lint
-      - name: Run tests except reprotest
-        run: |
-          . ./.venv/bin/activate
-          make test
+          # Necessary to enable git operations without permission issues
+          git config --global --add safe.directory "*"
+          # Necessary to run checks as non-root user, to avoid reproducibility issues
+          adduser --system ci --ingroup root
+          chown ci:root -R .
+          sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py"
