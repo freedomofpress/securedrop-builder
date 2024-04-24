@@ -27,3 +27,21 @@ jobs:
         run: |
           . ./.venv/bin/activate
           make test
+
+  checksums:
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    steps:
+      - name: Bootstrap Debian system package dependencies
+        run: |
+          apt-get update && apt-get install --yes --no-install-recommends make git git-lfs gnupg ca-certificates
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Verify checksums and signatures
+        run: |
+          git config --global --add safe.directory '*'
+          ./scripts/verify-sha256sum-signature securedrop-client
+          ./scripts/verify-sha256sum-signature securedrop-export
+          ./scripts/verify-sha256sum-signature securedrop-log
+          ./scripts/verify-sha256sum-signature securedrop-proxy
