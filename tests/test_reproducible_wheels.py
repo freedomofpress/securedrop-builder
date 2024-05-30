@@ -7,7 +7,6 @@ REPOS_WITH_WHEELS = [
     "client",
     "export",
     "log",
-    "proxy",
 ]
 
 
