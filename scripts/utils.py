@@ -121,6 +121,14 @@ def get_poetry_hashes(
 
     for package in parsed_toml.get("package", []):
         package_name = normalize(package["name"])
+        if (
+            path_to_poetry_lock.parent.name == "workstation-bootstrap"
+            and package_name == "colorama"
+        ):
+            # HACK: see <https://github.com/pypa/build/blob/1.2.1/pyproject.toml#L38>, this
+            # dependency isn't actually needed and complicates bootstrapping by needing
+            # hatchling too
+            continue
         if package_name in relevant_dependencies:
             package_name_and_version = f"{package_name}=={package['version']}"
             dependencies[package_name_and_version] = [
