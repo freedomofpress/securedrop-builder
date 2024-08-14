@@ -10,7 +10,7 @@ from pathlib import Path
 
 import utils
 
-SKIP_PACKAGES = ["pyqt5", "sip"]
+SKIP_PACKAGES = ["pyqt5", "sip", "colorama"]
 
 
 def parse_args():
