@@ -35,6 +35,12 @@ gpg --armor --output workstation-bootstrap/sha256sums.txt.asc --detach-sig  work
 
 Make sure that your GPG public key is stored in `pubkeys/`, so CI can verify the signatures.
 
+> [!NOTE]
+>
+> Dependabot will produce duplicate alerts for `pyproject.toml`/`poetry.lock`
+> and `build-requirements.txt`.  Initiate the Dependabot update for the former
+> first, and following this procedure will resolve it for the latter as well.
+
 ## Updating Python wheels
 
 When adding a new production dependency to a component, new wheels will need to be built
