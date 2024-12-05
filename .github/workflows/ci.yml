@@ -5,7 +5,7 @@ on: [merge_group, push, pull_request]
 
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: debian:bookworm
     steps:
       - name: Bootstrap Debian system package dependencies
@@ -29,7 +29,7 @@ jobs:
           make test
 
   checksums:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: debian:bookworm
     steps:
       - name: Bootstrap Debian system package dependencies
