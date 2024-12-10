@@ -49,7 +49,7 @@ def check_package(package: Path, buildinfos: dict) -> bool:
         return False
 
 
-def added_files(against="origin/main") -> List[Path]:
+def added_files(against: str) -> List[Path]:
     """Get list of added files compared to main"""
     added = []
     output = subprocess.check_output([
@@ -79,10 +79,13 @@ def main():
         description="Check packages against their buildinfo files"
     )
     parser.add_argument("buildinfos", type=Path, help="Folder with buildinfo files")
+    parser.add_argument(
+        "--against", default="origin/main", type=str, help="Git ref from which to detect changes"
+    )
     args = parser.parse_args()
     buildinfos = lookup_buildinfos(args.buildinfos)
     status = 0
-    added = added_files()
+    added = added_files(args.against)
     if not added:
         print("No new packages detected.")
         sys.exit(0)
