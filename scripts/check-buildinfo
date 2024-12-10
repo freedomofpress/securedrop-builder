@@ -6,6 +6,7 @@ Example:
     ./check-buildinfo package.deb package.buildinfo
 
 """
+
 import argparse
 import hashlib
 import subprocess
@@ -21,15 +22,15 @@ def lookup_buildinfos(buildinfos: Path) -> dict:
     data = {}
     for path in buildinfos.glob("**/*.buildinfo"):
         info = BuildInfo(path.read_text())
-        for details in info['Checksums-Sha256']:
-            if details['name'].endswith('.deb') or details['name'].endswith('.ddeb'):
+        for details in info["Checksums-Sha256"]:
+            if details["name"].endswith(".deb") or details["name"].endswith(".ddeb"):
                 # If the package is debug symbols, coerce Ubuntu-style ".ddeb"
                 # to Debian-style ".deb".
-                if "dbgsym" in details['name']:
-                    details['name'] = details['name'].replace(".ddeb", ".deb")
-                if details['name'] in data:
+                if "dbgsym" in details["name"]:
+                    details["name"] = details["name"].replace(".ddeb", ".deb")
+                if details["name"] in data:
                     raise ValueError(f"ERROR: duplicate checksum for {details['name']}")
-                data[details['name']] = details['sha256']
+                data[details["name"]] = details["sha256"]
     return data
 
 
@@ -52,21 +53,25 @@ def check_package(package: Path, buildinfos: dict) -> bool:
 def added_files(against: str) -> List[Path]:
     """Get list of added files compared to main"""
     added = []
-    output = subprocess.check_output([
-        "git", "log",
-        # Only list added files
-        "--diff-filter=A",
-        # Set our terminal width to be huge so it doesn't truncate
-        "--stat=999999",
-        # Output nothing else
-        "--pretty=",
-        f"{against}..HEAD"
-    ], text=True)
+    output = subprocess.check_output(
+        [
+            "git",
+            "log",
+            # Only list added files
+            "--diff-filter=A",
+            # Set our terminal width to be huge so it doesn't truncate
+            "--stat=999999",
+            # Output nothing else
+            "--pretty=",
+            f"{against}..HEAD",
+        ],
+        text=True,
+    )
     for line in output.splitlines():
         if "|" not in line:
             continue
         path = Path(line.split("|", 1)[0].strip())
-        if path.name.endswith('.deb') or path.name.endswith(".ddeb"):
+        if path.name.endswith(".deb") or path.name.endswith(".ddeb"):
             if path.exists():
                 # Wasn't deleted in an intermediate commit
                 added.append(path)
@@ -75,9 +80,7 @@ def added_files(against: str) -> List[Path]:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Check packages against their buildinfo files"
-    )
+    parser = argparse.ArgumentParser(description="Check packages against their buildinfo files")
     parser.add_argument("buildinfos", type=Path, help="Folder with buildinfo files")
     parser.add_argument(
         "--against", default="origin/main", type=str, help="Git ref from which to detect changes"
@@ -95,5 +98,5 @@ def main():
     sys.exit(status)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
