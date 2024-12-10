@@ -22,7 +22,11 @@ def lookup_buildinfos(buildinfos: Path) -> dict:
     for path in buildinfos.glob("**/*.buildinfo"):
         info = BuildInfo(path.read_text())
         for details in info['Checksums-Sha256']:
-            if details['name'].endswith('.deb'):
+            if details['name'].endswith('.deb') or details['name'].endswith('.ddeb'):
+                # If the package is debug symbols, coerce Ubuntu-style ".ddeb"
+                # to Debian-style ".deb".
+                if "dbgsym" in details['name']:
+                    details['name'] = details['name'].replace(".ddeb", ".deb")
                 if details['name'] in data:
                     raise ValueError(f"ERROR: duplicate checksum for {details['name']}")
                 data[details['name']] = details['sha256']
@@ -62,9 +66,10 @@ def added_files(against="origin/main") -> List[Path]:
         if "|" not in line:
             continue
         path = Path(line.split("|", 1)[0].strip())
-        if path.name.endswith('.deb') and path.exists():
-            # Wasn't deleted in an intermediate commit
-            added.append(path)
+        if path.name.endswith('.deb') or path.name.endswith(".ddeb"):
+            if path.exists():
+                # Wasn't deleted in an intermediate commit
+                added.append(path)
     added.sort(key=lambda x: x.name)
     return added
 
