@@ -19,6 +19,7 @@ jobs:
             python3-poetry
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           lfs: true
       - name:  Install additional packages and Python dependencies
         run: |

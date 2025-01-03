@@ -17,6 +17,7 @@ pytest = "*"
 pytest-mock = "*"
 ruff = "*"
 virtualenv = "<16"
+zizmor = "^1.0.0"
 
 [tool.ruff]
 line-length = 100
