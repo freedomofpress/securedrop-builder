@@ -3,6 +3,21 @@ name = "securedrop-builder"
 version = "0.1.0"
 requires-python = ">=3.9"
 
+[tool.poetry]
+name = "securedrop-builder"
+version = "0.1.0"
+description = ""
+authors = []
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-mock = "*"
+ruff = "*"
+virtualenv = "<16"
+
 [tool.ruff]
 line-length = 100
 

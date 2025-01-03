@@ -10,22 +10,19 @@ jobs:
     steps:
       - name: Bootstrap Debian system package dependencies
         run: |
-          apt-get update && apt-get install --yes --no-install-recommends make sudo git git-lfs ca-certificates
+          apt-get update && apt-get install --yes --no-install-recommends make sudo git git-lfs ca-certificates \
+            python3-poetry
       - uses: actions/checkout@v4
         with:
           lfs: true
       - name:  Install additional packages and Python dependencies
         run: |
-          # Installs Python & bootstrap wheels, and initializes a virtualenv at .venv
-          make install-deps
-          ./.venv/bin/pip install -r test-requirements.txt
+          poetry install --no-ansi
       - name: Run linters
         run: |
-          . ./.venv/bin/activate
           make lint
       - name: Run tests except reprotest
         run: |
-          . ./.venv/bin/activate
           make test
 
   checksums:
