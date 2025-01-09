@@ -5,6 +5,7 @@ SHELL := /bin/bash
 lint:
 	@poetry run ruff check .
 	@poetry run ruff format --check .
+	@poetry run zizmor .
 
 .PHONY: fix
 fix:

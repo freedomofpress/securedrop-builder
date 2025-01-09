@@ -14,6 +14,7 @@ jobs:
             python3-poetry
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           lfs: true
       - name:  Install additional packages and Python dependencies
         run: |
@@ -34,6 +35,7 @@ jobs:
           apt-get update && apt-get install --yes --no-install-recommends make git git-lfs gnupg ca-certificates
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           lfs: true
       - name: Verify checksums and signatures
         run: |
