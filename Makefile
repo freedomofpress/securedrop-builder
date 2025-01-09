@@ -3,13 +3,13 @@ SHELL := /bin/bash
 
 .PHONY: lint
 lint:
-	@ruff check .
-	@ruff format --check .
+	@poetry run ruff check .
+	@poetry run ruff format --check .
 
 .PHONY: fix
 fix:
-	@ruff check . --fix
-	@ruff format .
+	@poetry run ruff check . --fix
+	@poetry run ruff format .
 
 .PHONY: install-deps
 install-deps: ## Install initial wheel building dependencies
@@ -28,11 +28,11 @@ build-wheels: ## Builds the wheels and adds them to the wheels subdirectory
 
 .PHONY: test
 test: ## Run simple test suite (skips reproducibility checks)
-	pytest -v tests/test_update_requirements.py tests/test_utils.py
+	poetry run pytest -v tests/test_update_requirements.py tests/test_utils.py
 
 .PHONY: reprotest
 reprotest: ## Runs only reproducibility tests for .whl files
-	pytest -vvs tests/test_reproducible_wheels.py
+	poetry run pytest -vvs tests/test_reproducible_wheels.py
 
 .PHONY: help
 help: ## Prints this message and exits
