@@ -43,3 +43,4 @@ jobs:
           ./scripts/verify-sha256sum-signature securedrop-client
           ./scripts/verify-sha256sum-signature securedrop-export
           ./scripts/verify-sha256sum-signature securedrop-log
+          ./scripts/verify-sha256sum-signature workstation-bootstrap
