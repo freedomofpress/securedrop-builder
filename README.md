@@ -18,9 +18,10 @@ make install-deps
 source .venv/bin/activate
 # Perform the required dependency operations using Poetry.
 # Use "poetry update <foo>" to update an individual dependency per pyproject.toml
-# Use "poetry lock --no-update" to pick up pyproject.toml additions/removals
+# Use "poetry lock" to pick up pyproject.toml additions/removals
+# (as of Poetry 2.1.3, --no-update is the default and desired behaviour)
 # Use -C to run commands in the workstation-bootstrap directory, e.g.:
-poetry -C workstation-bootstrap/ lock --no-update
+poetry -C workstation-bootstrap/ lock
 # Now we are ready to build updated wheels:
 ./scripts/build-sync-wheels --project workstation-bootstrap --pkg-dir ./workstation-bootstrap
 # Once the new wheels are ready, we recreate our sha256sums:
