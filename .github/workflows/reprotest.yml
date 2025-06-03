@@ -9,6 +9,25 @@ on:
     - cron: "0 6 * * *"
 
 jobs:
+  keys:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - name: Bootstrap Debian system package dependencies
+        run: |
+          apt-get update && apt-get install --yes --no-install-recommends make sudo git git-lfs ca-certificates \
+            gpg gpg-agent
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          lfs: true
+      - name: Check that all public keys are valid and not expired
+        # The easiest way to do this is just to import everything into GPG and
+        # have it list expired keys, returning nonzero if there are any.
+        run: |
+          gpg --import pubkeys/*.pub
+          gpg --list-keys | (grep "expired" && exit 1 || exit 0)
+
   reprotest:
     runs-on: ubuntu-latest
     container: debian:bookworm
