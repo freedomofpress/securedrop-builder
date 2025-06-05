@@ -86,9 +86,16 @@ def get_relevant_poetry_dependencies(
     # This means that all new pyproject.toml [project] sections in component
     # projects will require a "dependencies = [...]" line (can be empty list
     # if no production dependencies)
-    relevant_dependencies = set(
-        normalize(name) for name in pyproject_dict["project"]["dependencies"]
-    )
+    delimiter = r"[\s\(<>=,]+"
+
+    # Dependency format can be:
+    # "name"
+    # "name >= versionconstraint,otherconstraint"
+    # "name == version"
+    # "name (version constraint)"
+    relevant_dependencies = set()
+    for name in pyproject_dict["project"]["dependencies"]:
+        relevant_dependencies.add(normalize(re.split(delimiter, name)[0]).strip("'"))
 
     # Poetry allows for dependencies to be specified either via
     # the project "dependencies" section (PEP621) or via
