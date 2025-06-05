@@ -94,8 +94,14 @@ def get_relevant_poetry_dependencies(
     # "name == version"
     # "name (version constraint)"
     relevant_dependencies = set()
-    for name in pyproject_dict["project"]["dependencies"]:
-        relevant_dependencies.add(normalize(re.split(delimiter, name)[0]).strip("'"))
+    try:
+        for name in pyproject_dict["project"]["dependencies"]:
+            relevant_dependencies.add(normalize(re.split(delimiter, name)[0]).strip("'"))
+    # Support legacy pyproject.toml files.
+    # This should be removed once components have been updated to poetry 2.x,
+    # so that toml file dependency parsing issues aren't overlooked!
+    except KeyError:
+        pass
 
     # Poetry allows for dependencies to be specified either via
     # the project "dependencies" section (PEP621) or via
