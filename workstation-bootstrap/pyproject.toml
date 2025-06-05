@@ -1,18 +1,23 @@
-[tool.poetry]
+[project]
+requires-python = ">=3.11"
 name = "workstation-bootsrap"
 version = "0.1.0"
 description = "Requirements for building wheels"
-authors = ["SecureDrop Team"]
-license = "GPLv3+"
+authors = [
+    {name = "SecureDrop Team", email = "securedrop@freedom.press"}
+    ]
+license = {text = "GPLv3+"}
 readme = "README.md"
+dependencies = [
+    "build == 1.2.1",
+    "wheel == 0.38.1",
+    "pip >= 25.0",
+    "setuptools == 79.0.0",
+    "setuptools-scm == 8.1.0",
+    "pytest-runner == 5.3.0",
+    "cython == 0.29.33",
+    "flit-core == 3.9.0"
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-build = "1.2.1"
-wheel = "0.38.1"
-pip = "^25.0"
-setuptools = "^79.0.0"
-setuptools-scm = "8.1.0"
-pytest-runner = "5.3.0"
-cython = "0.29.33"
-flit-core = "3.9.0"
+[tool.poetry]
+requires-poetry = ">=2.0.0,<3.0.0"

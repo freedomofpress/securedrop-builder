@@ -83,9 +83,36 @@ def get_relevant_poetry_dependencies(
 
     # Create a set to keep track of main and transitive dependencies (set ensures
     # no duplicates)
-    relevant_dependencies = set(
-        normalize(name) for name in pyproject_dict["tool"]["poetry"]["dependencies"]
-    )
+    # This means that all new pyproject.toml [project] sections in component
+    # projects will require a "dependencies = [...]" line (can be empty list
+    # if no production dependencies)
+    delimiter = r"[\s\(<>=,]+"
+
+    # Dependency format can be:
+    # "name"
+    # "name >= versionconstraint,otherconstraint"
+    # "name == version"
+    # "name (version constraint)"
+    relevant_dependencies = set()
+    try:
+        for name in pyproject_dict["project"]["dependencies"]:
+            relevant_dependencies.add(normalize(re.split(delimiter, name)[0]).strip("'"))
+    # Support legacy pyproject.toml files.
+    # This should be removed once components have been updated to poetry 2.x,
+    # so that toml file dependency parsing issues aren't overlooked!
+    except KeyError:
+        pass
+
+    # Poetry allows for dependencies to be specified either via
+    # the project "dependencies" section (PEP621) or via
+    # `tool.poetry.dependencies` (legacy).
+    # See https://python-poetry.org/docs/dependency-specification/
+    try:
+        relevant_dependencies.update(
+            normalize(name) for name in pyproject_dict["tool"]["poetry"]["dependencies"]
+        )
+    except KeyError:
+        pass
 
     # Remove 'python' as it's not a package dependency
     if "python" in relevant_dependencies:
