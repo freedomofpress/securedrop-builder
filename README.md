@@ -1,10 +1,10 @@
 > By contributing to this project, you agree to abide by our [Code of Conduct](https://github.com/freedomofpress/.github/blob/main/CODE_OF_CONDUCT.md).
 
-[![CircleCI](https://circleci.com/gh/freedomofpress/securedrop-builder/tree/main.svg?style=svg)](https://circleci.com/gh/freedomofpress/securedrop-builder/tree/main)
-
 # securedrop-builder
 
 `securedrop-builder` is the tool we use to build reproducible Python wheels for [SecureDrop Workstation components](https://github.com/freedomofpress/securedrop-client).
+
+Please note that this is an LFS repository. You must have `[git-lfs](https://git-lfs.com/)` installed and the LFS objects checked out for it to work correctly. If you receive checksum errors when working with the wheels stored in this repo, it is possible that you don't have LFS installed and your checkout only contains small pointer files.
 
 ## Updating our bootstrapped build tools
 
