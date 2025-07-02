@@ -4,7 +4,7 @@
 
 `securedrop-builder` is the tool we use to build reproducible Python wheels for [SecureDrop Workstation components](https://github.com/freedomofpress/securedrop-client).
 
-Please note that this is an LFS repository. You must have `[git-lfs](https://git-lfs.com/)` installed and the LFS objects checked out for it to work correctly. If you receive checksum errors when working with the wheels stored in this repo, it is possible that you don't have LFS installed and your checkout only contains small pointer files.
+Please note that this is an LFS repository. You must have `[git-lfs](https://git-lfs.com/)` installed and the LFS objects checked out for it to work correctly. If you receive checksum errors when working with the wheels stored in this repo, it is possible that you don't have LFS installed and your checkout only contains small pointer files. The `make install-deps` step described below covers this, assuming you are in a Debian environment.
 
 ## Updating our bootstrapped build tools
 
