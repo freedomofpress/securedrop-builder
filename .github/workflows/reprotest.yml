@@ -20,7 +20,7 @@ jobs:
         run: |
           apt-get update && apt-get install --yes --no-install-recommends make sudo git git-lfs ca-certificates \
             gpg gpg-agent
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
           lfs: true
@@ -42,7 +42,7 @@ jobs:
           pipx install poetry==$POETRY_VERSION
           pipx ensurepath
           echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
           lfs: true
