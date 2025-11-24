@@ -18,7 +18,7 @@ jobs:
           pipx install poetry==$POETRY_VERSION
           pipx ensurepath
           echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           lfs: true
@@ -39,7 +39,7 @@ jobs:
       - name: Bootstrap Debian system package dependencies
         run: |
           apt-get update && apt-get install --yes --no-install-recommends make git git-lfs gnupg ca-certificates
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           lfs: true
