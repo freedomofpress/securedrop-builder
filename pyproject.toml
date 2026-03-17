@@ -16,7 +16,7 @@ requires-poetry = ">=2.1.3,<3.0"
 pytest = "*"
 pytest-mock = "*"
 ruff = "*"
-virtualenv = "<16"
+virtualenv = "<21"
 zizmor = "^1.0.0"
 
 [tool.ruff]
