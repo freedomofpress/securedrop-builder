@@ -10,7 +10,7 @@ license = {text = "GPLv3+"}
 
 [tool.poetry]
 package-mode = false
-requires-poetry = ">=2.1.3,<3.0"
+requires-poetry = ">=2.3.3,<3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
