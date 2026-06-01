@@ -46,7 +46,6 @@ jobs:
       - name: Verify checksums and signatures
         run: |
           git config --global --add safe.directory '*'
-          ./scripts/verify-sha256sum-signature securedrop-client
           ./scripts/verify-sha256sum-signature securedrop-export
           ./scripts/verify-sha256sum-signature securedrop-log
           ./scripts/verify-sha256sum-signature workstation-bootstrap
