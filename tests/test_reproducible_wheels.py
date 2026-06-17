@@ -4,7 +4,6 @@ import pytest
 
 # These are the SDW repositories that we build wheels for.
 REPOS_WITH_WHEELS = [
-    "client",
     "export",
     "log",
 ]
