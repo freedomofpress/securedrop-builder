@@ -27,6 +27,19 @@ build-wheels: ## Builds the wheels and adds them to the wheels subdirectory
 	./scripts/sync-sha256sums securedrop-$$(basename ${PKG_DIR})
 	@echo Done!
 
+.PHONY: build-server-wheels
+build-server-wheels: ## Builds the securedrop-app-code wheels in the Noble builder image
+	./scripts/verify-sha256sum-signature securedrop-app-code
+	./scripts/run-in-server-builder ./scripts/build-sync-wheels --pkg-dir /securedrop/securedrop $(BUILD_ARGS)
+	./scripts/sync-sha256sums securedrop-app-code
+	@echo Done!
+
+.PHONY: build-server-bootstrap-wheels
+build-server-bootstrap-wheels: ## Builds the server-bootstrap wheels in the Noble builder image
+	./scripts/run-in-server-builder ./scripts/build-sync-wheels --project server-bootstrap --pkg-dir ./server-bootstrap $(BUILD_ARGS)
+	./scripts/sync-sha256sums server-bootstrap
+	@echo Done!
+
 .PHONY: test
 test: ## Run simple test suite (skips reproducibility checks)
 	poetry run pytest -v tests/test_update_requirements.py tests/test_utils.py

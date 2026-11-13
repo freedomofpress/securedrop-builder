@@ -123,3 +123,31 @@ PKG_DIR=/home/user/code/securedrop-client/<component> make requirements
 
 This will update the build-requirements.txt file, commit and open a PR with these
 changes. Note that CI will likely fail until the PR from step 3 is merged.
+
+## SecureDrop server wheels
+
+`securedrop-app-code/wheels` holds the wheels for the SecureDrop server's `securedrop-app-code`
+package. They are built from `securedrop/requirements/requirements.txt` in the
+[securedrop](https://github.com/freedomofpress/securedrop) repository, inside the same Noble
+builder image as the server packages (create it by running `make build-debs` there once), and with
+the same Debian hardening flags (`dpkg-buildflags`) as the deb build, so the compiled extensions keep
+protections such as full RELRO. With the securedrop repository checked out next to this one (or
+`SECUREDROP_DIR` set):
+
+```shell
+make build-server-wheels
+gpg --armor --output securedrop-app-code/sha256sums.txt.asc --detach-sig securedrop-app-code/sha256sums.txt
+PKG_DIR=../securedrop/securedrop make requirements
+```
+
+Wheels are built without build isolation, so the build-time dependencies of those sdists live in
+`server-bootstrap/`, installed on top of `workstation-bootstrap/`. Keep the cffi, pycparser, Babel,
+and pytz versions there the same as in the securedrop repository's `requirements.txt`. Update it the
+same way as `workstation-bootstrap/` (see above), except that the build step runs in the Noble image:
+
+```shell
+poetry -C server-bootstrap/ lock
+make build-server-bootstrap-wheels
+gpg --armor --output server-bootstrap/sha256sums.txt.asc --detach-sig server-bootstrap/sha256sums.txt
+./scripts/update-requirements --pkg-dir ./server-bootstrap/ --project server-bootstrap
+```

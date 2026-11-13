@@ -1,0 +1,22 @@
+[project]
+requires-python = ">=3.12"
+name = "server-bootstrap"
+version = "0.1.0"
+description = "Build-time requirements for the securedrop-app-code wheels"
+authors = [
+    {name = "SecureDrop Team", email = "securedrop@freedom.press"}
+    ]
+license = {text = "GPLv3+"}
+dependencies = [
+    "babel == 2.9.1",
+    "cffi == 2.0.0",
+    "flit-core == 3.12.0",
+    "maturin == 1.16.0",
+    "pycparser == 2.21",
+    "pytz == 2022.2.1",
+    "setuptools == 79.0.1",
+    "setuptools-rust == 1.13.0",
+]
+
+[tool.poetry]
+requires-poetry = ">=2.3.3,<3.0.0"
