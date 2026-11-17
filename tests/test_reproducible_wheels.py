@@ -1,3 +1,5 @@
+import os
+import shutil
 import subprocess
 
 import pytest
@@ -40,6 +42,31 @@ def test_workstation_bootstrap_wheels():
             "--project",
             "workstation-bootstrap",
         ]
+    )
+    # Check for modified files (won't catch new, untracked files)
+    subprocess.check_call(["/usr/bin/git", "diff", "--exit-code"])
+    # Check for new, untracked files.
+    assert subprocess.check_output(["/usr/bin/git", "status", "--porcelain"]) == b""
+
+
+# The securedrop-app-code wheels are built in the securedrop repository's
+# Noble builder image, so these tests need docker or podman.
+@pytest.fixture(scope="module")
+def securedrop_checkout():
+    path = "/tmp/securedrop"
+    subprocess.check_call(
+        ["/usr/bin/git", "clone", "https://github.com/freedomofpress/securedrop", path]
+    )
+    oci_bin = os.environ.get("OCI_BIN") or ("podman" if shutil.which("podman") else "docker")
+    env = {**os.environ, "OCI_BIN": oci_bin, "OCI_RUN_ARGUMENTS": "", "OS_VERSION": "noble"}
+    subprocess.check_call(["/usr/bin/bash", "./builder/image_prep.sh"], cwd=path, env=env)
+    return path
+
+
+@pytest.mark.parametrize("target", ["build-server-bootstrap-wheels", "build-server-wheels"])
+def test_server_wheels(securedrop_checkout, target):
+    subprocess.check_call(
+        ["/usr/bin/make", target, f"SECUREDROP_DIR={securedrop_checkout}", "BUILD_ARGS=--clobber"]
     )
     # Check for modified files (won't catch new, untracked files)
     subprocess.check_call(["/usr/bin/git", "diff", "--exit-code"])

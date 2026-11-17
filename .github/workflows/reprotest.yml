@@ -59,4 +59,24 @@ jobs:
           # Necessary to run checks as non-root user, to avoid reproducibility issues
           adduser --system ci --ingroup root
           chown ci:root -R .
-          sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py"
+          sudo -u ci bash -c "source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py -k 'not server'"
+
+  # The server wheels are built in a container, so this runs on the host.
+  reprotest-server-wheels:
+    runs-on: ubuntu-24.04
+    env:
+      OCI_BIN: docker
+    steps:
+      - run: |
+          pipx install poetry==$POETRY_VERSION
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          lfs: true
+      - name:  Install additional packages and Python dependencies
+        run: |
+          make install-deps
+          poetry install --no-ansi
+      - name: Test wheel reproducibility
+        run: |
+          source .venv/bin/activate && pytest -vvs tests/test_reproducible_wheels.py -k server

@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+# Runs a command in the securedrop repository's Noble builder image, in a
+# virtualenv with workstation-bootstrap and server-bootstrap installed and the
+# Debian hardening flags exported, e.g.:
+#   ./scripts/run-in-server-builder ./scripts/build-sync-wheels --project server-bootstrap --pkg-dir ./server-bootstrap
+
+repo_root="$(git rev-parse --show-toplevel)"
+SECUREDROP_DIR="$(realpath "${SECUREDROP_DIR:-${repo_root}/../securedrop}")"
+SERVER_IMAGE="${SERVER_IMAGE:-fpf.local/sd-server-builder-noble}"
+
+OCI_RUN_ARGUMENTS=()
+if [[ -z "${OCI_BIN:-}" ]]; then
+    if which podman > /dev/null 2>&1; then
+        OCI_BIN="podman"
+    else
+        OCI_BIN="docker"
+    fi
+fi
+if [[ "$OCI_BIN" == "podman" ]]; then
+    OCI_RUN_ARGUMENTS+=(--userns=keep-id)
+fi
+
+# The command string is expanded inside the container, not here.
+"$OCI_BIN" run --rm "${OCI_RUN_ARGUMENTS[@]}" \
+    --user "$(id -u):$(id -g)" -e HOME=/tmp -e CARGO_HOME=/tmp/cargo \
+    -v "${repo_root}:/builder:Z" -v "${SECUREDROP_DIR}:/securedrop:Z" -w /builder \
+    "$SERVER_IMAGE" bash -c '
+        set -euo pipefail
+        python3 -m venv /tmp/venv
+        source /tmp/venv/bin/activate
+        pip install --require-hashes --no-index --no-deps \
+            -r workstation-bootstrap/build-requirements.txt --find-links workstation-bootstrap/wheels
+        pip install --require-hashes --no-index --no-deps \
+            -r server-bootstrap/build-requirements.txt --find-links server-bootstrap/wheels
+        export DEB_BUILD_MAINT_OPTIONS=hardening=+all
+        eval "$(dpkg-buildflags --export=sh)"
+        exec "$@"
+    ' bash "$@"
